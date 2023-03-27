@@ -1,64 +1,41 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"os"
 	"server/entities"
+	"server/services"
 
-	
+	// pb "github.com/karankumarshreds/GoProto/protofiles"
+	// "google.golang.org/protobuf/proto"
 )
 
 func main() {
-	classConfig, keywordsconfig, err := readConfig();
+	classConfig, keywordsconfig, err := readConfigFromJSON();
+	if err != nil {
+		log.Fatalln("Fail to read config from JSON: ", err)
+	}
+
 	fmt.Printf("%#v \n", classConfig)
 	fmt.Printf("%#v \n", keywordsconfig)
 	fmt.Printf("%#v \n", err)
 }
 
-// Read config (admin can config via UI)
-func readConfig() (entities.HtmlArticleClass, entities.Keywords, error){
+func readConfigFromJSON() (entities.HtmlArticleClass, entities.Keywords, error) {
 	var classConfig entities.HtmlArticleClass
 	var keywordsConfig entities.Keywords
 
-	classConfigJson, err := os.Open("./configs/htmlArticleClassConfig.json")
+	classConfig, err := services.ReadHtmlClassJSON();
 	if err != nil {
-		log.Println(err)
-		return classConfig, keywordsConfig, err
-	}
-	defer classConfigJson.Close()
-
-	keywordsConfigJson, err := os.Open("./configs/keywordsConfig.json")
-	if err != nil {
-		log.Println(err)
-		return classConfig, keywordsConfig, err
-	}
-	defer keywordsConfigJson.Close()
-
-	classConfigByte, err := io.ReadAll(classConfigJson)
-	if err != nil {
-		log.Println(err)
+		log.Println("Fail to read htmlArticleClassConfig.json: ", err)
 		return classConfig, keywordsConfig, err
 	}
 
-	keywordsConfigByte, err := io.ReadAll(keywordsConfigJson)
+	keywordsconfig, err := services.ReadKeywordsJSON();
 	if err != nil {
-		log.Println(err)
-		return classConfig, keywordsConfig, err
+		log.Println("Fail to read keywordsConfig.json: ", err)
+		return classConfig, keywordsconfig, err
 	}
 
-	err = json.Unmarshal(classConfigByte, &classConfig)
-	if err != nil {
-		log.Println(err)
-		return classConfig, keywordsConfig, err
-	}
-
-	err = json.Unmarshal(keywordsConfigByte, &keywordsConfig)
-	if err != nil {
-		log.Println(err)
-		return classConfig, keywordsConfig, err
-	}
-	return classConfig, keywordsConfig, nil
+	return classConfig, keywordsconfig, nil
 }
