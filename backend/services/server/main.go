@@ -16,7 +16,7 @@ func main() {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
 	conn := connectToCrawler()
-	services.GetArticlesWithAllKeyWords(keywordsconfig, classConfig, conn)
+	services.GetArticles(keywordsconfig, classConfig, conn)
 	fmt.Printf("%#v \n", classConfig)
 	fmt.Printf("%#v \n", keywordsconfig)
 	fmt.Printf("%#v \n", err)
