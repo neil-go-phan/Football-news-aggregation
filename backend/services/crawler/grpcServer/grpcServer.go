@@ -14,6 +14,7 @@ func GRPCServer() {
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
-
+	log.Println(s)
+	log.Println(lis)
 
 }
