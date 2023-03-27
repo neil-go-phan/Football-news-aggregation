@@ -7,8 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"sync"
-	"time"
+	// "time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/cdproto/cdp"
@@ -23,13 +22,13 @@ type HtmlArticleClass struct {
 	LinkClass        string
 }
 
-var htmlArticleClass = HtmlArticleClass{
-	ArticleClass:     `SoaBEf`,
-	TitleClass:       `mCBkyc ynAwRc MBeuO nDgy9d`,
-	DescriptionClass: `GI74Re nDgy9d`,
-	ThumbnailClass:   `uhHOwf BYbUcd`,
-	LinkClass:        `WlydOe`,
-}
+// var htmlArticleClass = HtmlArticleClass{
+// 	ArticleClass:     `SoaBEf`,
+// 	TitleClass:       `mCBkyc ynAwRc MBeuO nDgy9d`,
+// 	DescriptionClass: `GI74Re nDgy9d`,
+// 	ThumbnailClass:   `uhHOwf BYbUcd`,
+// 	LinkClass:        `WlydOe`,
+// }
 
 var PAGES int = 10
 
@@ -40,36 +39,36 @@ type Article struct {
 	Link        string
 }
 
-func SearchKeyWord(keyword string) ([]Article, error) {
+func SearchKeyWord(keyword string) (string, error) {
 
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
-	ctx2, cancel := context.WithTimeout(ctx, 3*time.Second)
-	defer cancel()
+	// ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
+	// defer cancel()
 
 	log.Println("Navigate to: ", fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword)))
 
-	err := chromedp.Run(ctx2, chromedp.Navigate(fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword))))
+	err := chromedp.Run(ctx, chromedp.Navigate(fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword))))
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return "", err
 	}
 
 	log.Println("Waiting for search result...")
 
-	err = chromedp.Run(ctx2, chromedp.WaitVisible(`#search`, chromedp.ByID))
+	err = chromedp.Run(ctx, chromedp.WaitVisible(`#search`, chromedp.ByID))
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return "", err
 	}
 
 	log.Println("Search result...")
 
 	var nodes []*cdp.Node
-	err = chromedp.Run(ctx2, chromedp.Nodes(`//div[@class="hdtb-mitem"]//a[text()="Tin tức"]`, &nodes))
+	err = chromedp.Run(ctx, chromedp.Nodes(`//div[@class="hdtb-mitem"]//a[text()="Tin tức"]`, &nodes))
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return "", err
 	}
 
 	var newURL string
@@ -81,33 +80,30 @@ func SearchKeyWord(keyword string) ([]Article, error) {
 
 	log.Println("News tab url: ", newURL)
 
-	// articles, _ := searchInMultiPages(ctx2, newURL, PAGES)
-	articles := multiPage(newURL)
-
-	return articles, nil
+	return newURL, nil
 }
 
-func multiPage(newURL string) []Article {
-	var articles []Article
-	var wg sync.WaitGroup
-	for i := 0; i < PAGES; i++ {
-		wg.Add(1)
-		go func(index int) {
-			defer wg.Done()
-			news, err := fetchHtml(newURL, index)
-			if err != nil {
-				log.Fatal(err)
-			}
-			articles = append(articles, news...)
+// func multiPage(newURL string) []Article {
+// 	var articles []Article
+// 	var wg sync.WaitGroup
+// 	for i := 0; i < PAGES; i++ {
+// 		wg.Add(1)
+// 		go func(index int) {
+// 			defer wg.Done()
+// 			news, err := CrawlPage(newURL, index)
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+// 			articles = append(articles, news...)
 
-		}(i)
+// 		}(i)
 
-	}
-	wg.Wait()
-	return articles
-}
+// 	}
+// 	wg.Wait()
+// 	return articles
+// }
 
-func fetchHtml(url string, page int) ([]Article, error) {
+func CrawlPage(url string, page int, htmlClasses HtmlArticleClass) ([]Article, error) {
 	var articles []Article
 	//
 	req, err := http.NewRequest("GET", fmt.Sprintf(`%s&start=%d0`, url, page), nil)
@@ -128,12 +124,12 @@ func fetchHtml(url string, page int) ([]Article, error) {
 		log.Fatal(err)
 	}
 
-	doc.Find(formatClassName(htmlArticleClass.ArticleClass)).Each(func(i int, s *goquery.Selection) {
+	doc.Find(formatClassName(htmlClasses.ArticleClass)).Each(func(i int, s *goquery.Selection) {
 		var article Article
-		article.Title = s.Find(formatClassName(htmlArticleClass.TitleClass)).Text()
-		article.Description = s.Find(formatClassName(htmlArticleClass.DescriptionClass)).Text()
-		article.Thumbnail, _ = s.Find(formatClassName(htmlArticleClass.ThumbnailClass)).Find("img").Attr("src")
-		article.Link, _ = s.Find(formatClassName(htmlArticleClass.LinkClass)).Attr("href")
+		article.Title = s.Find(formatClassName(htmlClasses.TitleClass)).Text()
+		article.Description = s.Find(formatClassName(htmlClasses.DescriptionClass)).Text()
+		article.Thumbnail, _ = s.Find(formatClassName(htmlClasses.ThumbnailClass)).Find("img").Attr("src")
+		article.Link, _ = s.Find(formatClassName(htmlClasses.LinkClass)).Attr("href")
 		articles = append(articles, article)
 	})
 	return articles, nil

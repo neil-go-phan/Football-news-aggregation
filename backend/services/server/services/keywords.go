@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"server/entities"
+	"backend/services/server/entities"
 )
 
 func ReadKeywordsJSON() (entities.Keywords, error){
