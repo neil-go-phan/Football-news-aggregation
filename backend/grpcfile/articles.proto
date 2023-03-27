@@ -19,7 +19,7 @@ message HTMLClasses {
 
 // The request message containing keywords and html class
 message AllConfigs {
-  string keyword = 1;
+  repeated string keywords = 1;
   HTMLClasses html_classes = 2;
 }
 
@@ -31,5 +31,6 @@ message Article {
 }
 // The response message containing the articles
 message ArticlesReponse {
-  repeated Article articles = 1;
+  string keyword = 1;
+  repeated Article articles = 2;
 } 
