@@ -8,6 +8,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+type server struct {
+	pb.UnimplementedArticleServiceServer
+}
+
 func GRPCServer() {
 	s := grpc.NewServer()
 	lis, err := net.Listen("tcp", ":8000")
@@ -16,5 +20,5 @@ func GRPCServer() {
 	}
 	log.Println(s)
 	log.Println(lis)
-
+	pb.RegisterArticleServiceServer(s, &server{})
 }

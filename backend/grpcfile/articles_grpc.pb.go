@@ -4,7 +4,7 @@
 // - protoc             v3.6.1
 // source: articles.proto
 
-package __
+package grpcfile
 
 import (
 	context "context"
