@@ -6,7 +6,7 @@ import (
 	"net"
 	"sync"
 
-	pb "github.com/neil-go-phan/Football-news-aggregation/backend/grpcfile"
+	pb "backend/grpcfile"
 	"google.golang.org/grpc"
 )
 
@@ -18,7 +18,7 @@ type articlesServer struct {
 
 func GRPCServer() {
 	s := grpc.NewServer()
-	lis, err := net.Listen("tcp", "localhost:50005")
+	lis, err := net.Listen("tcp", "localhost:8000")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -32,11 +32,11 @@ func GRPCServer() {
 }
 
 func (s *articlesServer) GetArticles(configs *pb.AllConfigs, stream pb.ArticleService_GetArticlesServer) error {
-	keyword := configs.GetKeywords()
+	keyword := configs.Keyword
 	// Search keyword on google and tab "Tin tức" url
-	newsUrl, err := crawl.SearchKeyWord(keyword.String())
+	newsUrl, err := crawl.SearchKeyWord(keyword)
 	if err != nil {
-		log.Printf("Faile to search for key word: %s, err: %v \n", keyword.String(), err)
+		log.Printf("Faile to search for key word: %s, err: %v \n", keyword, err)
 		return err
 	}
 
@@ -67,17 +67,13 @@ func (s *articlesServer) GetArticles(configs *pb.AllConfigs, stream pb.ArticleSe
 
 		}(i)
 	}
-	
-	if err != nil {
-		log.Printf("Faile to crawl for key word: %s, err: %v \n", keyword.String(), err)
-		return err
-	}
+	log.Println(keyword, ": crawl successfully")
 	wg.Wait()
 	return nil
 }
 
-func crawlArticlesToPbActicles(crawlArticles []crawl.Article) *pb.Articles {
-	pbArticles := &pb.Articles{}
+func crawlArticlesToPbActicles(crawlArticles []crawl.Article) *pb.ArticlesReponse {
+	pbArticles := &pb.ArticlesReponse{}
 	for _, article := range crawlArticles {
 		pbArticle := &pb.Article{
 			Title:       article.Title,
