@@ -1,15 +1,15 @@
-import ProgressBar from '@/components/ProcessBar';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'nprogress/nprogress.css';
-// import '@/styles/globals.css';
+import '@fortawesome/fontawesome-svg-core/styles.css';
+import '@/styles/globals.scss';
+import ProgressBar from '@/components/processBar';
 import type { AppProps } from 'next/app';
-import ClientLayout from '@/layouts/clientLayout';
+
+import { SSRProvider } from 'react-bootstrap';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <ClientLayout>
+    <SSRProvider>
       <ProgressBar />
       <Component {...pageProps} />
-    </ClientLayout>
+    </SSRProvider>
   );
 }
