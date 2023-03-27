@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package grpcfile;
+
+option go_package="./";
+
+service ArticleService {
+  rpc GetArticles(AllConfigs) returns (stream Articles) {}
+}
+
+message Articles {
+  repeated Article Articles = 1;
+}
+
+message Article {
+	string Title        = 1;
+	string Description =2;
+	string Thumbnail   =3;
+	string Link        =4;
+}
+
+message Signal {
+  string Ping = 1;
+}
+
+message AllConfigs {
+  Keywords Keywords = 1;
+  HTMLClasses HtmlClasses = 2;
+}
+
+message Keywords {
+  repeated string Keyword = 1; 
+}
+
+message HTMLClasses {
+  string ArticleClass = 1;
+  string TitleClass = 2;
+  string DescriptionClass = 3;
+  string ThumbnailClass = 4;
+  string LinkClass = 5;
+}
+

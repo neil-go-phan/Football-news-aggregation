@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -30,7 +31,7 @@ var htmlArticleClass = HtmlArticleClass{
 	LinkClass:        `WlydOe`,
 }
 
-var PAGES int = 10
+var PAGES int = 100
 
 type Article struct {
 	Title       string
@@ -40,11 +41,11 @@ type Article struct {
 }
 
 func main() {
-	articles, _ := searchKeyWord("ngoai hang anh")
-	for index, a:= range articles {
+	articles, _ := searchKeyWord("Ngoại hạng anh")
+	for index, a := range articles {
 		fmt.Println("index: ", index, " title: ", a.Title)
 	}
-	
+
 }
 
 func searchKeyWord(keyword string) ([]Article, error) {
@@ -53,18 +54,24 @@ func searchKeyWord(keyword string) ([]Article, error) {
 	defer cancel()
 	ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	
+
+	log.Println("Navigate to: ", fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword)))
+
 	err := chromedp.Run(ctx2, chromedp.Navigate(fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword))))
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
+	log.Println("Waiting for search result...")
+
 	err = chromedp.Run(ctx2, chromedp.WaitVisible(`#search`, chromedp.ByID))
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+
+	log.Println("Search result...")
 
 	var nodes []*cdp.Node
 	err = chromedp.Run(ctx2, chromedp.Nodes(`//div[@class="hdtb-mitem"]//a[text()="Tin tức"]`, &nodes))
@@ -80,16 +87,18 @@ func searchKeyWord(keyword string) ([]Article, error) {
 
 	newURL = `https://www.google.com` + newURL
 
+	log.Println("News tab url: ", newURL)
+
 	// articles, _ := searchInMultiPages(ctx2, newURL, PAGES)
 	articles := multiPage(newURL)
 
 	return articles, nil
 }
 
-func multiPage(newURL string) ([]Article) {
+func multiPage(newURL string) []Article {
 	var articles []Article
 	var wg sync.WaitGroup
-	for i := 0; i < PAGES; i ++ {
+	for i := 0; i < PAGES; i++ {
 		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
@@ -98,9 +107,9 @@ func multiPage(newURL string) ([]Article) {
 				log.Fatal(err)
 			}
 			articles = append(articles, news...)
-			
-		} (i)
-		
+
+		}(i)
+
 	}
 	wg.Wait()
 	return articles
@@ -141,13 +150,41 @@ func fetchHtml(url string, page int) ([]Article, error) {
 func formatClassName(class string) string {
 	var classes string
 	hashParts := strings.Split(class, " ")
-	for _,s := range hashParts {
+	for _, s := range hashParts {
 		classes = classes + "." + s
 	}
 	return classes
 }
 
 func formatKeywords(keyword string) string {
+	var Regexp_A = `à|á|ạ|ã|ả|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ`
+	var Regexp_E = `è|ẻ|ẽ|é|ẹ|ê|ề|ể|ễ|ế|ệ`
+	var Regexp_I = `ì|ỉ|ĩ|í|ị`
+	var Regexp_U = `ù|ủ|ũ|ú|ụ|ư|ừ|ử|ữ|ứ|ự`
+	var Regexp_Y = `ỳ|ỷ|ỹ|ý|ỵ`
+	var Regexp_O = `ò|ỏ|õ|ó|ọ|ô|ồ|ổ|ỗ|ố|ộ|ơ|ờ|ở|ỡ|ớ|ợ`
+	var Regexp_D = `Đ|đ`
+	reg_a := regexp.MustCompile(Regexp_A)
+	reg_e := regexp.MustCompile(Regexp_E)
+	reg_i := regexp.MustCompile(Regexp_I)
+	reg_o := regexp.MustCompile(Regexp_O)
+	reg_u := regexp.MustCompile(Regexp_U)
+	reg_y := regexp.MustCompile(Regexp_Y)
+	reg_d := regexp.MustCompile(Regexp_D)
+	keyword = reg_a.ReplaceAllLiteralString(keyword, "a")
+	keyword = reg_e.ReplaceAllLiteralString(keyword, "e")
+	keyword = reg_i.ReplaceAllLiteralString(keyword, "i")
+	keyword = reg_o.ReplaceAllLiteralString(keyword, "o")
+	keyword = reg_u.ReplaceAllLiteralString(keyword, "u")
+	keyword = reg_y.ReplaceAllLiteralString(keyword, "y")
+	keyword = reg_d.ReplaceAllLiteralString(keyword, "d")
+
+	// regexp remove charaters in ()
+	var RegexpPara = `\(.*\)`
+	reg_para := regexp.MustCompile(RegexpPara)
+	keyword = reg_para.ReplaceAllLiteralString(keyword, "")
+
+	keyword = strings.ToLower(keyword)
 	return strings.Replace(keyword, " ", "+", -1)
 }
 

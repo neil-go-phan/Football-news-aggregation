@@ -1,4 +1,6 @@
 go 1.20
 
-use ./backend/services/crawler
-use ./backend/services/server
+use (
+	./backend/services/crawler
+	./backend/services/server
+)

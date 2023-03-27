@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"server/entities"
+
+	
 )
 
 func main() {
@@ -35,13 +37,13 @@ func readConfig() (entities.HtmlArticleClass, entities.Keywords, error){
 	}
 	defer keywordsConfigJson.Close()
 
-	classConfigByte, err := ioutil.ReadAll(classConfigJson)
+	classConfigByte, err := io.ReadAll(classConfigJson)
 	if err != nil {
 		log.Println(err)
 		return classConfig, keywordsConfig, err
 	}
 
-	keywordsConfigByte, err := ioutil.ReadAll(keywordsConfigJson)
+	keywordsConfigByte, err := io.ReadAll(keywordsConfigJson)
 	if err != nil {
 		log.Println(err)
 		return classConfig, keywordsConfig, err

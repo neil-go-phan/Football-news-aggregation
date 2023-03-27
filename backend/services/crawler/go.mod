@@ -3,18 +3,13 @@ module crawler
 go 1.20
 
 require (
-	github.com/chromedp/cdproto v0.0.0-20230220211738-2b1ec77315c9
+	github.com/chromedp/cdproto v0.0.0-20230319112347-6603f2c23d36
 	github.com/chromedp/chromedp v0.9.1
 )
 
 require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
 	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
-	google.golang.org/genproto v0.0.0-20230323212658-478b75c54725 // indirect
-	google.golang.org/grpc v1.54.0 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
 )
 
 require (
