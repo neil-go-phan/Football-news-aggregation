@@ -22,14 +22,6 @@ type HtmlArticleClass struct {
 	LinkClass        string
 }
 
-// var htmlArticleClass = HtmlArticleClass{
-// 	ArticleClass:     `SoaBEf`,
-// 	TitleClass:       `mCBkyc ynAwRc MBeuO nDgy9d`,
-// 	DescriptionClass: `GI74Re nDgy9d`,
-// 	ThumbnailClass:   `uhHOwf BYbUcd`,
-// 	LinkClass:        `WlydOe`,
-// }
-
 var PAGES int = 10
 
 type Article struct {
@@ -54,7 +46,7 @@ func SearchKeyWord(keyword string) (string, error) {
 		return "", err
 	}
 
-	log.Println("Waiting for search result...")
+	log.Println(keyword, ": Waiting for search result...")
 
 	err = chromedp.Run(ctx, chromedp.WaitVisible(`#search`, chromedp.ByID))
 	if err != nil {
@@ -62,7 +54,7 @@ func SearchKeyWord(keyword string) (string, error) {
 		return "", err
 	}
 
-	log.Println("Search result...")
+	log.Println(keyword, ": Search result...")
 
 	var nodes []*cdp.Node
 	err = chromedp.Run(ctx, chromedp.Nodes(`//div[@class="hdtb-mitem"]//a[text()="Tin tức"]`, &nodes))
@@ -78,34 +70,13 @@ func SearchKeyWord(keyword string) (string, error) {
 
 	newURL = `https://www.google.com` + newURL
 
-	log.Println("News tab url: ", newURL)
+	log.Println(keyword, ": News tab url: ", newURL)
 
 	return newURL, nil
 }
 
-// func multiPage(newURL string) []Article {
-// 	var articles []Article
-// 	var wg sync.WaitGroup
-// 	for i := 0; i < PAGES; i++ {
-// 		wg.Add(1)
-// 		go func(index int) {
-// 			defer wg.Done()
-// 			news, err := CrawlPage(newURL, index)
-// 			if err != nil {
-// 				log.Fatal(err)
-// 			}
-// 			articles = append(articles, news...)
-
-// 		}(i)
-
-// 	}
-// 	wg.Wait()
-// 	return articles
-// }
-
 func CrawlPage(url string, page int, htmlClasses HtmlArticleClass) ([]Article, error) {
 	var articles []Article
-	//
 	req, err := http.NewRequest("GET", fmt.Sprintf(`%s&start=%d0`, url, page), nil)
 	if err != nil {
 		log.Fatal(err)

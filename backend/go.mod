@@ -1,12 +1,10 @@
 module backend
 
 go 1.20
-
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/chromedp/cdproto v0.0.0-20230319112347-6603f2c23d36
 	github.com/chromedp/chromedp v0.9.1
-	github.com/neil-go-phan/Football-news-aggregation v0.0.0-20230327070943-5bc20c1efc71
 	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.30.0
 )

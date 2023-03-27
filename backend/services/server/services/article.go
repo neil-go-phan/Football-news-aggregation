@@ -5,13 +5,30 @@ import (
 	"context"
 	"io"
 	"log"
+	"sync"
 
-	pb "github.com/neil-go-phan/Football-news-aggregation/backend/grpcfile"
+	pb "backend/grpcfile"
+
 	"google.golang.org/grpc"
 )
 
+func GetArticlesWithAllKeyWords(keywords entities.Keywords, htmlClass entities.HtmlArticleClass, conn *grpc.ClientConn) {
+	var wg sync.WaitGroup
+	for index, keyword := range keywords.Keywords {
+		wg.Add(1)
+		log.Println("Get article with keyword: ", keyword)
+		go func (index int, keyword string)  {
+			GetArticles(keyword, htmlClass, conn)
+			wg.Done()
+		}(index, keyword)
+		
+	}
+	wg.Wait()
+}
+
 func GetArticles(keyword string, htmlClass entities.HtmlArticleClass, conn *grpc.ClientConn) {
 	client := pb.NewArticleServiceClient(conn)
+
 	in := &pb.AllConfigs{
 		HtmlClasses: &pb.HTMLClasses{
 			ArticleClass: htmlClass.ArticleClass,
@@ -20,8 +37,9 @@ func GetArticles(keyword string, htmlClass entities.HtmlArticleClass, conn *grpc
 			ThumbnailClass: htmlClass.ThumbnailClass,
 			LinkClass: htmlClass.LinkClass,
 		},
-		Keywords: keyword,
+		Keyword: keyword,
 	}
+
 	stream, err := client.GetArticles(context.Background(), in)
 	if err != nil {
 		log.Printf("open stream error %v \n", err)
@@ -32,6 +50,9 @@ func GetArticles(keyword string, htmlClass entities.HtmlArticleClass, conn *grpc
 	go func() {
 		for {
 			resp, err := stream.Recv()
+			for index := range resp.GetArticles() {
+				log.Printf("Keyword:%s  received: %v\n",keyword, index)
+			}
 			if err == io.EOF {
 				done <- true //means stream is finished
 				return
@@ -39,10 +60,11 @@ func GetArticles(keyword string, htmlClass entities.HtmlArticleClass, conn *grpc
 			if err != nil {
 				log.Printf("cannot receive %v\n", err)
 			}
-			log.Printf("Resp received: %s\n", resp.Articles[0])
+			
 		}
 	}()
 
 	<-done //we will wait until all response is received
 	log.Printf("finished")
 }
+

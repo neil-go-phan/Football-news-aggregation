@@ -16,7 +16,7 @@ func main() {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
 	conn := connectToCrawler()
-	
+	services.GetArticlesWithAllKeyWords(keywordsconfig, classConfig, conn)
 	fmt.Printf("%#v \n", classConfig)
 	fmt.Printf("%#v \n", keywordsconfig)
 	fmt.Printf("%#v \n", err)
@@ -45,9 +45,10 @@ func readConfig() (entities.HtmlArticleClass, entities.Keywords, error) {
 
 func connectToCrawler() (*grpc.ClientConn){
 		// dial server
-		conn, err := grpc.Dial(":50005", grpc.WithInsecure())
+		conn, err := grpc.Dial(":8000", grpc.WithInsecure())
 		if err != nil {
 			log.Fatalf("can not connect with server %v", err)
 		}
 	return conn
 }
+
