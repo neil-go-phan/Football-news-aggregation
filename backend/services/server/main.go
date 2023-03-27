@@ -7,7 +7,8 @@ import (
 	"server/services"
 
 	// pb "github.com/karankumarshreds/GoProto/protofiles"
-	// "google.golang.org/protobuf/proto"
+	pb "github.com/neil-go-phan/Football-news-aggregation/backend/gRPC"
+	"google.golang.org/protobuf/proto"
 )
 
 func main() {
@@ -19,6 +20,8 @@ func main() {
 	fmt.Printf("%#v \n", classConfig)
 	fmt.Printf("%#v \n", keywordsconfig)
 	fmt.Printf("%#v \n", err)
+
+	
 }
 
 func readConfigFromJSON() (entities.HtmlArticleClass, entities.Keywords, error) {
