@@ -1,4 +1,5 @@
 
+
 # Football news aggregation
 
 ## Sequence diagram
@@ -21,3 +22,4 @@
     - `npm run dev`
 - Backend: 
   - Complete later 
+
