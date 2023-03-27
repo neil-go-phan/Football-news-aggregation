@@ -5,38 +5,31 @@ option go_package="github.com/neil-go-phan/Football-news-aggregation/backend/grp
 package grpcfile;
 
 service ArticleService {
-  rpc GetArticles(AllConfigs) returns (stream Articles) {}
-}
-
-message Articles {
-  repeated Article Articles = 1;
-}
-
-message Article {
-	string Title        = 1;
-	string Description =2;
-	string Thumbnail   =3;
-	string Link        =4;
-}
-
-message Signal {
-  string Ping = 1;
-}
-
-message AllConfigs {
-  Keywords Keywords = 1;
-  HTMLClasses HtmlClasses = 2;
-}
-
-message Keywords {
-  repeated string Keyword = 1; 
+  // Get articles with keywords
+  rpc GetArticles(AllConfigs) returns (stream ArticlesReponse) {}
 }
 
 message HTMLClasses {
-  string ArticleClass = 1;
-  string TitleClass = 2;
-  string DescriptionClass = 3;
-  string ThumbnailClass = 4;
-  string LinkClass = 5;
+  string article_class = 1;
+  string title_class = 2;
+  string description_class = 3;
+  string thumbnail_class = 4;
+  string link_class = 5;
 }
 
+// The request message containing keywords and html class
+message AllConfigs {
+  string keyword = 1;
+  HTMLClasses html_classes = 2;
+}
+
+message Article {
+	string title        = 1;
+	string description =2;
+	string thumbnail   =3;
+	string link        =4;
+}
+// The response message containing the articles
+message ArticlesReponse {
+  repeated Article articles = 1;
+} 

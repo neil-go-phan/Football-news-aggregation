@@ -26,6 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ArticleServiceClient interface {
+	// Get articles with keywords
 	GetArticles(ctx context.Context, in *AllConfigs, opts ...grpc.CallOption) (ArticleService_GetArticlesClient, error)
 }
 
@@ -53,7 +54,7 @@ func (c *articleServiceClient) GetArticles(ctx context.Context, in *AllConfigs, 
 }
 
 type ArticleService_GetArticlesClient interface {
-	Recv() (*Articles, error)
+	Recv() (*ArticlesReponse, error)
 	grpc.ClientStream
 }
 
@@ -61,8 +62,8 @@ type articleServiceGetArticlesClient struct {
 	grpc.ClientStream
 }
 
-func (x *articleServiceGetArticlesClient) Recv() (*Articles, error) {
-	m := new(Articles)
+func (x *articleServiceGetArticlesClient) Recv() (*ArticlesReponse, error) {
+	m := new(ArticlesReponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -73,6 +74,7 @@ func (x *articleServiceGetArticlesClient) Recv() (*Articles, error) {
 // All implementations must embed UnimplementedArticleServiceServer
 // for forward compatibility
 type ArticleServiceServer interface {
+	// Get articles with keywords
 	GetArticles(*AllConfigs, ArticleService_GetArticlesServer) error
 	mustEmbedUnimplementedArticleServiceServer()
 }
@@ -106,7 +108,7 @@ func _ArticleService_GetArticles_Handler(srv interface{}, stream grpc.ServerStre
 }
 
 type ArticleService_GetArticlesServer interface {
-	Send(*Articles) error
+	Send(*ArticlesReponse) error
 	grpc.ServerStream
 }
 
@@ -114,7 +116,7 @@ type articleServiceGetArticlesServer struct {
 	grpc.ServerStream
 }
 
-func (x *articleServiceGetArticlesServer) Send(m *Articles) error {
+func (x *articleServiceGetArticlesServer) Send(m *ArticlesReponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 

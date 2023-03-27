@@ -1,21 +1,22 @@
 package main
 
 import (
+	"backend/services/server/entities"
+	"backend/services/server/services"
 	"fmt"
 	"log"
-	"server/entities"
-	"server/services"
 
+	"google.golang.org/grpc"
 	// pb "github.com/karankumarshreds/GoProto/protofiles"
-
 )
 
 func main() {
-	classConfig, keywordsconfig, err := readConfigFromJSON();
+	classConfig, keywordsconfig, err := readConfig();
 	if err != nil {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
-
+	conn := connectToCrawler()
+	
 	fmt.Printf("%#v \n", classConfig)
 	fmt.Printf("%#v \n", keywordsconfig)
 	fmt.Printf("%#v \n", err)
@@ -23,7 +24,7 @@ func main() {
 
 }
 
-func readConfigFromJSON() (entities.HtmlArticleClass, entities.Keywords, error) {
+func readConfig() (entities.HtmlArticleClass, entities.Keywords, error) {
 	var classConfig entities.HtmlArticleClass
 	var keywordsConfig entities.Keywords
 
@@ -40,4 +41,13 @@ func readConfigFromJSON() (entities.HtmlArticleClass, entities.Keywords, error) 
 	}
 
 	return classConfig, keywordsconfig, nil
+}
+
+func connectToCrawler() (*grpc.ClientConn){
+		// dial server
+		conn, err := grpc.Dial(":50005", grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("can not connect with server %v", err)
+		}
+	return conn
 }
