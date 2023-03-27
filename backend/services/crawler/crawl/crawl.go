@@ -44,7 +44,7 @@ func SearchKeyWord(keyword string) ([]Article, error) {
 
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
-	ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx2, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	log.Println("Navigate to: ", fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword)))
