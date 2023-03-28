@@ -54,7 +54,7 @@ func SearchKeyWord(keyword string) (string, error) {
 		return "", err
 	}
 
-	log.Println(keyword, ": Search result...")
+	log.Println(keyword, ": Get news tab URL...")
 
 	var nodes []*cdp.Node
 	err = chromedp.Run(ctx, chromedp.Nodes(`//div[@class="hdtb-mitem"]//a[text()="Tin tức"]`, &nodes))

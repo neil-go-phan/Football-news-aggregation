@@ -49,7 +49,7 @@ func (s *articlesServer) GetArticles(configs *pb.AllConfigs, stream pb.ArticleSe
 		go func(keyword string) {
 			err := crawlAndStreamResult(stream, keyword, htmlClasses)
 			if err != nil {
-				log.Printf("Faile to search for key word: %s, err: %v \n", keyword, err)
+				log.Printf("error occurred while searching for key word: %s, err: %v \n", keyword, err)
 			}
 			wg.Done()
 		}(keyword)
@@ -73,12 +73,12 @@ func crawlAndStreamResult(stream pb.ArticleService_GetArticlesServer, keyword st
 			defer wg.Done()
 			newses, err := crawl.CrawlPage(newsUrl, index, htmlClasses)
 			if err != nil {
-				log.Printf("Error when crawl page: %v, err: %v \n", index, err)
+				log.Printf("error occurred during crawl page process: %v, err: %v \n", index, err)
 			}
 			articles := crawlArticlesToPbActicles(newses, keyword)
 			err = stream.Send(articles)
 			if err != nil {
-				log.Println("Error when send response to client: ", err)
+				log.Println("error occurred while sending response to client: ", err)
 			}
 
 		}(i)

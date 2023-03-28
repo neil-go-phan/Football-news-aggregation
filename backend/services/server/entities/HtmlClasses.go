@@ -1,6 +1,6 @@
 package entities
 
-type HtmlArticleClass struct {
+type HtmlClasses struct {
 	ArticleClass     string `json:"article_class"`
 	TitleClass       string `json:"title_class"`
 	DescriptionClass string `json:"description_class"`
