@@ -2,12 +2,11 @@ package main
 
 import (
 	"backend/services/server/entities"
+	"backend/services/server/helper"
 	"backend/services/server/services"
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
-	"strings"
 	"sync"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -35,17 +34,19 @@ func main() {
 	}
 	conn := connectToCrawler(env)
 
-	// declare services
-	htmlClassesService := services.NewHtmlClassesService(classConfig)
-	keywordsService := services.NewKeywordsService(keywordsconfig)
-	articleService := services.NewArticleService(keywordsService, htmlClassesService, conn)
-
 	// elastic search
 	es, err := connectToElasticsearch(env)
 	if err != nil {
 		log.Println("error occurred while connecting to elasticsearch node: ", err)
 	}
 	createElaticsearchIndex(es, keywordsconfig)
+
+
+	// declare services
+	htmlClassesService := services.NewHtmlClassesService(classConfig)
+	keywordsService := services.NewKeywordsService(keywordsconfig)
+	articleService := services.NewArticleService(keywordsService, htmlClassesService, conn, es)
+
 
 	// cronjob
 	cronjob := cron.New()
@@ -118,7 +119,7 @@ func createElaticsearchIndex(es *elasticsearch.Client, keywords entities.Keyword
 	for _, elasticIndex := range keywords.Keywords {
 		wg.Add(1)
 		go func(elasticIndex string) {
-			indexName := formatIndexName(elasticIndex)
+			indexName := helper.FormatElasticSearchIndexName(elasticIndex)
 			// check if index exist. if not exist, create new one, if exist, skip it
 			exists, err := checkIndexExists(es, indexName)
 			if err != nil {
@@ -168,36 +169,4 @@ func createIndex(es *elasticsearch.Client, indexName string) error {
 	}
 
 	return nil
-}
-
-func formatIndexName(indexName string) string {
-	var Regexp_A = `à|á|ạ|ã|ả|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ`
-	var Regexp_E = `è|ẻ|ẽ|é|ẹ|ê|ề|ể|ễ|ế|ệ`
-	var Regexp_I = `ì|ỉ|ĩ|í|ị`
-	var Regexp_U = `ù|ủ|ũ|ú|ụ|ư|ừ|ử|ữ|ứ|ự`
-	var Regexp_Y = `ỳ|ỷ|ỹ|ý|ỵ`
-	var Regexp_O = `ò|ỏ|õ|ó|ọ|ô|ồ|ổ|ỗ|ố|ộ|ơ|ờ|ở|ỡ|ớ|ợ`
-	var Regexp_D = `Đ|đ`
-	reg_a := regexp.MustCompile(Regexp_A)
-	reg_e := regexp.MustCompile(Regexp_E)
-	reg_i := regexp.MustCompile(Regexp_I)
-	reg_o := regexp.MustCompile(Regexp_O)
-	reg_u := regexp.MustCompile(Regexp_U)
-	reg_y := regexp.MustCompile(Regexp_Y)
-	reg_d := regexp.MustCompile(Regexp_D)
-	indexName = reg_a.ReplaceAllLiteralString(indexName, "a")
-	indexName = reg_e.ReplaceAllLiteralString(indexName, "e")
-	indexName = reg_i.ReplaceAllLiteralString(indexName, "i")
-	indexName = reg_o.ReplaceAllLiteralString(indexName, "o")
-	indexName = reg_u.ReplaceAllLiteralString(indexName, "u")
-	indexName = reg_y.ReplaceAllLiteralString(indexName, "y")
-	indexName = reg_d.ReplaceAllLiteralString(indexName, "d")
-
-	// regexp remove charaters in ()
-	var RegexpPara = `\(.*\)`
-	reg_para := regexp.MustCompile(RegexpPara)
-	indexName = reg_para.ReplaceAllLiteralString(indexName, "")
-
-	indexName = strings.ToLower(indexName)
-	return strings.Replace(indexName, " ", "", -1)
 }

@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-var PAGES = 10
+var PAGES = 1
 
 type articlesServer struct {
 	pb.UnimplementedArticleServiceServer
