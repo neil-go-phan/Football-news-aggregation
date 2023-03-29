@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	// "time"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/cdproto/cdp"
@@ -22,8 +22,6 @@ type HtmlArticleClass struct {
 	LinkClass        string
 }
 
-var PAGES int = 10
-
 type Article struct {
 	Title       string
 	Description string
@@ -35,12 +33,12 @@ func SearchKeyWord(keyword string) (string, error) {
 
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
-	// ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
-	// defer cancel()
+	ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	log.Println("Navigate to: ", fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword)))
 
-	err := chromedp.Run(ctx, chromedp.Navigate(fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword))))
+	err := chromedp.Run(ctx2, chromedp.Navigate(fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword))))
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -48,7 +46,7 @@ func SearchKeyWord(keyword string) (string, error) {
 
 	log.Println(keyword, ": Waiting for search result...")
 
-	err = chromedp.Run(ctx, chromedp.WaitVisible(`#search`, chromedp.ByID))
+	err = chromedp.Run(ctx2, chromedp.WaitVisible(`#search`, chromedp.ByID))
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -57,7 +55,7 @@ func SearchKeyWord(keyword string) (string, error) {
 	log.Println(keyword, ": Get news tab URL...")
 
 	var nodes []*cdp.Node
-	err = chromedp.Run(ctx, chromedp.Nodes(`//div[@class="hdtb-mitem"]//a[text()="Tin tức"]`, &nodes))
+	err = chromedp.Run(ctx2, chromedp.Nodes(`//div[@class="hdtb-mitem"]//a[text()="Tin tức"]`, &nodes))
 	if err != nil {
 		log.Println(err)
 		return "", err

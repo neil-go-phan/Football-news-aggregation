@@ -18,7 +18,7 @@ export default function Contents() {
       <Tab
         eventKey="schedule"
         title="Lịch thi đấu"
-        disabled={router.asPath === '/' ? true : false}
+        disabled={router.asPath === '/news' ? true : false}
       >
         <Schedule />
       </Tab>

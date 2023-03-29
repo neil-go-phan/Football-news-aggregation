@@ -2,7 +2,10 @@ package main
 
 import (
 	"backend/services/server/entities"
+	"backend/services/server/handler"
 	"backend/services/server/helper"
+	"backend/services/server/middlewares"
+	"backend/services/server/routes"
 	"backend/services/server/services"
 	"fmt"
 	"log"
@@ -10,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -41,19 +45,31 @@ func main() {
 	}
 	createElaticsearchIndex(es, keywordsconfig)
 
-
+	
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
 	keywordsService := services.NewKeywordsService(keywordsconfig)
 	articleService := services.NewArticleService(keywordsService, htmlClassesService, conn, es)
 
+	// cronjob Setup
 
-	// cronjob
-	cronjob := cron.New()
+	go func ()  {
+		cronjob := cron.New()
+
+		articleService.GetArticlesEveryMinutes(cronjob)
+		cronjob.Run()
+	}()
+
+	// app routes
+	log.Println("Setup routes")
+	r := gin.Default()
+	r.Use(middlewares.Cors())
 	
-	articleService.GetArticlesEveryMinutes(cronjob)
-	cronjob.Run()
-
+	articleHandler := handler.NewArticleHandler(articleService)
+	articleRoute := routes.NewArticleRoutes(articleHandler)
+	articleRoute.Setup(r)
+	
+	r.Run(":8080")
 }
 
 func readConfigFromJSON() (entities.HtmlClasses, entities.Keywords, error) {

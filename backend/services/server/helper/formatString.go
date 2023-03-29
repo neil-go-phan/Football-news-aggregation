@@ -42,3 +42,8 @@ func FormatElasticSearchIndexName(indexName string) string {
 		formatedPhase1 = reg_para.ReplaceAllLiteralString(formatedPhase1, "")
 	return strings.Replace(formatedPhase1, " ", "", -1)
 }
+
+// func MemoryAlloc() {
+// 	log.Printf("Total Memory Usage %T: memory allocate: %v\n", s, unsafe.Sizeof(s))
+// 	log.Printf("Name: grpc.ClientConn, type: %T, memory allocate: %v\n", s.conn, unsafe.Sizeof(s.conn))
+// }

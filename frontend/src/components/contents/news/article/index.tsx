@@ -1,7 +1,24 @@
-import React from 'react'
+import React, { FunctionComponent } from 'react'
 
-export default function Article() {
+interface Props {
+  article: ArticleType
+}
+
+export type ArticleType = {
+  title: string
+  discription: string
+  thumbnail: string
+  link: string
+}
+
+
+const Article: FunctionComponent<Props> = (props:Props) =>{
+  const {article} = props
   return (
-    <div>Article</div>
+    <div className="articles__article">
+        {article.title}
+    </div>
   )
 }
+
+export default Article

@@ -1,3 +1,4 @@
+import { _ROUTES } from '@/helpers/constants';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React from 'react';
@@ -9,20 +10,20 @@ export default function SidebarNav() {
     <ul className="list-unstyled">
       <Nav.Item
         className={`px-3 py-2 d-flex align-items-center nav__item ${
-          router.asPath === '/' ? 'active' : ''
+          router.asPath === _ROUTES.NEWS_PAGE ? 'active' : ''
         }`}
       >
-        <Link href={'/'} className="text-decoration-none text-dark link">
+        <Link href={_ROUTES.NEWS_PAGE} className="text-decoration-none text-dark link">
           Tin tức chung
         </Link>
       </Nav.Item>
       <Nav.Item
         className={`px-3 py-2 d-flex align-items-center nav__item ${
-          router.asPath === '/ngoai-hang-anh' ? 'active' : ''
+          router.asPath === `${_ROUTES.NEWS_PAGE}/ngoaihanganh` ? 'active' : ''
         }`}
       >
         <Link
-          href={'/ngoai-hang-anh'}
+          href={`${_ROUTES.NEWS_PAGE}/ngoaihanganh`}
           className="text-decoration-none text-dark link"
         >
           Ngoại hạng anh
@@ -30,10 +31,10 @@ export default function SidebarNav() {
       </Nav.Item>
       <Nav.Item
         className={`px-3 py-2 d-flex align-items-center nav__item ${
-          router.asPath === '/cup-c1' ? 'active' : ''
+          router.asPath === `${_ROUTES.NEWS_PAGE}/cupc1` ? 'active' : ''
         }`}
       >
-        <Link href={'/cup-c1'} className="text-decoration-none text-dark link">
+        <Link href={`${_ROUTES.NEWS_PAGE}/cupc1`} className="text-decoration-none text-dark link">
           Cup C1
         </Link>
       </Nav.Item>
