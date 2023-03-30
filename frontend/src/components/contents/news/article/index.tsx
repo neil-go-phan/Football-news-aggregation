@@ -1,24 +1,25 @@
-import React, { FunctionComponent } from 'react'
+import React, { FunctionComponent } from 'react';
 
 interface Props {
-  article: ArticleType
+  article: ArticleType;
 }
 
 export type ArticleType = {
-  title: string
-  discription: string
-  thumbnail: string
-  link: string
-}
+  title: string;
+  description: string;
+  link: string;
+};
 
-
-const Article: FunctionComponent<Props> = (props:Props) =>{
-  const {article} = props
+const Article: FunctionComponent<Props> = (props: Props) => {
+  const { article } = props;
   return (
-    <div className="articles__article">
-        {article.title}
+    <div className="news__articles--article mb-3 py-2">
+      <a className="" href={article.link} target='_blank'>
+          <div className="title">{article.title}</div>
+          <div className="description">{article.description}</div>
+      </a>
     </div>
-  )
-}
+  );
+};
 
-export default Article
+export default Article;

@@ -1,76 +1,26 @@
 package crawl
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/chromedp/cdproto/cdp"
-	"github.com/chromedp/chromedp"
 )
 
 type HtmlArticleClass struct {
 	ArticleClass     string
 	TitleClass       string
 	DescriptionClass string
-	ThumbnailClass   string
 	LinkClass        string
 }
 
 type Article struct {
 	Title       string
 	Description string
-	Thumbnail   string
 	Link        string
-}
-
-func SearchKeyWord(keyword string) (string, error) {
-
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-	ctx2, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	log.Println("Navigate to: ", fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword)))
-
-	err := chromedp.Run(ctx2, chromedp.Navigate(fmt.Sprintf("https://www.google.com/search?q=%s", formatKeywords(keyword))))
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	log.Println(keyword, ": Waiting for search result...")
-
-	err = chromedp.Run(ctx2, chromedp.WaitVisible(`#search`, chromedp.ByID))
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	log.Println(keyword, ": Get news tab URL...")
-
-	var nodes []*cdp.Node
-	err = chromedp.Run(ctx2, chromedp.Nodes(`//div[@class="hdtb-mitem"]//a[text()="Tin tức"]`, &nodes))
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-
-	var newURL string
-	for _, node := range nodes {
-		newURL, _ = node.Attribute("href")
-	}
-
-	newURL = `https://www.google.com` + newURL
-
-	log.Println(keyword, ": News tab url: ", newURL)
-
-	return newURL, nil
 }
 
 func CrawlPage(url string, page int, htmlClasses HtmlArticleClass) ([]Article, error) {
@@ -97,12 +47,12 @@ func CrawlPage(url string, page int, htmlClasses HtmlArticleClass) ([]Article, e
 		var article Article
 		article.Title = s.Find(formatClassName(htmlClasses.TitleClass)).Text()
 		article.Description = s.Find(formatClassName(htmlClasses.DescriptionClass)).Text()
-		article.Thumbnail, _ = s.Find(formatClassName(htmlClasses.ThumbnailClass)).Find("img").Attr("src")
 		article.Link, _ = s.Find(formatClassName(htmlClasses.LinkClass)).Attr("href")
 		articles = append(articles, article)
 	})
 	return articles, nil
 }
+
 
 func formatClassName(class string) string {
 	var classes string
@@ -113,7 +63,7 @@ func formatClassName(class string) string {
 	return classes
 }
 
-func formatKeywords(keyword string) string {
+func FormatKeywords(keyword string) string {
 	var Regexp_A = `à|á|ạ|ã|ả|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ`
 	var Regexp_E = `è|ẻ|ẽ|é|ẹ|ê|ề|ể|ễ|ế|ệ`
 	var Regexp_I = `ì|ỉ|ĩ|í|ị`

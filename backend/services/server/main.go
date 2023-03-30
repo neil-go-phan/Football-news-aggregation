@@ -29,10 +29,10 @@ type EnvConfig struct {
 func main() {
 	env, err := loadEnv(".")
 	if err != nil {
-		log.Fatal("cannot load env")
+		log.Fatalln("cannot load env")
 	}
 	// load default config
-	classConfig, keywordsconfig, err := readConfigFromJSON()
+	classConfig, keywordsconfig, tagsConfig, err := readConfigFromJSON()
 	if err != nil {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
@@ -45,18 +45,19 @@ func main() {
 	}
 	createElaticsearchIndex(es, keywordsconfig)
 
-	
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
 	keywordsService := services.NewKeywordsService(keywordsconfig)
-	articleService := services.NewArticleService(keywordsService, htmlClassesService, conn, es)
-
+	tagsService := services.NewTagsService(tagsConfig)
+	articleService := services.NewArticleService(keywordsService, htmlClassesService, tagsService, conn, es)
+	articleHandler := handler.NewArticleHandler(articleService)
+	articleRoute := routes.NewArticleRoutes(articleHandler)
 	// cronjob Setup
 
-	go func ()  {
+	go func() {
 		cronjob := cron.New()
 
-		articleService.GetArticlesEveryMinutes(cronjob)
+		articleHandler.SignalToCrawler(cronjob)
 		cronjob.Run()
 	}()
 
@@ -64,31 +65,36 @@ func main() {
 	log.Println("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
-	
-	articleHandler := handler.NewArticleHandler(articleService)
-	articleRoute := routes.NewArticleRoutes(articleHandler)
+
 	articleRoute.Setup(r)
-	
+
 	r.Run(":8080")
 }
 
-func readConfigFromJSON() (entities.HtmlClasses, entities.Keywords, error) {
+func readConfigFromJSON() (entities.HtmlClasses, entities.Keywords, entities.Tags, error) {
 	var classConfig entities.HtmlClasses
 	var keywordsConfig entities.Keywords
+	var tagsConfig entities.Tags
 
 	classConfig, err := services.ReadHtmlClassJSON()
 	if err != nil {
 		log.Println("Fail to read htmlClassesConfig.json: ", err)
-		return classConfig, keywordsConfig, err
+		return classConfig, keywordsConfig, tagsConfig, err
 	}
 
-	keywordsconfig, err := services.ReadKeywordsJSON()
+	keywordsConfig, err = services.ReadKeywordsJSON()
 	if err != nil {
 		log.Println("Fail to read keywordsConfig.json: ", err)
-		return classConfig, keywordsconfig, err
+		return classConfig, keywordsConfig, tagsConfig, err
 	}
 
-	return classConfig, keywordsconfig, nil
+	tagsConfig, err = services.ReadTagsJSON()
+	if err != nil {
+		log.Println("Fail to read tagsConfig.json: ", err)
+		return classConfig, keywordsConfig, tagsConfig, err
+	}
+
+	return classConfig, keywordsConfig, tagsConfig, nil
 }
 
 func loadEnv(path string) (env EnvConfig, err error) {
@@ -149,7 +155,7 @@ func createElaticsearchIndex(es *elasticsearch.Client, keywords entities.Keyword
 					log.Fatalf("Error createing index: %s", err)
 				}
 				wg.Done()
-				return 
+				return
 			}
 			log.Printf("Index: %s is already exist, skip it...\n", indexName)
 			wg.Done()

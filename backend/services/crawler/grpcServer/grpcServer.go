@@ -2,11 +2,13 @@ package grpcserver
 
 import (
 	"backend/services/crawler/crawl"
+	"fmt"
 	"log"
 	"net"
 	"sync"
 
 	pb "backend/grpcfile"
+
 	"google.golang.org/grpc"
 )
 
@@ -38,12 +40,10 @@ func (s *articlesServer) GetArticles(configs *pb.AllConfigs, stream pb.ArticleSe
 		ArticleClass     : configs.HtmlClasses.ArticleClass,
     TitleClass       : configs.HtmlClasses.TitleClass,
     DescriptionClass : configs.HtmlClasses.DescriptionClass,
-    ThumbnailClass   : configs.HtmlClasses.ThumbnailClass,
     LinkClass	: configs.HtmlClasses.LinkClass,
 	}
 	var wg sync.WaitGroup
-
-	// Search keyword on google and tab "Tin tức" url
+	log.Println("Start scrapt")
 	for _, keyword := range keywords{
 		wg.Add(1)
 		go func(keyword string) {
@@ -55,15 +55,15 @@ func (s *articlesServer) GetArticles(configs *pb.AllConfigs, stream pb.ArticleSe
 		}(keyword)
 	}
 	wg.Wait()
+	log.Println("Finish scrapt")
 	return nil
 }
 
 func crawlAndStreamResult(stream pb.ArticleService_GetArticlesServer, keyword string,htmlClasses crawl.HtmlArticleClass) error{
 
-	newsUrl, err := crawl.SearchKeyWord(keyword)
-	if err != nil {
-		return err
-	}
+	newsUrl := fmt.Sprintf("https://www.google.com/search?tbm=nws&q=%s", crawl.FormatKeywords(keyword))
+	
+	log.Println(newsUrl)
 
 	var wg sync.WaitGroup
 
@@ -94,7 +94,6 @@ func crawlArticlesToPbActicles(crawlArticles []crawl.Article, keyword string) *p
 		pbArticle := &pb.Article{
 			Title:       article.Title,
 			Description: article.Description,
-			Thumbnail:   article.Thumbnail,
 			Link:        article.Link,
 		}
 		pbArticles.Articles = append(pbArticles.Articles, pbArticle)
