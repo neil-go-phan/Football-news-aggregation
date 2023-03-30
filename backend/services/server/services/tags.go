@@ -44,3 +44,7 @@ func ReadTagsJSON() (entities.Tags, error){
 	}
 	return tagsConfig, nil
 }
+
+func (s *tagsService)ListTags() (entities.Tags) {
+	return s.Tags
+}

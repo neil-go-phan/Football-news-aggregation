@@ -50,6 +50,10 @@ func main() {
 	keywordsService := services.NewKeywordsService(keywordsconfig)
 	tagsService := services.NewTagsService(tagsConfig)
 	articleService := services.NewArticleService(keywordsService, htmlClassesService, tagsService, conn, es)
+
+	tagsHandler := handler.NewTagsHandler(tagsService)
+	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
+
 	articleHandler := handler.NewArticleHandler(articleService)
 	articleRoute := routes.NewArticleRoutes(articleHandler)
 	// cronjob Setup
@@ -65,7 +69,8 @@ func main() {
 	log.Println("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
-
+	
+	tagsRoutes.Setup(r)
 	articleRoute.Setup(r)
 
 	r.Run(":8080")

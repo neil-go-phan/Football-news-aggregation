@@ -21,7 +21,7 @@ func NewArticleHandler(handler services.ArticleServices) *ArticleHandler {
 	return userHandler
 }
 
-func (articleHandler *ArticleHandler) SearchWithIndexName(c *gin.Context) {
+func (articleHandler *ArticleHandler) SearchWithKeyword(c *gin.Context) {
 	keyword := c.Query("q")
 	index := c.Query("index")
 
@@ -36,6 +36,8 @@ func (articleHandler *ArticleHandler) SearchWithIndexName(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }
+
+
 
 func (articleHandler *ArticleHandler) SignalToCrawler(cronjob *cron.Cron) {
 	articleHandler.handler.GetArticles()

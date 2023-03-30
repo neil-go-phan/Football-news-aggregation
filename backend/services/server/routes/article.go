@@ -20,6 +20,6 @@ func NewArticleRoutes(articleHandler *handler.ArticleHandler) *ArticleRoutes{
 func (articleRoutes *ArticleRoutes)Setup(r *gin.Engine) {
 	routes := r.Group("article")
 	{
-		routes.GET("search",  articleRoutes.articleHandler.SearchWithIndexName)
+		routes.GET("search-tag-keyword",  articleRoutes.articleHandler.SearchWithKeyword)
 	}
 }

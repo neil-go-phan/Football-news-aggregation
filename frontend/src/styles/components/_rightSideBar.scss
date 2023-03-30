@@ -1,0 +1,17 @@
+.rightSideBar {
+  
+  &__tags {
+    &--line {
+      width: 100%;
+      border: 1px solid #dee2e6;;
+    }
+    &--list {
+      .tag {
+        font-size: 1rem;
+        margin-top: 5px;
+      }
+    }
+  }
+}
+
+

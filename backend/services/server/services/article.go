@@ -95,6 +95,7 @@ func (s *articleService) GetArticles() {
 			resp, err := stream.Recv()
 
 			keyword := resp.GetKeyword()
+
 			respArticles := resp.GetArticles()
 			tags := s.tagsService.Tags.Tags
 
@@ -136,7 +137,7 @@ func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, 
 		if !ok {
 			exist := checkWithElasticSearch(article, indexName, es)
 			if !exist {
-				entityArticle := newEntitiesArticleFromPb(article, tags)
+				entityArticle := newEntitiesArticleFromPb(article, tags, keyword)
 				storeElasticsearch(entityArticle, indexName, es)
 			}
 			// checkWithRedis(article)
@@ -185,13 +186,14 @@ func newEntitiesArticleFromMap(respArticle map[string]interface{}) entities.Arti
 		Title:       respArticle["title"].(string),
 		Description: respArticle["description"].(string),
 		Link:        respArticle["link"].(string),
-		Tags: tags,
+		Tags:        tags,
 	}
 	return article
 }
 
-func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string) entities.Article {
-	articleTags := checkTags(respArticle, tags)
+func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string, keyword string) entities.Article {
+	articleTags := checkTags(respArticle, tags, keyword)
+	
 	article := entities.Article{
 		Title:       respArticle.Title,
 		Description: respArticle.Description,
@@ -229,12 +231,24 @@ func storeElasticsearch(article entities.Article, indexName string, es *elastics
 	}
 }
 
-func checkTags(article *pb.Article, tags []string) []string {
-	articleTags := make([]string, 0)
+func checkTags(article *pb.Article, tags []string, keyword string) []string {
+	articleTags := make(map[string]bool)
+	articleTags[helper.FormatVietnamese(keyword)] = true
 	for _, tag := range tags {
-		if strings.Contains(helper.FormatVietnamese(article.Description), helper.FormatVietnamese(tag)) {
-			articleTags = append(articleTags, tag)
+		formatedTag := helper.FormatVietnamese(tag)
+		_, ok := articleTags[formatedTag]
+		if !ok {
+			if strings.Contains(helper.FormatVietnamese(article.Description), formatedTag) || strings.Contains(helper.FormatVietnamese(article.Title), formatedTag) {
+				articleTags[tag] = true
+			}
 		}
 	}
-	return articleTags
+
+	articleTagsSlice := make([]string, 0)
+
+	for tag := range articleTags {
+		articleTagsSlice = append(articleTagsSlice, tag)
+	}
+
+	return articleTagsSlice
 }

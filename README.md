@@ -4,7 +4,7 @@
   - Nextjs
   - Bootstrapt
 - Backend: 
-  - Crawler: chromedp, goquery
+  - Crawler: goquery
   - Message between services: gRPC
   - Database: elasticsearch
 ## How to run

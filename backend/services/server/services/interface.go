@@ -15,7 +15,7 @@ type KeywordsServices interface {
 }
 
 type TagsServices interface {
-
+	ListTags() (entities.Tags)
 }
 
 type ArticleServices interface {
