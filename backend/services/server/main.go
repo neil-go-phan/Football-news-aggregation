@@ -1,54 +1,187 @@
 package main
 
 import (
-	"backend/services/server/entities"
-	"backend/services/server/services"
+	"server/entities"
+	"server/handler"
+	"server/middlewares"
+	"server/routes"
+	"server/services"
 	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
-	// pb "github.com/karankumarshreds/GoProto/protofiles"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
+type EnvConfig struct {
+	ElasticsearchAddress string `mapstructure:"ELASTICSEARCH_ADDRESS"`
+	Port                 string `mapstructure:"PORT"`
+	CrawlerAddress       string `mapstructure:"CRAWLER_ADDRESS"`
+}
+
 func main() {
-	classConfig, keywordsconfig, err := readConfig();
+	env, err := loadEnv(".")
+	if err != nil {
+		log.Fatalln("cannot load env")
+	}
+	// load default config
+	classConfig, keywordsconfig, tagsConfig, err := readConfigFromJSON()
 	if err != nil {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
-	conn := connectToCrawler()
-	services.GetArticles(keywordsconfig, classConfig, conn)
-	fmt.Printf("%#v \n", classConfig)
-	fmt.Printf("%#v \n", keywordsconfig)
-	fmt.Printf("%#v \n", err)
+	conn := connectToCrawler(env)
 
+	// elastic search
+	es, err := connectToElasticsearch(env)
+	if err != nil {
+		log.Println("error occurred while connecting to elasticsearch node: ", err)
+	}
+	createElaticsearchIndex(es)
 
+	// declare services
+	htmlClassesService := services.NewHtmlClassesService(classConfig)
+	keywordsService := services.NewKeywordsService(keywordsconfig)
+	tagsService := services.NewTagsService(tagsConfig)
+	articleService := services.NewArticleService(keywordsService, htmlClassesService, tagsService, conn, es)
+
+	tagsHandler := handler.NewTagsHandler(tagsService)
+	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
+
+	articleHandler := handler.NewArticleHandler(articleService)
+	articleRoute := routes.NewArticleRoutes(articleHandler)
+	// cronjob Setup
+
+	go func() {
+		cronjob := cron.New()
+
+		articleHandler.SignalToCrawler(cronjob)
+		cronjob.Run()
+	}()
+
+	// app routes
+	log.Println("Setup routes")
+	r := gin.Default()
+	r.Use(middlewares.Cors())
+
+	tagsRoutes.Setup(r)
+	articleRoute.Setup(r)
+
+	r.Run(":8080")
 }
 
-func readConfig() (entities.HtmlArticleClass, entities.Keywords, error) {
-	var classConfig entities.HtmlArticleClass
+func readConfigFromJSON() (entities.HtmlClasses, entities.Keywords, entities.Tags, error) {
+	var classConfig entities.HtmlClasses
 	var keywordsConfig entities.Keywords
+	var tagsConfig entities.Tags
 
-	classConfig, err := services.ReadHtmlClassJSON();
+	classConfig, err := services.ReadHtmlClassJSON()
 	if err != nil {
-		log.Println("Fail to read htmlArticleClassConfig.json: ", err)
-		return classConfig, keywordsConfig, err
+		log.Println("Fail to read htmlClassesConfig.json: ", err)
+		return classConfig, keywordsConfig, tagsConfig, err
 	}
 
-	keywordsconfig, err := services.ReadKeywordsJSON();
+	keywordsConfig, err = services.ReadKeywordsJSON()
 	if err != nil {
 		log.Println("Fail to read keywordsConfig.json: ", err)
-		return classConfig, keywordsconfig, err
+		return classConfig, keywordsConfig, tagsConfig, err
 	}
 
-	return classConfig, keywordsconfig, nil
+	tagsConfig, err = services.ReadTagsJSON()
+	if err != nil {
+		log.Println("Fail to read tagsConfig.json: ", err)
+		return classConfig, keywordsConfig, tagsConfig, err
+	}
+
+	return classConfig, keywordsConfig, tagsConfig, nil
 }
 
-func connectToCrawler() (*grpc.ClientConn){
-		// dial server
-		conn, err := grpc.Dial(":8000", grpc.WithInsecure())
-		if err != nil {
-			log.Fatalf("can not connect with server %v", err)
-		}
+func loadEnv(path string) (env EnvConfig, err error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+
+	err = viper.Unmarshal(&env)
+	return
+}
+
+func connectToCrawler(env EnvConfig) *grpc.ClientConn {
+	// dial server
+	conn, err := grpc.Dial(env.CrawlerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("can not connect with server %v", err)
+	}
 	return conn
 }
 
+func connectToElasticsearch(env EnvConfig) (*elasticsearch.Client, error) {
+	var esConfig = elasticsearch.Config{
+		Addresses: []string{
+			env.ElasticsearchAddress,
+		},
+	}
+
+	es, err := elasticsearch.NewClient(esConfig)
+	if err != nil {
+		return nil, err
+	}
+	return es, nil
+}
+
+func createElaticsearchIndex(es *elasticsearch.Client) {
+	// check if index exist. if not exist, create new one, if exist, skip it
+	indexName := "articles"
+	exists, err := checkIndexExists(es, indexName)
+	if err != nil {
+		log.Printf("Error checking if the index %s exists: %s\n", indexName, err)
+	}
+
+	if !exists {
+		log.Printf("Index: %s is not exist, create a new one...\n", indexName)
+		err = createIndex(es, indexName)
+		if err != nil {
+			log.Fatalf("Error createing index: %s", err)
+		}
+		return
+	}
+	log.Printf("Index: %s is already exist, skip it...\n", indexName)
+}
+
+func checkIndexExists(es *elasticsearch.Client, indexName string) (bool, error) {
+	res, err := es.Indices.Exists([]string{indexName})
+	if err != nil {
+		return false, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusOK {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func createIndex(es *elasticsearch.Client, indexName string) error {
+	res, err := es.Indices.Create(indexName)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("error creating index %s: %s", indexName, res.Status())
+	}
+
+	return nil
+}

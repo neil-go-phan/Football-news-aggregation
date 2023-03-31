@@ -1,16 +1,18 @@
 package grpcserver
 
 import (
-	"backend/services/crawler/crawl"
+	"crawler/crawl"
+	"fmt"
 	"log"
 	"net"
 	"sync"
 
-	pb "backend/grpcfile"
+	pb "grpcfile"
+
 	"google.golang.org/grpc"
 )
 
-var PAGES = 10
+var PAGES = 5
 
 type articlesServer struct {
 	pb.UnimplementedArticleServiceServer
@@ -18,7 +20,7 @@ type articlesServer struct {
 
 func GRPCServer() {
 	s := grpc.NewServer()
-	lis, err := net.Listen("tcp", "localhost:8000")
+	lis, err := net.Listen("tcp", ":8000")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -38,47 +40,46 @@ func (s *articlesServer) GetArticles(configs *pb.AllConfigs, stream pb.ArticleSe
 		ArticleClass     : configs.HtmlClasses.ArticleClass,
     TitleClass       : configs.HtmlClasses.TitleClass,
     DescriptionClass : configs.HtmlClasses.DescriptionClass,
-    ThumbnailClass   : configs.HtmlClasses.ThumbnailClass,
     LinkClass	: configs.HtmlClasses.LinkClass,
 	}
 	var wg sync.WaitGroup
-
-	// Search keyword on google and tab "Tin tức" url
+	log.Println("Start scrapt")
 	for _, keyword := range keywords{
 		wg.Add(1)
 		go func(keyword string) {
 			err := crawlAndStreamResult(stream, keyword, htmlClasses)
 			if err != nil {
-				log.Printf("Faile to search for key word: %s, err: %v \n", keyword, err)
+				log.Printf("error occurred while searching for key word: %s, err: %v \n", keyword, err)
 			}
 			wg.Done()
 		}(keyword)
 	}
 	wg.Wait()
+	log.Println("Finish scrapt")
 	return nil
 }
 
 func crawlAndStreamResult(stream pb.ArticleService_GetArticlesServer, keyword string,htmlClasses crawl.HtmlArticleClass) error{
 
-	newsUrl, err := crawl.SearchKeyWord(keyword)
-	if err != nil {
-		return err
-	}
+	newsUrl := fmt.Sprintf("https://www.google.com/search?tbm=nws&q=%s", crawl.FormatKeywords(keyword))
+	
+	log.Println(newsUrl)
 
 	var wg sync.WaitGroup
 
+	wg.Add(PAGES)
+
 	for i := 0; i < PAGES; i++ {
-		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
 			newses, err := crawl.CrawlPage(newsUrl, index, htmlClasses)
 			if err != nil {
-				log.Printf("Error when crawl page: %v, err: %v \n", index, err)
+				log.Printf("error occurred during crawl page process: %v, err: %v \n", index, err)
 			}
 			articles := crawlArticlesToPbActicles(newses, keyword)
 			err = stream.Send(articles)
 			if err != nil {
-				log.Println("Error when send response to client: ", err)
+				log.Println("error occurred while sending response to client: ", err)
 			}
 
 		}(i)
@@ -94,7 +95,6 @@ func crawlArticlesToPbActicles(crawlArticles []crawl.Article, keyword string) *p
 		pbArticle := &pb.Article{
 			Title:       article.Title,
 			Description: article.Description,
-			Thumbnail:   article.Thumbnail,
 			Link:        article.Link,
 		}
 		pbArticles.Articles = append(pbArticles.Articles, pbArticle)

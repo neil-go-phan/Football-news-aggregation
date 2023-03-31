@@ -1,15 +1,28 @@
 package services
 
 import (
-	"encoding/json"
+	jsoniter "github.com/json-iterator/go"
 	"io"
 	"log"
 	"os"
-	"backend/services/server/entities"
+	"server/entities"
 )
+
+type keywordsService struct {
+	Keywords entities.Keywords
+}
+
+func NewKeywordsService(keywords entities.Keywords) *keywordsService{
+	keyword := &keywordsService{
+		Keywords: keywords,	
+	}
+	return keyword
+}
+
 
 func ReadKeywordsJSON() (entities.Keywords, error){
 	var keywordsConfig entities.Keywords
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	keywordsConfigJson, err := os.Open("configs/keywordsConfig.json")
 	if err != nil {

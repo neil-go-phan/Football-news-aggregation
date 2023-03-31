@@ -1,0 +1,40 @@
+version: '3.9'
+services:
+  crawler: 
+    build:
+      context: ./services/server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes: 
+      - ./grpcfile:/grpcfile
+  
+  elasticsearch:
+    image: elasticsearch:7.17.9
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+
+  server:
+    build:
+      context: ./services/server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - CRAWLER_ADDRESS=:8000
+      - ELASTICSEARCH_ADDRESS=http://elasticsearch:9200/
+    volumes: 
+      - ./grpcfile:/grpcfile
+    depends_on:
+      - crawler
+      - elasticsearch
+    entrypoint:
+      [
+        "/app/wait-for.sh",
+        "elasticsearch:9200",
+        "--",
+        "/app/main"
+      ]

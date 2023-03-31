@@ -1,27 +1,22 @@
-import React from 'react';
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-import News from './news';
-import Schedule from './schedule';
-import { useRouter } from 'next/router';
-export default function Contents() {
-  const router = useRouter();
+import React, { useState } from 'react';
+import MainContents from './mainContents';
+import RightSideBar from './rightSideBar';
+import SearchTagContext from '../../common/contexts/searchTag';
+
+function Contents() {
+  const [searchTags, setSearchTags] = useState<Array<string>>([]);
   return (
-    <Tabs
-      defaultActiveKey="news"
-      id="uncontrolled-tab-example"
-      className="mb-3"
-    >
-      <Tab eventKey="news" title="Tin tức">
-        <News />
-      </Tab>
-      <Tab
-        eventKey="schedule"
-        title="Lịch thi đấu"
-        disabled={router.asPath === '/' ? true : false}
-      >
-        <Schedule />
-      </Tab>
-    </Tabs>
+    <SearchTagContext.Provider value={{ searchTags, setSearchTags }}>
+      <div className="contents d-md-flex py-2">
+        <div className="col-12 col-md-9">
+          <MainContents />
+        </div>
+        <div className="col-md-3">
+          <RightSideBar />
+        </div>
+      </div>
+    </SearchTagContext.Provider>
   );
 }
+
+export default Contents;

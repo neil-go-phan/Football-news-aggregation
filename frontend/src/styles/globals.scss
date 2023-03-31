@@ -1,8 +1,13 @@
 $enable-negative-margins: true;
 
 @import "~bootstrap/scss/bootstrap";
+@import "~nprogress/nprogress.css";
 
 @import "./components/progress";
 @import "./components/sidebar";
 
-@import "~nprogress/nprogress.css";
+@import "./common/tag";
+
+@import "./components/rightSideBar";
+@import "./components/contents";
+

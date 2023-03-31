@@ -1,3 +1,7 @@
 go 1.20
 
-use ./backend
+use (
+	./backend/grpcfile
+	./backend/services/crawler
+	./backend/services/server
+)
