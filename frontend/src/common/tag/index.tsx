@@ -11,7 +11,7 @@ const Tag: FunctionComponent<Props> = (props: Props) => {
     const tags = searchTags
     if (!tags.includes(props.tagName)) {
       tags.push(props.tagName)
-      setSearchTags(tags)
+      setSearchTags([...tags])
     }
   }
   return (

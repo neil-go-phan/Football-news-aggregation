@@ -21,10 +21,7 @@ interface Props {
 const SearchBar: FunctionComponent<Props> = (props: Props) => {
   const [keyword, setkeyword] = useState<string>('');
   const { searchTags, setSearchTags } = useContext(SearchTagContext);
-  const [tagsInSearch, setTagsInSearch] = useState<Array<string>>([]);
   const router = useRouter();
-  
-  console.log("search render")
 
   const getIndex = (): string => {
     const isContainNewsPath = router.asPath.search('/news/');
@@ -68,10 +65,6 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
       props.handleSearch([]);
     }
   }, [router.asPath]);
-
-  useEffect(() => {
-    setTagsInSearch(searchTags)
-  }, [searchTags])
   
 
   // handle when click add tag
@@ -92,8 +85,7 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
     const tags = searchTags
     const index = tags.indexOf(tag)
     tags.splice(index, 1)
-    setSearchTags(tags)
-    setTagsInSearch(tags)
+    setSearchTags([...tags])
   };
 
   return (
@@ -103,7 +95,7 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
           <FontAwesomeIcon icon={faMagnifyingGlass} />
         </span>
         <div className="tags">
-          {tagsInSearch.map((tag) => (
+          {searchTags.map((tag) => (
             <div key={`search_tag_name_${tag}`} className="tag">
               <span>{tag}</span>
               <span className="tag--icon" onClick={() => handleDeleteTag(tag)}>
