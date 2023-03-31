@@ -3,6 +3,7 @@ FROM golang:1.20-alpine3.16 AS builder
 LABEL author="Neil GoldenOwl golang intern"
 WORKDIR /app
 COPY . . 
+RUN go get .
 RUN go build -o main main.go
 
 EXPOSE 8000

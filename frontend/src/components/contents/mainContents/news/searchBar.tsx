@@ -12,6 +12,7 @@ import { ArticleType } from './article';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faX } from '@fortawesome/free-solid-svg-icons';
 import SearchTagContext from '@/common/contexts/searchTag';
+import { toast } from 'react-toastify';
 
 interface Props {
   // eslint-disable-next-line no-unused-vars
@@ -23,18 +24,21 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
   const { searchTags, setSearchTags } = useContext(SearchTagContext);
   const router = useRouter();
 
-  const getIndex = (): string => {
+  const getDefaultTag = (): string => {
     const isContainNewsPath = router.asPath.search('/news/');
     if (isContainNewsPath === -1) {
       return '';
     }
-    return router.asPath.slice(6);
+    const defaultTag = router.asPath.slice(6)
+
+
+    return defaultTag.replace("-", " ")
   };
 
   const getTagParam = ():string => {
     let tagParam:string = ""
-    if (searchTags.indexOf(getIndex()) < 0) {
-      tagParam += getIndex() + ","
+    if (searchTags.indexOf(getDefaultTag()) < 0) {
+      tagParam += getDefaultTag() + ","
     }
     searchTags.forEach((tag) => tagParam += tag + "," )
     tagParam = tagParam.slice(0, tagParam.length - 1)
@@ -47,22 +51,41 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
         params: { q: searchKeyword.trim(), tags : getTagParam()},
       });
       props.handleSearch(data.articles);
+      toast.success(`Search keyword ${searchKeyword.trim()} success`, {
+        position: "top-right",
+        autoClose: 100,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
     } catch (error) {
-      
+      toast.error(`Error occurred while searching keyword ${searchKeyword.trim()}`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
     }
   };
 
   // handle when user change route
   useEffect(() => {
     const storedValue = window.sessionStorage.getItem(
-      `search_keyword_${getIndex()}`
+      `search_keyword_${getDefaultTag()}`
     );
     if (storedValue !== null) {
       setkeyword(storedValue);
       requestArticle(storedValue);
     } else {
       setkeyword('');
-      props.handleSearch([]);
+      requestArticle('')
     }
   }, [router.asPath]);
   
@@ -73,10 +96,10 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
     event.preventDefault();
     if ((keyword.trim() === "") && (searchTags.length === 0)) {
       setkeyword('');
-      props.handleSearch([]);
+      requestArticle("");
       return
     }
-    window.sessionStorage.setItem(`search_keyword_${getIndex()}`, keyword.trim());
+    window.sessionStorage.setItem(`search_keyword_${getDefaultTag()}`, keyword.trim());
     // window.sessionStorage.setItem(`search_tags_${getIndex()}`, tagsInSearch);
     requestArticle(keyword);
   };

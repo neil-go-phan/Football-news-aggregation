@@ -19,11 +19,11 @@ export default function SidebarNav() {
       </Nav.Item>
       <Nav.Item
         className={`px-3 py-2 d-flex align-items-center nav__item ${
-          router.asPath === `${_ROUTES.NEWS_PAGE}/ngoaihanganh` ? 'active' : ''
+          router.asPath === `${_ROUTES.NEWS_PAGE}/ngoai-hang-anh` ? 'active' : ''
         }`}
       >
         <Link
-          href={`${_ROUTES.NEWS_PAGE}/ngoaihanganh`}
+          href={`${_ROUTES.NEWS_PAGE}/ngoai-hang-anh`}
           className="text-decoration-none text-dark link"
         >
           Ngoại hạng anh
@@ -31,10 +31,10 @@ export default function SidebarNav() {
       </Nav.Item>
       <Nav.Item
         className={`px-3 py-2 d-flex align-items-center nav__item ${
-          router.asPath === `${_ROUTES.NEWS_PAGE}/cupc1` ? 'active' : ''
+          router.asPath === `${_ROUTES.NEWS_PAGE}/cup-c1` ? 'active' : ''
         }`}
       >
-        <Link href={`${_ROUTES.NEWS_PAGE}/cupc1`} className="text-decoration-none text-dark link">
+        <Link href={`${_ROUTES.NEWS_PAGE}/cup-c1`} className="text-decoration-none text-dark link">
           Cup C1
         </Link>
       </Nav.Item>

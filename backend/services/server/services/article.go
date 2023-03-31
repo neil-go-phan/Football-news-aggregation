@@ -54,7 +54,9 @@ func (s *articleService)FrontendSearchArticlesTagsAndKeyword(keyword string, for
 			filterQueries = append(filterQueries, tagQuery)
 		}
 	}
-	var query map[string]interface{}
+
+	// default is search all 
+	query := querySearchAll()
 
 	if len(filterQueries) == 0 && keyword != "" {
 		// search with only keyword
@@ -91,11 +93,7 @@ func (s *articleService)FrontendSearchAll(search_type string, scroll string, siz
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
 
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
-			"match_all" : map[string]interface{}{},
-		},
-	}
+	query := querySearchAll()
 
 	json.NewEncoder(&buffer).Encode(query)
 	resp, err := s.es.Search(s.es.Search.WithIndex(INDEX_NAME), s.es.Search.WithBody(&buffer))
@@ -110,6 +108,15 @@ func (s *articleService)FrontendSearchAll(search_type string, scroll string, siz
 		articles = append(articles, newEntitiesArticleFromMap(article))
 	}
 	return articles, nil
+}
+
+func querySearchAll() map[string]interface{} {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match_all" : map[string]interface{}{},
+		},
+	}
+	return query
 }
 
 func queryWithOnlySearchKeyword(keyword string) map[string]interface{}{

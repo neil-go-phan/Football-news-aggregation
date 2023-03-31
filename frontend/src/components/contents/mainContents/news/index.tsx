@@ -1,6 +1,7 @@
 
 import axiosClient from '@/helpers/axiosClient';
 import React, {  useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import Article, { ArticleType } from './article';
 import SearchBar from './searchBar';
 
@@ -18,7 +19,16 @@ export default function News() {
         });
         setArticles(data.articles)
       } catch (error) {
-        
+        toast.error(`Error occurred while get articles`, {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+          });
       }
     };
     
