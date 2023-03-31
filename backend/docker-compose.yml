@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:8080"
     volumes: 
-      - ./grpcfile:/grpcfile
+      - ./grpcfile:/app/grpcfile
   
   elasticsearch:
     image: elasticsearch:7.17.9
@@ -27,7 +27,7 @@ services:
       - CRAWLER_ADDRESS=:8000
       - ELASTICSEARCH_ADDRESS=http://elasticsearch:9200/
     volumes: 
-      - ./grpcfile:/grpcfile
+      - ./grpcfile:/usr/local/go/src/grpcfile
     depends_on:
       - crawler
       - elasticsearch

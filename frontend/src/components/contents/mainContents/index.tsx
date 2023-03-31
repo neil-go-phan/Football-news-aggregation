@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import News from './news';
@@ -7,11 +7,6 @@ import { useRouter } from 'next/router';
 import { _ROUTES } from '@/helpers/constants';
 export default function MainContents() {
   const router = useRouter();
-  // useEffect(() => {
-    // router.events.on('routeChangeStart', (url) => {
-    // });
-  // }, []);
-
   return (
     <Tabs
       defaultActiveKey="news"
