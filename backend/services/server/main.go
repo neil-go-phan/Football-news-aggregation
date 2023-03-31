@@ -3,14 +3,12 @@ package main
 import (
 	"backend/services/server/entities"
 	"backend/services/server/handler"
-	"backend/services/server/helper"
 	"backend/services/server/middlewares"
 	"backend/services/server/routes"
 	"backend/services/server/services"
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gin-gonic/gin"
@@ -43,7 +41,7 @@ func main() {
 	if err != nil {
 		log.Println("error occurred while connecting to elasticsearch node: ", err)
 	}
-	createElaticsearchIndex(es, keywordsconfig)
+	createElaticsearchIndex(es)
 
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
@@ -69,7 +67,7 @@ func main() {
 	log.Println("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
-	
+
 	tagsRoutes.Setup(r)
 	articleRoute.Setup(r)
 
@@ -141,33 +139,23 @@ func connectToElasticsearch(env EnvConfig) (*elasticsearch.Client, error) {
 	return es, nil
 }
 
-func createElaticsearchIndex(es *elasticsearch.Client, keywords entities.Keywords) {
-	var wg sync.WaitGroup
-	for _, elasticIndex := range keywords.Keywords {
-		wg.Add(1)
-		go func(elasticIndex string) {
-			indexName := helper.FormatElasticSearchIndexName(elasticIndex)
-			// check if index exist. if not exist, create new one, if exist, skip it
-			exists, err := checkIndexExists(es, indexName)
-			if err != nil {
-				log.Printf("Error checking if the index %s exists: %s\n", indexName, err)
-			}
-
-			if !exists {
-				log.Printf("Index: %s is not exist, create a new one...\n", indexName)
-				err = createIndex(es, indexName)
-				if err != nil {
-					log.Fatalf("Error createing index: %s", err)
-				}
-				wg.Done()
-				return
-			}
-			log.Printf("Index: %s is already exist, skip it...\n", indexName)
-			wg.Done()
-		}(elasticIndex)
+func createElaticsearchIndex(es *elasticsearch.Client) {
+	// check if index exist. if not exist, create new one, if exist, skip it
+	indexName := "articles"
+	exists, err := checkIndexExists(es, indexName)
+	if err != nil {
+		log.Printf("Error checking if the index %s exists: %s\n", indexName, err)
 	}
 
-	wg.Wait()
+	if !exists {
+		log.Printf("Index: %s is not exist, create a new one...\n", indexName)
+		err = createIndex(es, indexName)
+		if err != nil {
+			log.Fatalf("Error createing index: %s", err)
+		}
+		return
+	}
+	log.Printf("Index: %s is already exist, skip it...\n", indexName)
 }
 
 func checkIndexExists(es *elasticsearch.Client, indexName string) (bool, error) {

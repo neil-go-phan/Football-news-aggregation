@@ -5,7 +5,6 @@ import SearchTagContext from '../../common/contexts/searchTag';
 
 function Contents() {
   const [searchTags, setSearchTags] = useState<Array<string>>([]);
-  const value = { searchTags, setSearchTags };
   return (
     <SearchTagContext.Provider value={{ searchTags, setSearchTags }}>
       <div className="contents d-md-flex py-2">

@@ -43,7 +43,7 @@ func FormatElasticSearchIndexName(indexName string) string {
 	return strings.Replace(formatedPhase1, " ", "", -1)
 }
 
-// func MemoryAlloc() {
-// 	log.Printf("Total Memory Usage %T: memory allocate: %v\n", s, unsafe.Sizeof(s))
-// 	log.Printf("Name: grpc.ClientConn, type: %T, memory allocate: %v\n", s.conn, unsafe.Sizeof(s.conn))
-// }
+func FortmatTagsFromRequest(tags string) []string {
+	tagsSlice := strings.Split(tags, ",")
+	return tagsSlice
+}

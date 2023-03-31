@@ -67,8 +67,9 @@ func crawlAndStreamResult(stream pb.ArticleService_GetArticlesServer, keyword st
 
 	var wg sync.WaitGroup
 
+	wg.Add(PAGES)
+
 	for i := 0; i < PAGES; i++ {
-		wg.Add(1)
 		go func(index int) {
 			defer wg.Done()
 			newses, err := crawl.CrawlPage(newsUrl, index, htmlClasses)

@@ -23,6 +23,7 @@ func NewHtmlClassesService(htmlClassesInput entities.HtmlClasses) *htmlClassesSe
 func ReadHtmlClassJSON() (entities.HtmlClasses, error){
 	var classConfig entities.HtmlClasses
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	
 	classConfigJson, err := os.Open("configs/htmlClassesConfig.json")
 	if err != nil {
 		log.Println(err)

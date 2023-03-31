@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
+import React, {
+  FunctionComponent,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form';
 import axiosClient from '@/helpers/axiosClient';
@@ -11,70 +16,101 @@ import SearchTagContext from '@/common/contexts/searchTag';
 interface Props {
   // eslint-disable-next-line no-unused-vars
   handleSearch: (searchResult: Array<ArticleType>) => void;
-  tagsList: Array<string>
 }
 
 const SearchBar: FunctionComponent<Props> = (props: Props) => {
   const [keyword, setkeyword] = useState<string>('');
-  const [tagsInSearch, setTagsInSearch] = useState<Array<string>>([])
+  const { searchTags, setSearchTags } = useContext(SearchTagContext);
+  const [tagsInSearch, setTagsInSearch] = useState<Array<string>>([]);
   const router = useRouter();
   
-
+  console.log("search render")
 
   const getIndex = (): string => {
     const isContainNewsPath = router.asPath.search('/news/');
     if (isContainNewsPath === -1) {
-      return '_all';
+      return '';
     }
     return router.asPath.slice(6);
   };
-  console.log(props.tagsList)
+
+  const getTagParam = ():string => {
+    let tagParam:string = ""
+    if (searchTags.indexOf(getIndex()) < 0) {
+      tagParam += getIndex() + ","
+    }
+    searchTags.forEach((tag) => tagParam += tag + "," )
+    tagParam = tagParam.slice(0, tagParam.length - 1)
+    return tagParam
+  }
 
   const requestArticle = async (searchKeyword: string) => {
     try {
       const { data } = await axiosClient.get('article/search-tag-keyword', {
-        params: { q: searchKeyword, index: getIndex() },
-      }); 
+        params: { q: searchKeyword.trim(), tags : getTagParam()},
+      });
       props.handleSearch(data.articles);
-    } catch (error) {}
-  }
+    } catch (error) {
+      
+    }
+  };
 
   // handle when user change route
   useEffect(() => {
-    const storedValue = window.sessionStorage.getItem(`search_keyword_${getIndex()}`);
+    const storedValue = window.sessionStorage.getItem(
+      `search_keyword_${getIndex()}`
+    );
     if (storedValue !== null) {
-      setkeyword(storedValue)
-      requestArticle(storedValue)
+      setkeyword(storedValue);
+      requestArticle(storedValue);
     } else {
-      setkeyword('')
+      setkeyword('');
       props.handleSearch([]);
     }
-  }, [router.asPath])
+  }, [router.asPath]);
 
-    // handle when click add tag
-
+  useEffect(() => {
+    setTagsInSearch(searchTags)
+  }, [searchTags])
   
+
+  // handle when click add tag
+
   const onSearchSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    window.sessionStorage.setItem(`search_keyword_${getIndex()}`, keyword);
+    if ((keyword.trim() === "") && (searchTags.length === 0)) {
+      setkeyword('');
+      props.handleSearch([]);
+      return
+    }
+    window.sessionStorage.setItem(`search_keyword_${getIndex()}`, keyword.trim());
     // window.sessionStorage.setItem(`search_tags_${getIndex()}`, tagsInSearch);
-    requestArticle(keyword)
+    requestArticle(keyword);
   };
 
-  const handleDeleteTag = () => {
-    console.log("delete tag")
-  }
+  const handleDeleteTag = (tag : string) => {
+    const tags = searchTags
+    const index = tags.indexOf(tag)
+    tags.splice(index, 1)
+    setSearchTags(tags)
+    setTagsInSearch(tags)
+  };
 
   return (
     <Form onSubmit={(event) => onSearchSubmit(event)}>
       <InputGroup className="mb-3 news__searchBar--search">
-        <span className="icon"><FontAwesomeIcon icon={faMagnifyingGlass} /></span>
+        <span className="icon">
+          <FontAwesomeIcon icon={faMagnifyingGlass} />
+        </span>
         <div className="tags">
-        
-          <div className="tag">
-            <span>Heelo</span>
-            <span className='tag--icon' onClick={handleDeleteTag}><FontAwesomeIcon icon={faX} /></span>
-          </div>
+          {tagsInSearch.map((tag) => (
+            <div key={`search_tag_name_${tag}`} className="tag">
+              <span>{tag}</span>
+              <span className="tag--icon" onClick={() => handleDeleteTag(tag)}>
+                <FontAwesomeIcon icon={faX} />
+              </span>
+            </div>
+          ))}
         </div>
         <input
           placeholder="Tìm kiếm"

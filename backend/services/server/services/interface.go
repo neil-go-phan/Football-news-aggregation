@@ -20,6 +20,6 @@ type TagsServices interface {
 
 type ArticleServices interface {
 	// GetArticlesEveryMinutes(cronjob *cron.Cron)
-	FrontendSearchWithIndex(keyword string, indexName string) ([]entities.Article ,error)
+	FrontendSearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article ,error)
 	GetArticles()
 }

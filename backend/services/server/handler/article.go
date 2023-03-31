@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"backend/services/server/helper"
 	"backend/services/server/services"
-	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
 	"log"
 	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
 )
 
 // user search article, server query elastic search
@@ -21,17 +24,17 @@ func NewArticleHandler(handler services.ArticleServices) *ArticleHandler {
 	return userHandler
 }
 
-func (articleHandler *ArticleHandler) SearchWithKeyword(c *gin.Context) {
+func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 	keyword := c.Query("q")
-	index := c.Query("index")
-
+	tags := c.Query("tags")
+	formatedTags := helper.FortmatTagsFromRequest(tags)
 	// check if index is valid
 
 	// request to elasticsearch
-
-	articles, err := articleHandler.handler.FrontendSearchWithIndex(keyword, index)
+	keyword= strings.TrimSpace(keyword)
+	articles, err := articleHandler.handler.FrontendSearchArticlesTagsAndKeyword(keyword, formatedTags)
 	if err != nil {
-		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, index, err)
+		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, "articles", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})

@@ -25,6 +25,7 @@ type Article struct {
 
 func CrawlPage(url string, page int, htmlClasses HtmlArticleClass) ([]Article, error) {
 	var articles []Article
+	
 	req, err := http.NewRequest("GET", fmt.Sprintf(`%s&start=%d0`, url, page), nil)
 	if err != nil {
 		log.Fatal(err)

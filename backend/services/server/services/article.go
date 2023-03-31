@@ -40,18 +40,39 @@ func NewArticleService(keywords *keywordsService, htmlClass *htmlClassesService,
 	return articleService
 }
 
-func (s *articleService) FrontendSearchWithIndex(keyword string, indexName string) ([]entities.Article, error) {
+func (s *articleService) FrontendSearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
-	query := map[string]interface{}{
-		"query": map[string]interface{}{
-			"multi_match": map[string]interface{}{
-				"query":  keyword,
-				"fields": []string{"title", "discription"},
-			},
-		},
+
+	indexName := "articles"
+
+	var filterQueries []map[string]interface{}
+	for _, tag := range formatedTags {
+		if tag != "" {
+			tagQuery := map[string]interface{}{"match_phrase": map[string]interface{}{"tags": tag}}
+			filterQueries = append(filterQueries, tagQuery)
+		}
 	}
+	var query map[string]interface{}
+
+	if len(filterQueries) == 0 && keyword != "" {
+		// search with only keyword
+		query = queryWithOnlySearchKeyword(keyword)
+	}
+
+	if len(filterQueries) != 0 && keyword == "" {
+		// search with only tags
+		query = queryWithOnlyTag(filterQueries)
+	}
+
+	if len(filterQueries) != 0 && keyword != "" {
+		// search with both tags and keyword
+		query = queryWithBothTagAndKeywords(keyword, filterQueries)
+	}
+
+	fmt.Println(query)
+
 	json.NewEncoder(&buffer).Encode(query)
 	resp, err := s.es.Search(s.es.Search.WithIndex(indexName), s.es.Search.WithBody(&buffer))
 	if err != nil {
@@ -67,6 +88,58 @@ func (s *articleService) FrontendSearchWithIndex(keyword string, indexName strin
 	return articles, nil
 }
 
+func queryWithOnlySearchKeyword(keyword string) map[string]interface{}{
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": map[string]interface{}{
+					"multi_match": map[string]interface{}{
+						"query":  keyword,
+						"fields": []string{"title", "description"},
+					},
+				},
+			},
+		},
+	}
+	return query
+}
+
+func queryWithOnlyTag(filterQueries []map[string]interface{}) map[string]interface{}{
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"filter": map[string]interface{}{
+					"bool": map[string]interface{}{
+						"must": filterQueries,
+					},
+				},
+			},
+		},
+	}
+	return query
+}
+
+func queryWithBothTagAndKeywords(keyword string, filterQueries []map[string]interface{}) map[string]interface{}{
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": map[string]interface{}{
+					"multi_match": map[string]interface{}{
+						"query":  strings.TrimSpace(keyword),
+						"fields": []string{"title", "description"},
+					},
+				},
+				"filter": map[string]interface{}{
+					"bool": map[string]interface{}{
+						"must": filterQueries,
+					},
+				},
+			},
+		},
+	}
+	return query
+}
+
 // GetArticles request crawler to scrapt data and sync new data with redis and elastic search
 func (s *articleService) GetArticles() {
 	client := pb.NewArticleServiceClient(s.conn)
@@ -80,7 +153,7 @@ func (s *articleService) GetArticles() {
 		},
 		Keywords: s.keywordsService.Keywords.Keywords,
 	}
-
+	// send gRPC request to crawler
 	stream, err := client.GetArticles(context.Background(), in)
 	if err != nil {
 		log.Printf("error occurred while openning stream error %v \n", err)
@@ -90,6 +163,7 @@ func (s *articleService) GetArticles() {
 	done := make(chan bool)
 	var mapSearchResult = make(map[string]bool)
 	log.Printf("Start get stream of article...\n")
+	// recieve stream of article from crawler
 	go func() {
 		for {
 			resp, err := stream.Recv()
@@ -122,7 +196,7 @@ func (s *articleService) GetArticles() {
 // C1: Server lưu kết quả cào ở lần trước đó, sau đó lấy kết quả mới so sánh với cũ, nếu có bài báo nào mới thì sẽ check lại với elasticsearch. Elasticsearch chưa có thì thêm vào
 
 func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, keyword string, tags []string) {
-	indexName := helper.FormatElasticSearchIndexName(keyword)
+
 	// Condition: similar title
 	for _, article := range respArticles {
 
@@ -135,26 +209,28 @@ func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, 
 		// check if it exist in previous results
 		_, ok := PREV_ARTICLES[article.Title]
 		if !ok {
-			exist := checkWithElasticSearch(article, indexName, es)
+			exist := checkWithElasticSearch(article, es)
 			if !exist {
 				entityArticle := newEntitiesArticleFromPb(article, tags, keyword)
-				storeElasticsearch(entityArticle, indexName, es)
+				storeElasticsearch(entityArticle, es)
 			}
 			// checkWithRedis(article)
 		}
 	}
 }
 
-func checkWithElasticSearch(article *pb.Article, indexName string, es *elasticsearch.Client) bool {
+func checkWithElasticSearch(article *pb.Article, es *elasticsearch.Client) bool {
 	req := esapi.ExistsRequest{
-		Index:      indexName,
+		Index:      "articles",
 		DocumentID: strings.ToLower(article.Title),
 	}
+
 	resp, err := req.Do(context.Background(), es)
 	if err != nil {
 		log.Printf("Error checking if document exists: %s\n", err)
 		return false
 	}
+
 	status := resp.StatusCode
 	if status == 200 {
 		log.Println("Document already exist in elastic search")
@@ -163,6 +239,7 @@ func checkWithElasticSearch(article *pb.Article, indexName string, es *elasticse
 		log.Println("Document not found, creating new one...")
 		return false
 	}
+
 	return false
 }
 
@@ -175,7 +252,7 @@ func saveToMapSearchResult(respArticles []*pb.Article, mapSearchResult map[strin
 }
 
 func newEntitiesArticleFromMap(respArticle map[string]interface{}) entities.Article {
-	// assertion []interface{} to []string
+	// type assertion []interface{} to []string
 	tagInterface := respArticle["tags"].([]interface{})
 	tags := make([]string, len(tagInterface))
 	for i, tag := range tagInterface {
@@ -193,7 +270,7 @@ func newEntitiesArticleFromMap(respArticle map[string]interface{}) entities.Arti
 
 func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string, keyword string) entities.Article {
 	articleTags := checkTags(respArticle, tags, keyword)
-	
+
 	article := entities.Article{
 		Title:       respArticle.Title,
 		Description: respArticle.Description,
@@ -203,7 +280,7 @@ func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string, keyword st
 	return article
 }
 
-func storeElasticsearch(article entities.Article, indexName string, es *elasticsearch.Client) {
+func storeElasticsearch(article entities.Article, es *elasticsearch.Client) {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	body, err := json.Marshal(article)
@@ -212,7 +289,7 @@ func storeElasticsearch(article entities.Article, indexName string, es *elastics
 	}
 
 	req := esapi.IndexRequest{
-		Index:      indexName,
+		Index:      "articles",
 		DocumentID: strings.ToLower(article.Title),
 		Body:       strings.NewReader(string(body)),
 		Refresh:    "true",
@@ -227,16 +304,18 @@ func storeElasticsearch(article entities.Article, indexName string, es *elastics
 	if res.IsError() {
 		log.Printf("[%s] Error indexing document\n", res.Status())
 	} else {
-		log.Printf("[%s] Indexed document with index: %s \n", res.Status(), indexName)
+		log.Printf("[%s] Indexed document with index: %s \n", res.Status(), "articles")
 	}
 }
 
 func checkTags(article *pb.Article, tags []string, keyword string) []string {
 	articleTags := make(map[string]bool)
 	articleTags[helper.FormatVietnamese(keyword)] = true
+
 	for _, tag := range tags {
 		formatedTag := helper.FormatVietnamese(tag)
 		_, ok := articleTags[formatedTag]
+
 		if !ok {
 			if strings.Contains(helper.FormatVietnamese(article.Description), formatedTag) || strings.Contains(helper.FormatVietnamese(article.Title), formatedTag) {
 				articleTags[tag] = true
