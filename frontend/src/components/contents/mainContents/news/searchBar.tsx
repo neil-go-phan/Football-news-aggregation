@@ -77,16 +77,8 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
 
   // handle when user change route
   useEffect(() => {
-    const storedValue = window.sessionStorage.getItem(
-      `search_keyword_${getDefaultTag()}`
-    );
-    if (storedValue !== null) {
-      setkeyword(storedValue);
-      requestArticle(storedValue);
-    } else {
-      setkeyword('');
-      requestArticle('')
-    }
+    setkeyword('');
+    requestArticle('')
   }, [router.asPath]);
   
 
@@ -99,8 +91,6 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
       requestArticle("");
       return
     }
-    window.sessionStorage.setItem(`search_keyword_${getDefaultTag()}`, keyword.trim());
-    // window.sessionStorage.setItem(`search_tags_${getIndex()}`, tagsInSearch);
     requestArticle(keyword);
   };
 
