@@ -1,7 +1,7 @@
 package services
 
 import (
-	"backend/services/server/entities"
+	"server/entities"
 	"io"
 	"log"
 	"os"
@@ -23,7 +23,7 @@ func NewHtmlClassesService(htmlClassesInput entities.HtmlClasses) *htmlClassesSe
 func ReadHtmlClassJSON() (entities.HtmlClasses, error){
 	var classConfig entities.HtmlClasses
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	
+
 	classConfigJson, err := os.Open("configs/htmlClassesConfig.json")
 	if err != nil {
 		log.Println(err)

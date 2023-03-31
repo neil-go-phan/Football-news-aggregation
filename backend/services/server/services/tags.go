@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"backend/services/server/entities"
+	"server/entities"
 )
 
 type tagsService struct {

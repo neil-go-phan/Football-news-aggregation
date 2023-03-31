@@ -1,13 +1,13 @@
 package grpcserver
 
 import (
-	"backend/services/crawler/crawl"
+	"crawler/crawl"
 	"fmt"
 	"log"
 	"net"
 	"sync"
 
-	pb "backend/grpcfile"
+	pb "grpcfile"
 
 	"google.golang.org/grpc"
 )
@@ -20,7 +20,7 @@ type articlesServer struct {
 
 func GRPCServer() {
 	s := grpc.NewServer()
-	lis, err := net.Listen("tcp", "localhost:8000")
+	lis, err := net.Listen("tcp", ":8000")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}

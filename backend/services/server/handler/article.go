@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"backend/services/server/helper"
-	"backend/services/server/services"
+	"server/helper"
+	"server/services"
 	"log"
 	"net/http"
 	"strings"

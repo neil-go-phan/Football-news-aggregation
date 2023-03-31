@@ -1,8 +1,8 @@
 package services
 
 import (
-	"backend/services/server/entities"
-	"backend/services/server/helper"
+	"server/entities"
+	"server/helper"
 	"bytes"
 	"context"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"log"
 	"strings"
 
-	pb "backend/grpcfile"
+	pb "grpcfile"
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"

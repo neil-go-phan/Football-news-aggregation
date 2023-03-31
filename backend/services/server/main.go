@@ -1,11 +1,11 @@
 package main
 
 import (
-	"backend/services/server/entities"
-	"backend/services/server/handler"
-	"backend/services/server/middlewares"
-	"backend/services/server/routes"
-	"backend/services/server/services"
+	"server/entities"
+	"server/handler"
+	"server/middlewares"
+	"server/routes"
+	"server/services"
 	"fmt"
 	"log"
 	"net/http"

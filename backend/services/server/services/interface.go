@@ -1,7 +1,7 @@
 package services
 
 import (
-	"backend/services/server/entities"
+	"server/entities"
 
 	// "github.com/robfig/cron/v3"
 )

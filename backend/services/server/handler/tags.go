@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"backend/services/server/services"
+	"server/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

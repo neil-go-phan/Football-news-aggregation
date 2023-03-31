@@ -1,7 +1,7 @@
 package main
 
 import (
-	"backend/services/crawler/grpcServer"
+	"crawler/grpcServer"
 )
 
 
