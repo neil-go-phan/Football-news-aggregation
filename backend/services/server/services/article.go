@@ -20,7 +20,7 @@ import (
 )
 
 var PREV_ARTICLES = make(map[string]bool)
-
+var INDEX_NAME = "articles"
 type articleService struct {
 	conn               *grpc.ClientConn
 	es                 *elasticsearch.Client
@@ -40,12 +40,12 @@ func NewArticleService(keywords *keywordsService, htmlClass *htmlClassesService,
 	return articleService
 }
 
-func (s *articleService) FrontendSearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article, error) {
+func (s *articleService)FrontendSearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
 
-	indexName := "articles"
+
 
 	var filterQueries []map[string]interface{}
 	for _, tag := range formatedTags {
@@ -71,10 +71,34 @@ func (s *articleService) FrontendSearchArticlesTagsAndKeyword(keyword string, fo
 		query = queryWithBothTagAndKeywords(keyword, filterQueries)
 	}
 
-	fmt.Println(query)
+	json.NewEncoder(&buffer).Encode(query)
+	resp, err := s.es.Search(s.es.Search.WithIndex(INDEX_NAME), s.es.Search.WithBody(&buffer))
+	if err != nil {
+		return articles, fmt.Errorf("request to elastic search fail")
+	}
+
+	var result map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&result)
+	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
+		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
+		articles = append(articles, newEntitiesArticleFromMap(article))
+	}
+	return articles, nil
+}
+
+func (s *articleService)FrontendSearchAll(search_type string, scroll string, size string) ([]entities.Article ,error) {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	articles := make([]entities.Article, 0)
+	var buffer bytes.Buffer
+
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"match_all" : map[string]interface{}{},
+		},
+	}
 
 	json.NewEncoder(&buffer).Encode(query)
-	resp, err := s.es.Search(s.es.Search.WithIndex(indexName), s.es.Search.WithBody(&buffer))
+	resp, err := s.es.Search(s.es.Search.WithIndex(INDEX_NAME), s.es.Search.WithBody(&buffer))
 	if err != nil {
 		return articles, fmt.Errorf("request to elastic search fail")
 	}
