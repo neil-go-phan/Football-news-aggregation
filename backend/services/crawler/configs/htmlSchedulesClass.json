@@ -1,0 +1,19 @@
+{
+  "league_class": "football-header",
+  "date" : "table-header text-center",
+  "html_match_class": {
+    "match_class" : "football-match-livescore",
+    "time": "columns-time",
+    "round": "vongbang",
+    "club_1": {
+      "club_name" : "name-club club1",
+      "club_logo" : "logo-club"
+    },
+    "club_2": {
+      "club_name" : "name-club club2",
+      "club_logo" : "logo-club"
+    },
+    "scores": "soccer-scores",
+    "match_detail_link": "columns-detail"
+  }
+}

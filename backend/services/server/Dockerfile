@@ -11,8 +11,9 @@ EXPOSE 8080
 FROM alpine:3.16
 
 WORKDIR /app
-COPY --from=builder /app/main .
+COPY configs/*.json /app/configs/
 COPY app.env .
+COPY --from=builder /app/main .
 COPY wait-for.sh .
 
 CMD [ "/app/main" ]

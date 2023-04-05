@@ -1,14 +1,15 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/http"
 	"server/entities"
 	"server/handler"
 	"server/middlewares"
 	"server/routes"
 	"server/services"
-	"fmt"
-	"log"
-	"net/http"
+	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,7 @@ type EnvConfig struct {
 	ElasticsearchAddress string `mapstructure:"ELASTICSEARCH_ADDRESS"`
 	Port                 string `mapstructure:"PORT"`
 	CrawlerAddress       string `mapstructure:"CRAWLER_ADDRESS"`
+	JsonPath string `mapstructure:"JSON_PATH"`
 }
 
 func main() {
@@ -30,7 +32,7 @@ func main() {
 		log.Fatalln("cannot load env")
 	}
 	// load default config
-	classConfig, keywordsconfig, tagsConfig, err := readConfigFromJSON()
+	classConfig, leaguesconfig, tagsConfig, err := readConfigFromJSON(env.JsonPath)
 	if err != nil {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
@@ -45,21 +47,26 @@ func main() {
 
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
-	keywordsService := services.NewKeywordsService(keywordsconfig)
+	leaguesService := services.NewleaguesService(leaguesconfig)
 	tagsService := services.NewTagsService(tagsConfig)
-	articleService := services.NewArticleService(keywordsService, htmlClassesService, tagsService, conn, es)
+	articleService := services.NewArticleService(leaguesService, htmlClassesService, tagsService, conn, es)
+	schedulesService := services.NewScheduleOnDayService(conn, es)
 
 	tagsHandler := handler.NewTagsHandler(tagsService)
 	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
 
 	articleHandler := handler.NewArticleHandler(articleService)
 	articleRoute := routes.NewArticleRoutes(articleHandler)
+
+	schedulesHandler := handler.NewScheduleOnDayHandler(schedulesService)
 	// cronjob Setup
 
 	go func() {
 		cronjob := cron.New()
 
 		articleHandler.SignalToCrawler(cronjob)
+		schedulesHandler.SignalToCrawler(cronjob)
+
 		cronjob.Run()
 	}()
 
@@ -74,30 +81,30 @@ func main() {
 	r.Run(":8080")
 }
 
-func readConfigFromJSON() (entities.HtmlClasses, entities.Keywords, entities.Tags, error) {
+func readConfigFromJSON(JsonPath string) (entities.HtmlClasses, entities.Leagues, entities.Tags, error) {
 	var classConfig entities.HtmlClasses
-	var keywordsConfig entities.Keywords
+	var leaguesConfig entities.Leagues
 	var tagsConfig entities.Tags
 
-	classConfig, err := services.ReadHtmlClassJSON()
+	classConfig, err := services.ReadHtmlClassJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read htmlClassesConfig.json: ", err)
-		return classConfig, keywordsConfig, tagsConfig, err
+		return classConfig, leaguesConfig, tagsConfig, err
 	}
 
-	keywordsConfig, err = services.ReadKeywordsJSON()
+	leaguesConfig, err = services.ReadleaguesJSON(JsonPath)
 	if err != nil {
-		log.Println("Fail to read keywordsConfig.json: ", err)
-		return classConfig, keywordsConfig, tagsConfig, err
+		log.Println("Fail to read leaguesConfig.json: ", err)
+		return classConfig, leaguesConfig, tagsConfig, err
 	}
 
-	tagsConfig, err = services.ReadTagsJSON()
+	tagsConfig, err = services.ReadTagsJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read tagsConfig.json: ", err)
-		return classConfig, keywordsConfig, tagsConfig, err
+		return classConfig, leaguesConfig, tagsConfig, err
 	}
 
-	return classConfig, keywordsConfig, tagsConfig, nil
+	return classConfig, leaguesConfig, tagsConfig, nil
 }
 
 func loadEnv(path string) (env EnvConfig, err error) {
@@ -141,21 +148,25 @@ func connectToElasticsearch(env EnvConfig) (*elasticsearch.Client, error) {
 
 func createElaticsearchIndex(es *elasticsearch.Client) {
 	// check if index exist. if not exist, create new one, if exist, skip it
-	indexName := "articles"
-	exists, err := checkIndexExists(es, indexName)
-	if err != nil {
-		log.Printf("Error checking if the index %s exists: %s\n", indexName, err)
+	indexNames := []string{"articles", "scheduleonday"}
+	for _, indexName := range indexNames {
+		exists, err := checkIndexExists(es, indexName)
+		if err != nil {
+			log.Printf("Error checking if the index %s exists: %s\n", indexName, err)
+		}
+
+		if !exists {
+			log.Printf("Index: %s is not exist, create a new one...\n", indexName)
+			err = createIndex(es, indexName)
+			for err != nil {
+				log.Printf("Error createing index: %s, try again in 10 seconds\n", err)
+				time.Sleep(10 * time.Second)
+				err = createIndex(es, indexName)
+			}
+		}
+		log.Printf("Index: %s is already exist, skip it...\n", indexName)
 	}
 
-	if !exists {
-		log.Printf("Index: %s is not exist, create a new one...\n", indexName)
-		err = createIndex(es, indexName)
-		if err != nil {
-			log.Fatalf("Error createing index: %s", err)
-		}
-		return
-	}
-	log.Printf("Index: %s is already exist, skip it...\n", indexName)
 }
 
 func checkIndexExists(es *elasticsearch.Client, indexName string) (bool, error) {

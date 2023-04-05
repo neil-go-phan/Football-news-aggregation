@@ -1,61 +1,18 @@
-package crawl
+package helpers
 
 import (
+	"crawler/entities"
 	"fmt"
+	"io"
 	"log"
-	"net/http"
+	"os"
 	"regexp"
 	"strings"
 
-	"github.com/PuerkitoBio/goquery"
+	jsoniter "github.com/json-iterator/go"
 )
 
-type HtmlArticleClass struct {
-	ArticleClass     string
-	TitleClass       string
-	DescriptionClass string
-	LinkClass        string
-}
-
-type Article struct {
-	Title       string
-	Description string
-	Link        string
-}
-
-func CrawlPage(url string, page int, htmlClasses HtmlArticleClass) ([]Article, error) {
-	var articles []Article
-	
-	req, err := http.NewRequest("GET", fmt.Sprintf(`%s&start=%d0`, url, page), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	doc.Find(formatClassName(htmlClasses.ArticleClass)).Each(func(i int, s *goquery.Selection) {
-		var article Article
-		article.Title = s.Find(formatClassName(htmlClasses.TitleClass)).Text()
-		article.Description = s.Find(formatClassName(htmlClasses.DescriptionClass)).Text()
-		article.Link, _ = s.Find(formatClassName(htmlClasses.LinkClass)).Attr("href")
-		articles = append(articles, article)
-	})
-	return articles, nil
-}
-
-
-func formatClassName(class string) string {
+func FormatClassName(class string) string {
 	var classes string
 	hashParts := strings.Split(class, " ")
 	for _, s := range hashParts {
@@ -64,7 +21,7 @@ func formatClassName(class string) string {
 	return classes
 }
 
-func FormatKeywords(keyword string) string {
+func FormatToSearch(keyword string) string {
 	var Regexp_A = `à|á|ạ|ã|ả|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ`
 	var Regexp_E = `è|ẻ|ẽ|é|ẹ|ê|ề|ể|ễ|ế|ệ`
 	var Regexp_I = `ì|ỉ|ĩ|í|ị`
@@ -94,4 +51,37 @@ func FormatKeywords(keyword string) string {
 
 	keyword = strings.ToLower(keyword)
 	return strings.Replace(keyword, " ", "+", -1)
+}
+
+func FormatDate(date string) string {
+	dataPart := strings.Split(date, ",")
+	return strings.TrimSpace(dataPart[1]) 
+}
+
+func ReadHtmlClassScheduleJSON() (entities.HtmlSchedulesClass, error){
+	var classes entities.HtmlSchedulesClass
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	env, err := LoadEnv(".")
+	if err != nil {
+		log.Fatalln("cannot load env: ", err)
+	}
+	classesJson, err := os.Open(fmt.Sprintf("%shtmlSchedulesClass.json", env.JsonPath))
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+	defer classesJson.Close()
+
+	classesByte, err := io.ReadAll(classesJson)
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+
+	err = json.Unmarshal(classesByte, &classes)
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+	return classes, nil
 }

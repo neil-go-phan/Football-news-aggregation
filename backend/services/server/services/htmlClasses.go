@@ -1,10 +1,11 @@
 package services
 
 import (
-	"server/entities"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"server/entities"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -20,11 +21,11 @@ func NewHtmlClassesService(htmlClassesInput entities.HtmlClasses) *htmlClassesSe
 	return htmlClasses
 }
 
-func ReadHtmlClassJSON() (entities.HtmlClasses, error){
+func ReadHtmlClassJSON(jsonPath string) (entities.HtmlClasses, error){
 	var classConfig entities.HtmlClasses
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-	classConfigJson, err := os.Open("configs/htmlClassesConfig.json")
+	classConfigJson, err := os.Open(fmt.Sprintf("%shtmlClassesConfig.json", jsonPath))
 	if err != nil {
 		log.Println(err)
 		return classConfig, err
