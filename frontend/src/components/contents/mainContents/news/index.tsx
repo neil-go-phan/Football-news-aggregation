@@ -1,6 +1,5 @@
-
 import axiosClient from '@/helpers/axiosClient';
-import React, {  useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import Article, { ArticleType } from './article';
 import SearchBar from './searchBar';
@@ -15,31 +14,30 @@ export default function News() {
     const requestArticle = async () => {
       try {
         const { data } = await axiosClient.get('article/search-all', {
-          params: { search_type:"scan", scroll: "10m", size: 20},
+          params: { search_type: 'scan', scroll: '10m', size: 20 },
         });
-        setArticles(data.articles)
+        setArticles(data.articles);
       } catch (error) {
         toast.error(`Error occurred while get articles`, {
-          position: "top-right",
+          position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          theme: "light",
-          });
+          theme: 'light',
+        });
       }
     };
-    
-    requestArticle()
-  }, [])
-  
+
+    requestArticle();
+  }, []);
 
   return (
     <div className="news px-2">
       <div className="news__searchBar px-3">
-        <SearchBar handleSearch={handleSearch}/>
+        <SearchBar handleSearch={handleSearch} />
       </div>
 
       <div className="news__articles px-4">

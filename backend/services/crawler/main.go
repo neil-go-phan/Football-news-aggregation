@@ -1,10 +1,16 @@
 package main
 
 import (
-	"crawler/grpcServer"
+	"crawler/handlers"
+	"crawler/helpers"
+	"log"
 )
 
-
 func main() {
-	grpcserver.GRPCServer()
+	env, err := helpers.LoadEnv(".")
+	if err != nil {
+		log.Fatalln("cannot load env: ", err)
+	}
+	handlers.GRPCServer(env.GRPCPort)
 }
+

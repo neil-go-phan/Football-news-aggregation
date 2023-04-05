@@ -1,11 +1,13 @@
 package services
 
 import (
-	jsoniter "github.com/json-iterator/go"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"server/entities"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 type tagsService struct {
@@ -20,11 +22,11 @@ func NewTagsService(tags entities.Tags) *tagsService{
 }
 
 
-func ReadTagsJSON() (entities.Tags, error){
+func ReadTagsJSON(jsonPath string) (entities.Tags, error){
 	var tagsConfig entities.Tags
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-	tagsConfigJson, err := os.Open("configs/tagsConfig.json")
+	tagsConfigJson, err := os.Open(fmt.Sprintf("%stagsConfig.json", jsonPath))
 	if err != nil {
 		log.Println(err)
 		return tagsConfig, err

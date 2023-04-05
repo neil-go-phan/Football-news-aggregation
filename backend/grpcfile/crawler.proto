@@ -1,0 +1,127 @@
+syntax = "proto3";
+option go_package="github.com/neil-go-phan/Football-news-aggregation/backend/grpcfile";
+
+package crawlerproto;
+
+service CrawlerService {
+  rpc GetArticles(AllConfigsArticles) returns (stream ArticlesReponse) {}
+  rpc GetSchedulesOnDay(Date) returns (SchedulesReponse) {}
+  rpc GetMatchDetail(MatchURLs) returns (stream MatchDetail) {}
+}
+
+message HTMLClasses {
+  string article_class = 1;
+  string article_title_class = 2;
+  string article_description_class = 3;
+  string article_link_class = 4;
+}
+
+// The request message containing leagues and html class
+message AllConfigsArticles {
+  repeated string leagues = 1;
+  HTMLClasses html_classes = 2;
+}
+
+message Article {
+	string title        = 1;
+	string description =2;
+	string link        =3;
+}
+// The response message containing the articles
+message ArticlesReponse {
+  string league = 1;
+  repeated Article articles = 2;
+} 
+
+message SchedulesInMonthReponse {
+  string Month = 1;
+  repeated SchedulesReponse SchedulesOnDay = 2;
+} 
+
+message SchedulesReponse {
+  string DateWithWeekday = 1;
+  repeated ScheduleOnLeague ScheduleOnLeagues = 2;
+} 
+
+message ScheduleOnLeague {
+  string LeagueName = 1;
+  repeated Match Matchs = 2;
+} 
+
+message Match {
+  string Time = 1;
+  string Round = 2;
+  Club Club1 = 3;
+  Club Club2 = 4;
+  string Scores = 6;
+  string MatchDetailLink = 7;
+} 
+
+message Club {
+  string Name = 1;
+  string Logo = 2;
+} 
+
+
+message MatchDetail {
+	string ID =1;
+	MatchDetailTitle MatchDetailTitle =2;
+	MatchOverview MatchOverview =3;
+	MatchStatistics MatchStatistics =4;
+	MatchLineup MatchLineup=5;
+	MatchProgress MatchProgress =6;
+}
+
+message MatchDetailTitle {
+	Club Club1 =1;
+	Club Club2 =2;
+	string MatchScore =3;
+}
+
+message MatchOverview {
+  repeated OverviewItem Club1Overview = 1;
+  repeated OverviewItem Club2Overview = 2;
+}
+
+message OverviewItem {
+	string Info =1;
+	string ImageType =2;
+	string Time =3;
+}
+
+message MatchStatistics {
+	string Title  =1;
+  repeated StatisticsItem Statistics = 2;
+}
+
+message StatisticsItem {
+	string StatClub1  =1;
+	string StatContent =2;
+	string StatClub2  =3;
+}
+
+message MatchProgress {
+	string Title =1;
+  repeated MatchEvent Events = 2;
+}
+message MatchEvent {
+	string Time =1;
+	string Content=2; 
+}
+
+message MatchLineup {
+	string Title =1;
+	string LineupClub1=2; 
+	string DetailClub1 =3;
+	string LineupClub2 =4;
+	string DetailClub2 =5;
+}
+
+message Date {
+  string Date = 1;
+}
+
+message MatchURLs {
+  repeated string url = 1;
+}
+

@@ -10,7 +10,7 @@ import (
 	"log"
 	"strings"
 
-	pb "grpcfile"
+	pb "server/proto"
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
@@ -20,21 +20,21 @@ import (
 )
 
 var PREV_ARTICLES = make(map[string]bool)
-var INDEX_NAME = "articles"
+var ARTICLES_INDEX_NAME = "articles"
 type articleService struct {
 	conn               *grpc.ClientConn
 	es                 *elasticsearch.Client
 	htmlClassesService *htmlClassesService
-	keywordsService    *keywordsService
+	leaguesService    *leaguesService
 	tagsService        *tagsService
 }
 
-func NewArticleService(keywords *keywordsService, htmlClass *htmlClassesService, tags *tagsService, conn *grpc.ClientConn, es *elasticsearch.Client) *articleService {
+func NewArticleService(leagues *leaguesService, htmlClass *htmlClassesService, tags *tagsService, conn *grpc.ClientConn, es *elasticsearch.Client) *articleService {
 	articleService := &articleService{
 		conn:               conn,
 		es:                 es,
 		htmlClassesService: htmlClass,
-		keywordsService:    keywords,
+		leaguesService:    leagues,
 		tagsService:        tags,
 	}
 	return articleService
@@ -70,11 +70,11 @@ func (s *articleService)FrontendSearchArticlesTagsAndKeyword(keyword string, for
 
 	if len(filterQueries) != 0 && keyword != "" {
 		// search with both tags and keyword
-		query = queryWithBothTagAndKeywords(keyword, filterQueries)
+		query = queryWithBothTagAndKeyword(keyword, filterQueries)
 	}
 
 	json.NewEncoder(&buffer).Encode(query)
-	resp, err := s.es.Search(s.es.Search.WithIndex(INDEX_NAME), s.es.Search.WithBody(&buffer))
+	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
 	if err != nil {
 		return articles, fmt.Errorf("request to elastic search fail")
 	}
@@ -96,7 +96,7 @@ func (s *articleService)FrontendSearchAll(search_type string, scroll string, siz
 	query := querySearchAll()
 
 	json.NewEncoder(&buffer).Encode(query)
-	resp, err := s.es.Search(s.es.Search.WithIndex(INDEX_NAME), s.es.Search.WithBody(&buffer))
+	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
 	if err != nil {
 		return articles, fmt.Errorf("request to elastic search fail")
 	}
@@ -150,7 +150,7 @@ func queryWithOnlyTag(filterQueries []map[string]interface{}) map[string]interfa
 	return query
 }
 
-func queryWithBothTagAndKeywords(keyword string, filterQueries []map[string]interface{}) map[string]interface{}{
+func queryWithBothTagAndKeyword(keyword string, filterQueries []map[string]interface{}) map[string]interface{}{
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -173,16 +173,16 @@ func queryWithBothTagAndKeywords(keyword string, filterQueries []map[string]inte
 
 // GetArticles request crawler to scrapt data and sync new data with redis and elastic search
 func (s *articleService) GetArticles() {
-	client := pb.NewArticleServiceClient(s.conn)
+	client := pb.NewCrawlerServiceClient(s.conn)
 
-	in := &pb.AllConfigs{
+	in := &pb.AllConfigsArticles{
 		HtmlClasses: &pb.HTMLClasses{
 			ArticleClass:     s.htmlClassesService.HtmlClasses.ArticleClass,
-			TitleClass:       s.htmlClassesService.HtmlClasses.TitleClass,
-			DescriptionClass: s.htmlClassesService.HtmlClasses.DescriptionClass,
-			LinkClass:        s.htmlClassesService.HtmlClasses.LinkClass,
+			ArticleTitleClass:       s.htmlClassesService.HtmlClasses.ArticleTitleClass,
+			ArticleDescriptionClass: s.htmlClassesService.HtmlClasses.ArticleDescriptionClass,
+			ArticleLinkClass:        s.htmlClassesService.HtmlClasses.ArticleLinkClass,
 		},
-		Keywords: s.keywordsService.Keywords.Keywords,
+		Leagues: s.leaguesService.leagues.Leagues,
 	}
 	// send gRPC request to crawler
 	stream, err := client.GetArticles(context.Background(), in)
@@ -199,12 +199,12 @@ func (s *articleService) GetArticles() {
 		for {
 			resp, err := stream.Recv()
 
-			keyword := resp.GetKeyword()
+			league := resp.GetLeague()
 
 			respArticles := resp.GetArticles()
 			tags := s.tagsService.Tags.Tags
 
-			checkSimilarArticles(respArticles, s.es, keyword, tags)
+			checkSimilarArticles(respArticles, s.es, league, tags)
 
 			saveToMapSearchResult(respArticles, mapSearchResult)
 
@@ -226,7 +226,7 @@ func (s *articleService) GetArticles() {
 // Nếu gửi từng bài bào lên elastic check thì mỗi lần tìm sẽ gửi vài ngàn request
 // C1: Server lưu kết quả cào ở lần trước đó, sau đó lấy kết quả mới so sánh với cũ, nếu có bài báo nào mới thì sẽ check lại với elasticsearch. Elasticsearch chưa có thì thêm vào
 
-func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, keyword string, tags []string) {
+func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, league string, tags []string) {
 
 	// Condition: similar title
 	for _, article := range respArticles {
@@ -242,7 +242,7 @@ func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, 
 		if !ok {
 			exist := checkWithElasticSearch(article, es)
 			if !exist {
-				entityArticle := newEntitiesArticleFromPb(article, tags, keyword)
+				entityArticle := newEntitiesArticleFromPb(article, tags, league)
 				storeElasticsearch(entityArticle, es)
 			}
 			// checkWithRedis(article)
@@ -299,8 +299,8 @@ func newEntitiesArticleFromMap(respArticle map[string]interface{}) entities.Arti
 	return article
 }
 
-func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string, keyword string) entities.Article {
-	articleTags := checkTags(respArticle, tags, keyword)
+func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string, league string) entities.Article {
+	articleTags := checkTags(respArticle, tags, league)
 
 	article := entities.Article{
 		Title:       respArticle.Title,

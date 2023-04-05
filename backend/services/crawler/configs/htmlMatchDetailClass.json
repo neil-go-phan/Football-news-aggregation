@@ -1,0 +1,44 @@
+{
+  "match_detail_title": {
+    "class": "live-result fixs_ticky1",
+    "match_score_id" :"match-score",
+    "club_1": {
+      "club_name" : "logo-thumb1",
+      "club_logo" : "name-clb1"
+    },
+    "club_2": {
+      "club_name" : "logo-thumb2",
+      "club_logo" : "name-clb2"
+    }
+  },
+  "match_overview": {
+    "id": "sec1",
+    "club_1_overview": {
+      "img_time": "ic-the"
+    },
+    "club_2_overview": {
+      "img_time": "ic-the"
+    }
+  },
+  "match_statistics" : {
+    "id": "sec5",
+    "title": "h2",
+    "item": {
+      "class": "statistics-item",
+      "stat_club1": "statistics_number1",
+      "stat_content": "statistics_text",
+      "stat_club2": "statistics_number2 bgnumber2"
+    }
+  },
+  "match_lineup" : {
+    "title_id": "sec3",
+    "lineup":"strong",
+    "detail":"span"
+  },
+  "match_progress":{
+    "id": "sec2",
+    "title": "title-die",
+    "event_time": "time-die",
+    "event_content": "the-article-content"
+  }
+}

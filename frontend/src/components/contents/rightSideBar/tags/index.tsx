@@ -1,5 +1,6 @@
 import axiosClient from '@/helpers/axiosClient';
 import React, { FunctionComponent, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import Tag from '../../../../common/tag';
 
 interface Props {}
@@ -11,7 +12,21 @@ const Tags: FunctionComponent<Props> = (props: Props) => {
       try {
         const { data } = await axiosClient.get('tags/list');
         setTags(data.tags.tags);
-      } catch (error) {}
+      } catch (error) {
+        toast.error(
+          `Error occurred while geting tags`,
+          {
+            position: 'top-right',
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'light',
+          }
+        );
+      }
     };
     getTags();
   }, []);

@@ -11,6 +11,8 @@ EXPOSE 8000
 FROM alpine:3.16
 
 WORKDIR /app
+COPY configs/*.json /app/configs/
+COPY app.env .
 COPY --from=builder /app/main .
 
 CMD [ "/app/main" ]
