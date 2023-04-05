@@ -28,11 +28,10 @@ func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 	keyword := c.Query("q")
 	tags := c.Query("tags")
 	formatedTags := helper.FortmatTagsFromRequest(tags)
-	// TODO: check if index is valid
 
 	// request to elasticsearch
 	keyword= strings.TrimSpace(keyword)
-	articles, err := articleHandler.handler.FrontendSearchArticlesTagsAndKeyword(keyword, formatedTags)
+	articles, err := articleHandler.handler.APISearchArticlesTagsAndKeyword(keyword, formatedTags)
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, "articles", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
@@ -45,7 +44,7 @@ func (articleHandler *ArticleHandler) GetAllFromElastic(c *gin.Context) {
 	scroll := c.Query("scroll")
 	size := c.Query("size")
 
-	articles, err := articleHandler.handler.FrontendSearchAll(search_type, scroll, size)
+	articles, err := articleHandler.handler.APISearchAll(search_type, scroll, size)
 	if err != nil {
 		log.Printf("error occurred while services layer try to get all article from eslaticsearch err: %v\n", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})

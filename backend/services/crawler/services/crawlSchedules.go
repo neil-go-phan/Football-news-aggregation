@@ -65,7 +65,6 @@ func CrawlSchedules(date string) (entities.ScheduleOnDay, error) {
 			match.Club2.Name = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Text()
 			match.Club1.Logo, _ = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Logo)).Attr("src")
 			match.Club2.Logo, _ = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
-			fmt.Println(match.MatchDetailLink)
 			schedule.Matchs = append(schedule.Matchs, match)
 		})
 
