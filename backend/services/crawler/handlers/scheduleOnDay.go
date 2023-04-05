@@ -13,7 +13,7 @@ import (
 
 func (s *gRPCServer) GetSchedulesOnDay(ctx context.Context, date *pb.Date) (*pb.SchedulesReponse, error) {
 
-	log.Println("Start scrapt schedule")
+	log.Println("Start scrapt schedule on date", date.GetDate())
 
 	schedules, err := crawlSchedulesAndStreamResult(date)
 	if err != nil {
@@ -31,8 +31,6 @@ func crawlSchedulesAndStreamResult(date *pb.Date) (*pb.SchedulesReponse, error) 
 		log.Println("Date is invalid")
 		return nil, fmt.Errorf("date %s is invalid", dateIn)
 	}
-
-	log.Println("Date: ", dateIn)
 
 	schedulesCrawl, err := services.CrawlSchedules(dateIn)
 	if err != nil {

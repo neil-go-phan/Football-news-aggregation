@@ -2,7 +2,7 @@ package services
 
 import (
 	"server/entities"
-
+	"time"
 	// "github.com/robfig/cron/v3"
 )
 
@@ -19,11 +19,12 @@ type TagsServices interface {
 }
 
 type ArticleServices interface {
-	FrontendSearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article ,error)
-	FrontendSearchAll(search_type string, scroll string, size string) ([]entities.Article ,error)
+	APISearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article ,error)
+	APISearchAll(search_type string, scroll string, size string) ([]entities.Article ,error)
 	GetArticles()
 }
 
-type ScheduleOnDayServices interface {
+type SchedulesServices interface {
+	APIGetScheduleOnDay(date time.Time) (entities.ScheduleOnDay, error)
 	GetSchedules()
 }

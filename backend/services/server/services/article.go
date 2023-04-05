@@ -40,7 +40,7 @@ func NewArticleService(leagues *leaguesService, htmlClass *htmlClassesService, t
 	return articleService
 }
 
-func (s *articleService)FrontendSearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article, error) {
+func (s *articleService)APISearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
@@ -56,21 +56,21 @@ func (s *articleService)FrontendSearchArticlesTagsAndKeyword(keyword string, for
 	}
 
 	// default is search all 
-	query := querySearchAll()
+	query := querySearchAllArticles()
 
 	if len(filterQueries) == 0 && keyword != "" {
 		// search with only keyword
-		query = queryWithOnlySearchKeyword(keyword)
+		query = querySearchArticlesOnlySearchKeyword(keyword)
 	}
 
 	if len(filterQueries) != 0 && keyword == "" {
 		// search with only tags
-		query = queryWithOnlyTag(filterQueries)
+		query = querySearchArticlesOnlyTag(filterQueries)
 	}
 
 	if len(filterQueries) != 0 && keyword != "" {
 		// search with both tags and keyword
-		query = queryWithBothTagAndKeyword(keyword, filterQueries)
+		query = querySearchArticlesBothTagAndKeyword(keyword, filterQueries)
 	}
 
 	json.NewEncoder(&buffer).Encode(query)
@@ -88,12 +88,12 @@ func (s *articleService)FrontendSearchArticlesTagsAndKeyword(keyword string, for
 	return articles, nil
 }
 
-func (s *articleService)FrontendSearchAll(search_type string, scroll string, size string) ([]entities.Article ,error) {
+func (s *articleService)APISearchAll(search_type string, scroll string, size string) ([]entities.Article ,error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
 
-	query := querySearchAll()
+	query := querySearchAllArticles()
 
 	json.NewEncoder(&buffer).Encode(query)
 	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
@@ -110,7 +110,7 @@ func (s *articleService)FrontendSearchAll(search_type string, scroll string, siz
 	return articles, nil
 }
 
-func querySearchAll() map[string]interface{} {
+func querySearchAllArticles() map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"match_all" : map[string]interface{}{},
@@ -119,7 +119,7 @@ func querySearchAll() map[string]interface{} {
 	return query
 }
 
-func queryWithOnlySearchKeyword(keyword string) map[string]interface{}{
+func querySearchArticlesOnlySearchKeyword(keyword string) map[string]interface{}{
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -135,7 +135,7 @@ func queryWithOnlySearchKeyword(keyword string) map[string]interface{}{
 	return query
 }
 
-func queryWithOnlyTag(filterQueries []map[string]interface{}) map[string]interface{}{
+func querySearchArticlesOnlyTag(filterQueries []map[string]interface{}) map[string]interface{}{
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -150,7 +150,7 @@ func queryWithOnlyTag(filterQueries []map[string]interface{}) map[string]interfa
 	return query
 }
 
-func queryWithBothTagAndKeyword(keyword string, filterQueries []map[string]interface{}) map[string]interface{}{
+func querySearchArticlesBothTagAndKeyword(keyword string, filterQueries []map[string]interface{}) map[string]interface{}{
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -240,19 +240,19 @@ func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, 
 		// check if it exist in previous results
 		_, ok := PREV_ARTICLES[article.Title]
 		if !ok {
-			exist := checkWithElasticSearch(article, es)
+			exist := checkArtilceWithElasticSearch(article, es)
 			if !exist {
 				entityArticle := newEntitiesArticleFromPb(article, tags, league)
-				storeElasticsearch(entityArticle, es)
+				storeArticleInElasticsearch(entityArticle, es)
 			}
 			// checkWithRedis(article)
 		}
 	}
 }
 
-func checkWithElasticSearch(article *pb.Article, es *elasticsearch.Client) bool {
+func checkArtilceWithElasticSearch(article *pb.Article, es *elasticsearch.Client) bool {
 	req := esapi.ExistsRequest{
-		Index:      "articles",
+		Index:      ARTICLES_INDEX_NAME,
 		DocumentID: strings.ToLower(article.Title),
 	}
 
@@ -264,10 +264,10 @@ func checkWithElasticSearch(article *pb.Article, es *elasticsearch.Client) bool 
 
 	status := resp.StatusCode
 	if status == 200 {
-		log.Println("Document already exist in elastic search")
+		log.Println("Document already exist in index", ARTICLES_INDEX_NAME)
 		return true
 	} else if status == 404 {
-		log.Println("Document not found, creating new one...")
+		log.Printf("Document not found in index %s, creating new one...", ARTICLES_INDEX_NAME)
 		return false
 	}
 
@@ -311,7 +311,7 @@ func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string, league str
 	return article
 }
 
-func storeElasticsearch(article entities.Article, es *elasticsearch.Client) {
+func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Client) {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	body, err := json.Marshal(article)
@@ -320,7 +320,7 @@ func storeElasticsearch(article entities.Article, es *elasticsearch.Client) {
 	}
 
 	req := esapi.IndexRequest{
-		Index:      "articles",
+		Index:      ARTICLES_INDEX_NAME,
 		DocumentID: strings.ToLower(article.Title),
 		Body:       strings.NewReader(string(body)),
 		Refresh:    "true",
@@ -335,7 +335,7 @@ func storeElasticsearch(article entities.Article, es *elasticsearch.Client) {
 	if res.IsError() {
 		log.Printf("[%s] Error indexing document\n", res.Status())
 	} else {
-		log.Printf("[%s] Indexed document with index: %s \n", res.Status(), "articles")
+		log.Printf("[%s] Indexed document with index: %s \n", res.Status(), ARTICLES_INDEX_NAME)
 	}
 }
 

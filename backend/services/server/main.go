@@ -19,6 +19,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var ELASTIC_SEARCH_INDEXES = []string{services.ARTICLES_INDEX_NAME, services.SCHEDULE_INDEX_NAME}
+
 type EnvConfig struct {
 	ElasticsearchAddress string `mapstructure:"ELASTICSEARCH_ADDRESS"`
 	Port                 string `mapstructure:"PORT"`
@@ -50,7 +52,8 @@ func main() {
 	leaguesService := services.NewleaguesService(leaguesconfig)
 	tagsService := services.NewTagsService(tagsConfig)
 	articleService := services.NewArticleService(leaguesService, htmlClassesService, tagsService, conn, es)
-	schedulesService := services.NewScheduleOnDayService(conn, es)
+	schedulesService := services.NewSchedulesService(conn, es)
+
 
 	tagsHandler := handler.NewTagsHandler(tagsService)
 	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
@@ -58,7 +61,8 @@ func main() {
 	articleHandler := handler.NewArticleHandler(articleService)
 	articleRoute := routes.NewArticleRoutes(articleHandler)
 
-	schedulesHandler := handler.NewScheduleOnDayHandler(schedulesService)
+	schedulesHandler := handler.NewSchedulesHandler(schedulesService)
+	schedulesRoute := routes.NewScheduleRoutes(schedulesHandler)
 	// cronjob Setup
 
 	go func() {
@@ -77,6 +81,7 @@ func main() {
 
 	tagsRoutes.Setup(r)
 	articleRoute.Setup(r)
+	schedulesRoute.Setup(r)
 
 	r.Run(":8080")
 }
@@ -148,8 +153,7 @@ func connectToElasticsearch(env EnvConfig) (*elasticsearch.Client, error) {
 
 func createElaticsearchIndex(es *elasticsearch.Client) {
 	// check if index exist. if not exist, create new one, if exist, skip it
-	indexNames := []string{"articles", "scheduleonday"}
-	for _, indexName := range indexNames {
+	for _, indexName := range ELASTIC_SEARCH_INDEXES {
 		exists, err := checkIndexExists(es, indexName)
 		if err != nil {
 			log.Printf("Error checking if the index %s exists: %s\n", indexName, err)
