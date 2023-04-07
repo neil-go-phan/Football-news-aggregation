@@ -17,7 +17,7 @@ type HtmlMatchClass struct {
 }
 
 type ScheduleOnDay struct {
-	DateWithWeekday   string             `json:"date_with_weekday"`
+	Date   string             `json:"date"`
 	ScheduleOnLeagues []ScheduleOnLeague `json:"schedule_on_leagues"`
 }
 

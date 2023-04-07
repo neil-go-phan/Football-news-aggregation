@@ -23,15 +23,14 @@ func NewSchedulesHandler(handler services.SchedulesServices) *ScheduleHandler {
 	return schedulesHandler
 }
 
-func (schedulesHandler *ScheduleHandler)SignalToCrawler(cronjob *cron.Cron) {
-	schedulesHandler.handler.GetSchedules()
-	_, err := cronjob.AddFunc("0 0 * * *", func() { schedulesHandler.handler.GetSchedules() })
+func (schedulesHandler *ScheduleHandler) SignalToCrawler(cronjob *cron.Cron) {
+	_, err := cronjob.AddFunc("0 0 * * *", func() { schedulesHandler.handler.GetSchedules(time.Now().Format("02-01-2006")) })
 	if err != nil {
 		log.Println("error occurred while seting up getSchedules cronjob: ", err)
 	}
 }
 
-func (schedulesHandler *ScheduleHandler)APIGetScheduleOnDay(c *gin.Context) {
+func (schedulesHandler *ScheduleHandler) APIGetScheduleOnDay(c *gin.Context) {
 	dateString := c.Query("date")
 	date, err := time.Parse(DATE_LAYOUT, dateString)
 	if err != nil {

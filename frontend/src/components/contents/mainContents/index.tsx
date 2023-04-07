@@ -19,7 +19,6 @@ export default function MainContents() {
       <Tab
         eventKey="schedule"
         title="Lịch thi đấu"
-        disabled={router.asPath === _ROUTES.NEWS_PAGE ? true : false}
       >
         <Schedule />
       </Tab>

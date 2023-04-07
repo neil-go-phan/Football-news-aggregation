@@ -8,6 +8,7 @@ import (
 	"server/entities"
 	pb "server/proto"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/esapi"
@@ -19,22 +20,24 @@ import (
 var SCHEDULE_INDEX_NAME = "schedules"
 
 type schedulesService struct {
-	conn *grpc.ClientConn
-	es   *elasticsearch.Client
+	conn           *grpc.ClientConn
+	es             *elasticsearch.Client
+	leaguesService *leaguesService
+	tagsService    *tagsService
 }
 
-func NewSchedulesService(conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesService {
+func NewSchedulesService(leagues *leaguesService, tags *tagsService, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesService {
 	schedulesService := &schedulesService{
-		conn: conn,
-		es:   es,
+		conn:           conn,
+		es:             es,
+		leaguesService: leagues,
+		tagsService:    tags,
 	}
 	return schedulesService
 }
 
-func (s *schedulesService) GetSchedules() {
+func (s *schedulesService) GetSchedules(date string) {
 	client := pb.NewCrawlerServiceClient(s.conn)
-
-	date := time.Now().Format("02-01-2006")
 
 	in := &pb.Date{
 		Date: date,
@@ -46,17 +49,42 @@ func (s *schedulesService) GetSchedules() {
 		return
 	}
 	// store schedule in elastic search
+	var wg sync.WaitGroup
 	elasticSchedules := PbSchedulesToScheduleElastic(pbSchedules)
-	for _,schedule := range elasticSchedules {
-		exist := checkScheduleWithElasticSearch(schedule, s.es)
-		if !exist {
-			storeScheduleElasticsearch(schedule, s.es)
-		}
-		
+	for _, schedule := range elasticSchedules {
+		wg.Add(1)
+		go func(schedule entities.ScheduleElastic) {
+			defer wg.Done()
+			exist := checkScheduleWithElasticSearch(schedule, s.es)
+			if !exist {
+				storeScheduleElasticsearch(schedule, s.es)
+				// auto store new league
+				isNewLeague := s.storeNewLeague(schedule.LeagueName)
+				if isNewLeague {
+					log.Println("detect a new league: ", schedule.LeagueName)
+					err = s.leaguesService.WriteLeaguesJSON()
+					if err != nil {
+						log.Println("error occurred while overwrite leagueConfig.JSON:", err)
+					}
+				}
+				// auto store new tags
+				// isNewTag := s.storeNewTag(schedule.LeagueName)
+				// if isNewTag {
+				// 	log.Println("detect a new tag: ", helper.FormatVietnamese(schedule.LeagueName))
+				// 	err = s.tagsService.WriteTagsJSON()
+				// 	if err != nil {
+				// 		log.Println("error occurred while overwrite tagConfigs.JSON:", err)
+				// 	}
+				// }
+			}
+
+		}(schedule)
+
 	}
+	wg.Wait()
 }
 
-func (s *schedulesService)APIGetScheduleOnDay(date time.Time) (entities.ScheduleOnDay, error){
+func (s *schedulesService) APIGetScheduleOnDay(date time.Time) (entities.ScheduleOnDay, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	var scheduleOnDay entities.ScheduleOnDay
 	var buffer bytes.Buffer
@@ -78,7 +106,9 @@ func (s *schedulesService)APIGetScheduleOnDay(date time.Time) (entities.Schedule
 
 		scheduleOnLeague := hit.(map[string]interface{})["_source"].(map[string]interface{})
 
-		scheduleOnDay.ScheduleOnLeagues = append(scheduleOnDay.ScheduleOnLeagues, newEntitiesScheduleOnLeaguesFromMap(scheduleOnLeague))
+		entityScheduleOnDay := newEntitiesScheduleOnLeaguesFromMap(scheduleOnLeague)
+		scheduleOnDay.ScheduleOnLeagues = append(scheduleOnDay.ScheduleOnLeagues, entityScheduleOnDay)
+
 	}
 	return scheduleOnDay, nil
 }
@@ -89,7 +119,7 @@ func querySearchScheduleOnDay(dateISO8601 time.Time) map[string]interface{} {
 			"bool": map[string]interface{}{
 				"must": map[string]interface{}{
 					"match": map[string]interface{}{
-						"date":  dateISO8601,
+						"date": dateISO8601,
 					},
 				},
 			},
@@ -98,40 +128,12 @@ func querySearchScheduleOnDay(dateISO8601 time.Time) map[string]interface{} {
 	return query
 }
 
-func newEntitiesScheduleOnLeaguesFromMap(respScheduleOnLeague map[string]interface{}) entities.ScheduleOnLeague {
-	// type assertion []interface{} to []interface {}
-	matchsInterface := respScheduleOnLeague["matchs"].([]interface{})
-	
-	matchs := make([]entities.Match, len(matchsInterface))
-	for i, matchInterface := range matchsInterface {
-		matchParse := matchInterface.(map[string]interface {})
-		matchs[i].Time = matchParse["time"].(string)
-		matchs[i].Round = matchParse["round"].(string)
-		matchs[i].Scores = matchParse["scores"].(string)
-		matchs[i].MatchDetailLink = matchParse["match_detail_id"].(string)
-		matchs[i].Scores = matchParse["scores"].(string)
-
-		club1 := matchParse["club_1"].(map[string]interface {})
-		club2 := matchParse["club_2"].(map[string]interface {})
-		matchs[i].Club1.Name = club1["name"].(string)
-		matchs[i].Club1.Logo = club1["logo"].(string)
-		matchs[i].Club2.Name = club2["name"].(string)
-		matchs[i].Club1.Logo = club1["logo"].(string)
-	}
-	scheduleOnLeague := entities.ScheduleOnLeague{
-		LeagueName: respScheduleOnLeague["league_name"].(string),
-		Matchs: matchs,
-	}
-	return scheduleOnLeague
-}
-
-
 func checkScheduleWithElasticSearch(schedule entities.ScheduleElastic, es *elasticsearch.Client) bool {
 	req := esapi.ExistsRequest{
 		Index:      SCHEDULE_INDEX_NAME,
 		DocumentID: strings.ToLower(fmt.Sprintf("$DATE=%s,$LEAGUE=%s", schedule.Date.Format("02-01-2006"), schedule.LeagueName)),
 	}
-
+	
 	resp, err := req.Do(context.Background(), es)
 	if err != nil {
 		log.Printf("Error checking if document exists: %s\n", err)
@@ -140,7 +142,7 @@ func checkScheduleWithElasticSearch(schedule entities.ScheduleElastic, es *elast
 
 	status := resp.StatusCode
 	if status == 200 {
-		log.Println("Document already exist in index", SCHEDULE_INDEX_NAME)
+		log.Println("Document already exist in index", strings.ToLower(fmt.Sprintf("$DATE=%s,$LEAGUE=%s", schedule.Date.Format("02-01-2006"), schedule.LeagueName)))
 		return true
 	} else if status == 404 {
 		log.Printf("Document not found in index %s, creating new one...", SCHEDULE_INDEX_NAME)
@@ -157,7 +159,6 @@ func storeScheduleElasticsearch(schedule entities.ScheduleElastic, es *elasticse
 	if err != nil {
 		log.Printf("Error encoding schedule: %s\n", err)
 	}
-
 	req := esapi.IndexRequest{
 		Index:      SCHEDULE_INDEX_NAME,
 		DocumentID: strings.ToLower(fmt.Sprintf("$DATE=%s,$LEAGUE=%s", schedule.Date.Format("02-01-2006"), schedule.LeagueName)),
@@ -178,28 +179,61 @@ func storeScheduleElasticsearch(schedule entities.ScheduleElastic, es *elasticse
 	}
 }
 
+func (s *schedulesService) storeNewLeague(newLeague string) bool {
+	// detect new league
+	if newLeague == "" {
+		return false
+	}
+	for _, league := range s.leaguesService.leagues.Leagues {
+		if newLeague == league {
+			return false
+		}
+	}
+	s.leaguesService.leagues.Leagues = append(s.leaguesService.leagues.Leagues, newLeague)
+	return true
+}
+
+// func (s *schedulesService) storeNewTag(newTags string) bool {
+// 	if newTags == "" {
+// 		return false
+// 	}
+// 	// detect new league
+// 	tagFormat := helper.FormatVietnamese(newTags)
+// 	for _, tag := range s.tagsService.Tags.Tags {
+// 		if tagFormat == tag {
+// 			return false
+// 		}
+// 	}
+// 	s.tagsService.Tags.Tags = append(s.tagsService.Tags.Tags, tagFormat)
+// 	return true
+// }
+
 func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.ScheduleElastic {
 	schedules := make([]entities.ScheduleElastic, len(pbSchedule.GetScheduleOnLeagues()))
-	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0,0,0,0, time.UTC)
+	date, err := time.Parse("02-01-2006", pbSchedule.GetDateFormated())
+	if err != nil {
+		log.Println("error when parse date:", err)
+		// handler err later
+	}
+
 	for _, scheduleOnLeagueResp := range pbSchedule.GetScheduleOnLeagues() {
 		schedule := entities.ScheduleElastic{
-			Date: today,
+			Date:       date,
 			LeagueName: strings.TrimSpace(scheduleOnLeagueResp.GetLeagueName()),
 		}
 		for _, matchResp := range scheduleOnLeagueResp.GetMatchs() {
 			match := entities.Match{
-				Time: strings.TrimSpace(matchResp.Time) ,
+				Time:  strings.TrimSpace(matchResp.Time),
 				Round: strings.TrimSpace(matchResp.Round),
 				Club1: entities.Club{
-					Name: strings.TrimSpace(matchResp.Club1.Name) ,
-					Logo: strings.TrimSpace(matchResp.Club1.Logo) ,
+					Name: strings.TrimSpace(matchResp.Club1.Name),
+					Logo: strings.TrimSpace(matchResp.Club1.Logo),
 				},
 				Club2: entities.Club{
 					Name: strings.TrimSpace(matchResp.Club2.Name),
-					Logo: strings.TrimSpace(matchResp.Club2.Logo) ,
+					Logo: strings.TrimSpace(matchResp.Club2.Logo),
 				},
-				Scores: strings.TrimSpace(matchResp.Scores),
+				Scores:          strings.TrimSpace(matchResp.Scores),
 				MatchDetailLink: strings.TrimSpace(matchResp.MatchDetailLink),
 			}
 			schedule.Matchs = append(schedule.Matchs, match)
@@ -207,4 +241,31 @@ func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.Sc
 		schedules = append(schedules, schedule)
 	}
 	return schedules
+}
+
+func newEntitiesScheduleOnLeaguesFromMap(respScheduleOnLeague map[string]interface{}) entities.ScheduleOnLeague {
+	// type assertion []interface{} to []interface {}
+	matchsInterface := respScheduleOnLeague["matchs"].([]interface{})
+
+	matchs := make([]entities.Match, len(matchsInterface))
+	for i, matchInterface := range matchsInterface {
+		matchParse := matchInterface.(map[string]interface{})
+		matchs[i].Time = matchParse["time"].(string)
+		matchs[i].Round = matchParse["round"].(string)
+		matchs[i].Scores = matchParse["scores"].(string)
+		matchs[i].MatchDetailLink = matchParse["match_detail_id"].(string)
+		matchs[i].Scores = matchParse["scores"].(string)
+
+		club1 := matchParse["club_1"].(map[string]interface{})
+		club2 := matchParse["club_2"].(map[string]interface{})
+		matchs[i].Club1.Name = club1["name"].(string)
+		matchs[i].Club1.Logo = club1["logo"].(string)
+		matchs[i].Club2.Name = club2["name"].(string)
+		matchs[i].Club2.Logo = club2["logo"].(string)
+	}
+	scheduleOnLeague := entities.ScheduleOnLeague{
+		LeagueName: respScheduleOnLeague["league_name"].(string),
+		Matchs:     matchs,
+	}
+	return scheduleOnLeague
 }

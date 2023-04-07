@@ -11,7 +11,7 @@ type HtmlClassesServices interface {
 }
 
 type LeaguesServices interface {
-
+	ListLeagues() (entities.Leagues)
 }
 
 type TagsServices interface {
@@ -26,5 +26,5 @@ type ArticleServices interface {
 
 type SchedulesServices interface {
 	APIGetScheduleOnDay(date time.Time) (entities.ScheduleOnDay, error)
-	GetSchedules()
+	GetSchedules(date string)
 }

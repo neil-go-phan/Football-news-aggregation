@@ -26,6 +26,7 @@ func (s *gRPCServer) GetSchedulesOnDay(ctx context.Context, date *pb.Date) (*pb.
 
 func crawlSchedulesAndStreamResult(date *pb.Date) (*pb.SchedulesReponse, error) {
 	dateIn := date.GetDate()
+	fmt.Println(dateIn)
 	ok := checkDateFormat(dateIn)
 	if !ok {
 		log.Println("Date is invalid")
@@ -53,7 +54,7 @@ func checkDateFormat(dateStr string) bool {
 
 func crawledSchedulesToPbSchedules(crawledSchedules entities.ScheduleOnDay) *pb.SchedulesReponse {
 	pbSchedules := &pb.SchedulesReponse{
-		DateWithWeekday: crawledSchedules.DateWithWeekday,
+		DateFormated: crawledSchedules.Date,
 	}
 	for _, scheduleOnLeague := range crawledSchedules.ScheduleOnLeagues {
 		pbSchedule := &pb.ScheduleOnLeague{

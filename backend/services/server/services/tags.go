@@ -12,11 +12,13 @@ import (
 
 type tagsService struct {
 	Tags entities.Tags
+	path string
 }
 
-func NewTagsService(tags entities.Tags) *tagsService{
+func NewTagsService(tags entities.Tags, path string) *tagsService{
 	tag := &tagsService{
 		Tags: tags,	
+		path:path,
 	}
 	return tag
 }
@@ -49,4 +51,21 @@ func ReadTagsJSON(jsonPath string) (entities.Tags, error){
 
 func (s *tagsService)ListTags() (entities.Tags) {
 	return s.Tags
+}
+
+func (s *tagsService)WriteTagsJSON() error {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	file, err := os.Create(fmt.Sprintf("%stagsConfig.json", s.path))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(s.Tags)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

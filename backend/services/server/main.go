@@ -9,6 +9,7 @@ import (
 	"server/middlewares"
 	"server/routes"
 	"server/services"
+	"sync"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -25,7 +26,7 @@ type EnvConfig struct {
 	ElasticsearchAddress string `mapstructure:"ELASTICSEARCH_ADDRESS"`
 	Port                 string `mapstructure:"PORT"`
 	CrawlerAddress       string `mapstructure:"CRAWLER_ADDRESS"`
-	JsonPath string `mapstructure:"JSON_PATH"`
+	JsonPath             string `mapstructure:"JSON_PATH"`
 }
 
 func main() {
@@ -49,26 +50,31 @@ func main() {
 
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
-	leaguesService := services.NewleaguesService(leaguesconfig)
-	tagsService := services.NewTagsService(tagsConfig)
+	leaguesService := services.NewleaguesService(leaguesconfig, env.JsonPath)
+	tagsService := services.NewTagsService(tagsConfig, env.JsonPath)
 	articleService := services.NewArticleService(leaguesService, htmlClassesService, tagsService, conn, es)
-	schedulesService := services.NewSchedulesService(conn, es)
-
+	schedulesService := services.NewSchedulesService(leaguesService, tagsService, conn, es)
 
 	tagsHandler := handler.NewTagsHandler(tagsService)
 	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
+
+	leaguesHandler := handler.NewLeaguesHandler(leaguesService)
+	leaguesRoutes := routes.NewLeaguesRoutes(leaguesHandler)
 
 	articleHandler := handler.NewArticleHandler(articleService)
 	articleRoute := routes.NewArticleRoutes(articleHandler)
 
 	schedulesHandler := handler.NewSchedulesHandler(schedulesService)
 	schedulesRoute := routes.NewScheduleRoutes(schedulesHandler)
-	// cronjob Setup
 
+	// first run
+	seedDataFirstRun(articleService, schedulesService)
+	// cronjob Setup
+	
 	go func() {
 		cronjob := cron.New()
 
-		articleHandler.SignalToCrawler(cronjob)
+		// articleHandler.SignalToCrawler(cronjob)
 		schedulesHandler.SignalToCrawler(cronjob)
 
 		cronjob.Run()
@@ -80,6 +86,7 @@ func main() {
 	r.Use(middlewares.Cors())
 
 	tagsRoutes.Setup(r)
+	leaguesRoutes.Setup(r)
 	articleRoute.Setup(r)
 	schedulesRoute.Setup(r)
 
@@ -167,10 +174,10 @@ func createElaticsearchIndex(es *elasticsearch.Client) {
 				time.Sleep(10 * time.Second)
 				err = createIndex(es, indexName)
 			}
+			return
 		}
 		log.Printf("Index: %s is already exist, skip it...\n", indexName)
 	}
-
 }
 
 func checkIndexExists(es *elasticsearch.Client, indexName string) (bool, error) {
@@ -199,4 +206,26 @@ func createIndex(es *elasticsearch.Client, indexName string) error {
 	}
 
 	return nil
+}
+
+func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices) {
+	// Get schedule for year
+	year, currentMonth, _ := time.Now().Date()
+	var wg sync.WaitGroup
+
+	for month := 0; month < int(currentMonth + 2); month++ {
+		// loop each day in current month
+		wg.Add(1)
+		t := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC)
+		go func(t time.Time, month int) {
+			for day := 1; day <= t.Day(); day++ {
+				date := time.Date(year, time.Month(month+1), day, 0, 0, 0, 0, time.UTC)
+				schedulesService.GetSchedules(date.Format("02-01-2006"))
+			}
+			defer wg.Done()
+		}(t, month)
+	}
+	wg.Wait()
+		// Get articles
+	articleService.GetArticles()
 }

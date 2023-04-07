@@ -32,6 +32,14 @@ $sidebar-overlay-z-index: 1025;
     transform 0.15s, width 0.15s, z-index 0s ease 0.15s;
   z-index: $sidebar-z-index;
 
+  &--showmore{
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 10px;
+    color: #000;
+  }
+
   & + .wrapper {
     padding-left: var(--sidebar-width);
     transition: padding 0.15s;

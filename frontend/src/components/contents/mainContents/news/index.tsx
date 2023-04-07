@@ -14,11 +14,12 @@ export default function News() {
     const requestArticle = async () => {
       try {
         const { data } = await axiosClient.get('article/search-all', {
+          // eslint-disable-next-line camelcase
           params: { search_type: 'scan', scroll: '10m', size: 20 },
         });
         setArticles(data.articles);
       } catch (error) {
-        toast.error(`Error occurred while get articles`, {
+        toast.error('Error occurred while get articles', {
           position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,

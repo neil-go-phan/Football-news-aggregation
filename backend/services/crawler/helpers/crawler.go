@@ -55,7 +55,10 @@ func FormatToSearch(keyword string) string {
 
 func FormatDate(date string) string {
 	dataPart := strings.Split(date, ",")
-	return strings.TrimSpace(dataPart[1]) 
+	if len(dataPart) > 1 {
+		return strings.TrimSpace(dataPart[1]) 
+	}
+	return strings.TrimSpace(dataPart[0])
 }
 
 func ReadHtmlClassScheduleJSON() (entities.HtmlSchedulesClass, error){
