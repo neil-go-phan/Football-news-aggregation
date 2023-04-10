@@ -27,7 +27,7 @@ func NewArticleHandler(handler services.ArticleServices) *ArticleHandler {
 func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 	keyword := c.Query("q")
 	tags := c.Query("tags")
-	formatedTags := helper.FortmatTagsFromRequest(tags)
+	formatedTags := serverhelper.FortmatTagsFromRequest(tags)
 
 	// request to elasticsearch
 	keyword= strings.TrimSpace(keyword)

@@ -1,4 +1,4 @@
-package helpers
+package crawlerhelpers
 
 import (
 	"crawler/entities"
@@ -69,6 +69,34 @@ func ReadHtmlClassScheduleJSON() (entities.HtmlSchedulesClass, error){
 		log.Fatalln("cannot load env: ", err)
 	}
 	classesJson, err := os.Open(fmt.Sprintf("%shtmlSchedulesClass.json", env.JsonPath))
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+	defer classesJson.Close()
+
+	classesByte, err := io.ReadAll(classesJson)
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+
+	err = json.Unmarshal(classesByte, &classes)
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+	return classes, nil
+}
+
+func ReadXPathClassMatchDetailJSON() (entities.XPathMatchDetail, error){
+	var classes entities.XPathMatchDetail
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	env, err := LoadEnv(".")
+	if err != nil {
+		log.Fatalln("cannot load env: ", err)
+	}
+	classesJson, err := os.Open(fmt.Sprintf("%sxPathMatchDetailClass.json", env.JsonPath))
 	if err != nil {
 		log.Println(err)
 		return classes, err

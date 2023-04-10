@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"crawler/entities"
-	"crawler/helpers"
+	"crawler/helper"
 	pb "crawler/proto"
 )
 
@@ -27,7 +27,7 @@ func (s *gRPCServer) GetArticles(configs *pb.AllConfigsArticles, stream pb.Crawl
 	var wg sync.WaitGroup
 	log.Println("Start scrapt article")
 
-	proxyList, err := helpers.RequestProxyList()
+	proxyList, err := crawlerhelpers.RequestProxyList()
 	if err != nil {
 		log.Printf("error occurred while get proxy: %s\n", err)
 	}
@@ -50,7 +50,7 @@ func (s *gRPCServer) GetArticles(configs *pb.AllConfigsArticles, stream pb.Crawl
 
 func crawlArticlesAndStreamResult(stream pb.CrawlerService_GetArticlesServer, league string, htmlClasses entities.HtmlArticleClass, proxyList []string) error {
 
-	newsUrl := fmt.Sprintf("https://www.google.com/search?tbm=nws&q=%s", helpers.FormatToSearch(league))
+	newsUrl := fmt.Sprintf("https://www.google.com/search?tbm=nws&q=%s", crawlerhelpers.FormatToSearch(league))
 	log.Println("Search URL: ", newsUrl)
 
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))

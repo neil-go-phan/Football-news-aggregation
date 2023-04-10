@@ -359,14 +359,14 @@ func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Cli
 
 func checkTags(article *pb.Article, tags []string, keyword string) []string {
 	articleTags := make(map[string]bool)
-	articleTags[helper.FormatVietnamese(keyword)] = true
+	articleTags[serverhelper.FormatVietnamese(keyword)] = true
 
 	for _, tag := range tags {
-		formatedTag := helper.FormatVietnamese(tag)
+		formatedTag := serverhelper.FormatVietnamese(tag)
 		_, ok := articleTags[formatedTag]
 
 		if !ok {
-			if strings.Contains(helper.FormatVietnamese(article.Description), formatedTag) || strings.Contains(helper.FormatVietnamese(article.Title), formatedTag) {
+			if strings.Contains(serverhelper.FormatVietnamese(article.Description), formatedTag) || strings.Contains(serverhelper.FormatVietnamese(article.Title), formatedTag) {
 				articleTags[tag] = true
 			}
 		}

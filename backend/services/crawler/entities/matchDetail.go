@@ -1,7 +1,6 @@
 package entities
 
 type MatchDetail struct {
-	ID string
 	MatchDetailTitle MatchDetailTitle
 	MatchOverview MatchOverview
 	MatchStatistics MatchStatistics
@@ -27,7 +26,6 @@ type OverviewItem struct {
 }
 
 type MatchStatistics struct {
-	Title string 
 	Statistics []StatisticsItem
 }
 
@@ -38,7 +36,6 @@ type StatisticsItem struct {
 }
 
 type MatchProgress struct {
-	Title string
 	Events []MatchEvent
 }
 type MatchEvent struct {
@@ -47,60 +44,87 @@ type MatchEvent struct {
 }
 
 type MatchLineup struct {
-	Title string
-	LineupClub1 string
-	DetailClub1 string
-	LineupClub2 string
-	DetailClub2 string
+	LineupClub1 MatchLineUpDetail
+	LineupClub2 MatchLineUpDetail
 }
 
-type HtmlMatchDetail struct {
-	MatchDetailTitle HtmlMatchDetailTitle `json:"match_detail_title"`
-	MatchOverview HtmlMatchOverview `json:"match_overview"`
-	MatchStatistics HtmlMatchStatistics `json:"match_statistics"`
-	MatchLineup HtmlMatchLineup `json:"match_lineup"`
-	MatchProgress HtmlMatchProgress `json:"match_progress"`
+type MatchLineUpDetail struct {
+	ClubName string
+	Formation string
+	PitchRows []PitchRows
 }
 
-type HtmlMatchDetailTitle struct {
-	Class string `json:"class"`
-	Club1 HtmlClubClass `json:"club_1"`
-	Club2 HtmlClubClass `json:"club_2"`
+type PitchRows struct {
+	PitchRowsDetail []PitchRowsDetail
+}
+
+type PitchRowsDetail struct {
+	PlayerName string
+	PlayerNumber string
+}
+
+type XPathMatchDetail struct {
+	MatchDetailTitle XPathMatchDetailTitle `json:"match_detail_title"`
+	MatchOverview XPathMatchOverview `json:"match_overview"`
+	MatchStatistics XPathMatchStatistics `json:"match_statistics"`
+	MatchLineup XPathMatchLineup `json:"match_lineup"`
+	MatchProgress XPathMatchProgress `json:"match_progress"`
+}
+
+type XPathMatchDetailTitle struct {
+	Club1 XPathClubClass `json:"club_1"`
+	Club2 XPathClubClass `json:"club_2"`
 	MatchScore string `json:"match_score_id"`
 }
 
-type HtmlMatchOverview struct {
-	MatchOverviewID string `json:"id"`
-	Club1OverviewClass HtmlOverviewItem `json:"club_1_overview"`
-	Club2OverviewClass HtmlOverviewItem `json:"club_2_overview"`
+type XPathMatchOverview struct {
+	Club1OverviewClass XPathOverviewItem `json:"club_1_overview"`
+	Club2OverviewClass XPathOverviewItem `json:"club_2_overview"`
 }
 
-type HtmlOverviewItem struct {
-	ImageTypeAndTime string `json:"img_time"`
+type XPathOverviewItem struct {
+	List string `json:"list"`
+	Info string `json:"info"`
+	Time string `json:"time"`
+	Img string `json:"img"`
 }
 
-type HtmlMatchStatistics struct {
-	MatchStatisticsID string `json:"id"`
-	Title string `json:"title"`
-	StatisticsItem HtmlStatisticsItem `json:"item"`
+type XPathMatchStatistics struct {
+	MatchStatisticsListItem string `json:"list_item"`
+	StatisticsItem XPathStatisticsItem `json:"item"`
 }
 
-type HtmlStatisticsItem struct {
-	Class string `json:"class"`
+type XPathStatisticsItem struct {
 	StatClub1 string `json:"stat_club1"`
 	StatContent string `json:"stat_content"`
 	StatClub2 string  `json:"stat_club2"`
 }
 
-type HtmlMatchLineup struct {
-	Title string	`json:"title_id"`
+type XPathMatchLineup struct {
 	Lineup string`json:"lineup"`
-	Detail string`json:"detail"`
+	Club1 XPathMatchLineUpDetail`json:"club1"`
+	Club2 XPathMatchLineUpDetail`json:"club2"`
 }
 
-type HtmlMatchProgress struct {
-	ID string `json:"id"`
-	Title string`json:"title"`
+type XPathMatchLineUpDetail struct {
+	ClubName string`json:"club_name"`
+	Formation string`json:"formation"`
+	PitchRows XPathPitchRow`json:"pitch_row"`
+}
+
+type XPathPitchRow struct {
+	List string `json:"list"`
+	ListPlayer XPathPitchRowPlayer `json:"list_player"`
+}
+
+type XPathPitchRowPlayer struct {
+	List string `json:"list"`
+	PlayerNumber string `json:"player_number"`
+	PlayerName string `json:"player_name"`
+}
+
+type XPathMatchProgress struct {
+	Events string `json:"events"`
 	EventTime string`json:"event_time"`
 	EventContent string`json:"event_content"`
 }

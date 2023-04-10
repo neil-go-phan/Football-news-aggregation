@@ -59,7 +59,6 @@ message Club {
 
 
 message MatchDetail {
-	string ID =1;
 	MatchDetailTitle MatchDetailTitle =2;
 	MatchOverview MatchOverview =3;
 	MatchStatistics MatchStatistics =4;
@@ -85,8 +84,7 @@ message OverviewItem {
 }
 
 message MatchStatistics {
-	string Title  =1;
-  repeated StatisticsItem Statistics = 2;
+  repeated StatisticsItem Statistics = 1;
 }
 
 message StatisticsItem {
@@ -96,8 +94,7 @@ message StatisticsItem {
 }
 
 message MatchProgress {
-	string Title =1;
-  repeated MatchEvent Events = 2;
+  repeated MatchEvent Events = 1;
 }
 message MatchEvent {
 	string Time =1;
@@ -105,11 +102,23 @@ message MatchEvent {
 }
 
 message MatchLineup {
-	string Title =1;
-	string LineupClub1=2; 
-	string DetailClub1 =3;
-	string LineupClub2 =4;
-	string DetailClub2 =5;
+	MatchLineUpDetail LineupClub1=1; 
+	MatchLineUpDetail LineupClub2 =2;
+}
+
+message MatchLineUpDetail {
+	string ClubName=1; 
+	string Formation =2;
+  repeated PitchRows PitchRow = 3;
+}
+
+message PitchRows {
+  repeated PitchRowsDetail PitchRowsDetail = 1;
+}
+
+message PitchRowsDetail {
+	string PlayerName=1; 
+	string PlayerNumber =2;
 }
 
 message Date {

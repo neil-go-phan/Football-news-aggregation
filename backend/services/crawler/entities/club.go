@@ -9,3 +9,8 @@ type HtmlClubClass struct {
 	Name string `json:"club_name"`
 	Logo string `json:"club_logo"`
 }
+
+type XPathClubClass struct {
+	Name string `json:"club_name"`
+	Logo string `json:"club_logo"`
+}

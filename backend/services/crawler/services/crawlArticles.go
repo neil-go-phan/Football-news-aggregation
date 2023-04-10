@@ -1,8 +1,8 @@
 package services
 
 import (
+	"crawler/helper"
 	"crawler/entities"
-	"crawler/helpers"
 	"fmt"
 	"log"
 	"net/http"
@@ -54,11 +54,11 @@ func CrawlArticles(searchUrl string, page int, htmlClasses entities.HtmlArticleC
 		return articles, err
 	}
 
-	doc.Find(helpers.FormatClassName(htmlClasses.ArticleClass)).Each(func(i int, s *goquery.Selection) {
+	doc.Find(crawlerhelpers.FormatClassName(htmlClasses.ArticleClass)).Each(func(i int, s *goquery.Selection) {
 		var article entities.Article
-		article.Title = s.Find(helpers.FormatClassName(htmlClasses.ArticleTitleClass)).Text()
-		article.Description = s.Find(helpers.FormatClassName(htmlClasses.ArticleDescriptionClass)).Text()
-		article.Link, _ = s.Find(helpers.FormatClassName(htmlClasses.ArticleLinkClass)).Attr("href")
+		article.Title = s.Find(crawlerhelpers.FormatClassName(htmlClasses.ArticleTitleClass)).Text()
+		article.Description = s.Find(crawlerhelpers.FormatClassName(htmlClasses.ArticleDescriptionClass)).Text()
+		article.Link, _ = s.Find(crawlerhelpers.FormatClassName(htmlClasses.ArticleLinkClass)).Attr("href")
 		articles = append(articles, article)
 	})
 	return articles, nil

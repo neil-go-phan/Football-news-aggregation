@@ -2,15 +2,17 @@ package main
 
 import (
 	"crawler/handlers"
-	"crawler/helpers"
+	"crawler/helper"
+	"crawler/services"
 	"log"
 )
 
 func main() {
-	env, err := helpers.LoadEnv(".")
+	env, err := crawlerhelpers.LoadEnv(".")
 	if err != nil {
 		log.Fatalln("cannot load env: ", err)
 	}
+	services.CrawlMatchDetail("/truc-tiep-ket-qua/west-ham-vs-newcastle-113358.html")
 	handlers.GRPCServer(env.GRPCPort)
 } 
 
