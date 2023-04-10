@@ -9,14 +9,14 @@ import React, {
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
 import { Schedules } from '.';
+import { formatVietnameseDate } from '@/helpers/format';
 
-const AMOUNT_ITEM_SHOW_ON_WEEKDAYS_DIV = 7;
 const WEEKDAYS = [
   'Chủ nhật',
   'Thứ 2',
   'Thứ 3',
   'Thứ 4',
-  'Thuứ 5',
+  'Thứ 5',
   'Thứ 6',
   'Thứ 7',
 ];
@@ -26,36 +26,35 @@ type CustomInputProps = {
 };
 
 type Props = {
+  // eslint-disable-next-line no-unused-vars
   handleSchedule: (data: Schedules) => void;
 };
 
 const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
   const route = useRouter();
-  const [date, setDate] = useState<Date | null>();
+  const [date, setDate] = useState<Date>();
 
-  const formatDate = (date: Date): string => {
-    let month, year, day
-    year = date.getFullYear()
-    if ((date.getMonth() + 1) < 10) {
-      month = `0${date.getMonth() + 1}`
+  const formatISO8601Date = (date: Date): string => {
+    let month, year, day;
+    year = date.getFullYear();
+    if (date.getMonth() + 1 < 10) {
+      month = `0${date.getMonth() + 1}`;
     } else {
-      month = date.getMonth() + 1
+      month = date.getMonth() + 1;
     }
     if (date.getDate() < 10) {
-      day = `0${date.getDate()}`
+      day = `0${date.getDate()}`;
     } else {
-      day = date.getDate()
+      day = date.getDate();
     }
 
-    return `${year}-${month}-${day}`
+    return `${year}-${month}-${day}`;
   };
-
-  // const dateInUTC
 
   const getFollowingDays = (day: number): string => {
     let today = new Date();
     today.setDate(today.getDate() + day);
-    return today.toLocaleString().split(',')[0];
+    return formatVietnameseDate(today);
   };
 
   const getWeeksDay = (day: number): string => {
@@ -68,11 +67,12 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
     setDate(dateChose);
     requestScheduleDate(dateChose);
   };
+
   const requestScheduleDate = async (date: Date) => {
     try {
       const { data } = await axiosClient.get('schedules/on-day?', {
         // eslint-disable-next-line camelcase
-        params: { date: formatDate(date) },
+        params: { date: formatISO8601Date(date) },
       });
       handleSchedule(data.schedules);
     } catch (error) {
@@ -90,11 +90,13 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
   };
 
   useEffect(() => {
-    const today = new Date()
+    const today = new Date();
     requestScheduleDate(today);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.asPath]);
 
-  const ExampleCustomInput = forwardRef<
+  // eslint-disable-next-line react/display-name
+  const BtnCustomInput = forwardRef<
     HTMLButtonElement,
     { onClick: React.MouseEventHandler<HTMLButtonElement> }
   >(({ onClick }, ref) => (
@@ -104,12 +106,16 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
   ));
   const CustomInput: React.FunctionComponent<CustomInputProps> = ({
     onClick,
-  }) => <ExampleCustomInput onClick={onClick} />;
+  }) => <BtnCustomInput onClick={onClick} />;
   return (
     <div className="schedule__dateBar d-flex px-3">
       <div className="schedule__dateBar--weekdays d-flex col-10">
         <div
-          className="weekdays--item col-2 active"
+          className={
+            getFollowingDays(0) === formatVietnameseDate(date)
+              ? 'weekdays--item col-2 active'
+              : 'weekdays--item col-2'
+          }
           onClick={() => {
             let today = new Date();
             today.setDate(today.getDate() + 0);
@@ -120,7 +126,11 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
           <p>{getWeeksDay(0)}</p>
         </div>
         <div
-          className="weekdays--item col-2"
+          className={
+            getFollowingDays(1) === formatVietnameseDate(date)
+              ? 'weekdays--item col-2 active'
+              : 'weekdays--item col-2'
+          }
           onClick={() => {
             let today = new Date();
             today.setDate(today.getDate() + 1);
@@ -131,7 +141,11 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
           <p>{getWeeksDay(1)}</p>
         </div>
         <div
-          className="weekdays--item col-2"
+          className={
+            getFollowingDays(2) === formatVietnameseDate(date)
+              ? 'weekdays--item col-2 active'
+              : 'weekdays--item col-2'
+          }
           onClick={() => {
             let today = new Date();
             today.setDate(today.getDate() + 2);
@@ -142,7 +156,11 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
           <p>{getWeeksDay(2)}</p>
         </div>
         <div
-          className="weekdays--item col-2"
+          className={
+            getFollowingDays(3) === formatVietnameseDate(date)
+              ? 'weekdays--item col-2 active'
+              : 'weekdays--item col-2'
+          }
           onClick={() => {
             let today = new Date();
             today.setDate(today.getDate() + 3);
@@ -153,7 +171,11 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
           <p>{getWeeksDay(3)}</p>
         </div>
         <div
-          className="weekdays--item col-2"
+          className={
+            getFollowingDays(4) === formatVietnameseDate(date)
+              ? 'weekdays--item col-2 active'
+              : 'weekdays--item col-2'
+          }
           onClick={() => {
             let today = new Date();
             today.setDate(today.getDate() + 4);
@@ -164,7 +186,11 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
           <p>{getWeeksDay(4)}</p>
         </div>
         <div
-          className="weekdays--item col-2"
+          className={
+            getFollowingDays(5) === formatVietnameseDate(date)
+              ? 'weekdays--item col-2 active'
+              : 'weekdays--item col-2'
+          }
           onClick={() => {
             let today = new Date();
             today.setDate(today.getDate() + 5);
@@ -177,11 +203,9 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
       </div>
       <div className="schedule__dateBar--chooseDay col-2">
         <DatePicker
-        selected={date}
+          selected={date}
           onChange={(date: Date) => handleOnClickChooseDay(date)}
-          customInput={
-            <CustomInput onClick={() => console.log('do nothing')} />
-          }
+          customInput={<CustomInput onClick={() => {}} />}
         />
       </div>
     </div>

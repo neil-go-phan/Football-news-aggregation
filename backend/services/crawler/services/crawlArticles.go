@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -24,30 +22,30 @@ func CrawlArticles(searchUrl string, page int, htmlClasses entities.HtmlArticleC
 
 	// fmt.Println("proxy ", proxy)
 	// create a transport
-	proxyUrl, err := url.Parse(fmt.Sprintf("http://%s", proxy))
-	if err != nil {
-		log.Println("error when parse proxy to url:", err)
-	}
+	// proxyUrl, err := url.Parse(fmt.Sprintf("http://%s", proxy))
+	// if err != nil {
+	// 	log.Println("error when parse proxy to url:", err)
+	// }
 
 	// create a client
-	client := &http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			Proxy: http.ProxyURL(proxyUrl),
-		},
-	}
+	// client := &http.Client{
+	// 	Timeout: time.Second * 10,
+	// 	Transport: &http.Transport{
+	// 		Proxy: http.ProxyURL(proxyUrl),
+	// 	},
+	// }
 	// fmt.Println(client)
 	// var resp *http.Response
-	// resp, err := http.DefaultClient.Do(req)
-	// if err != nil {
-	// 	log.Printf("can not request, err:%s\n", err)
-	// 	return articles, err
-	// }
-		resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Printf("can not request, err:%s\n", err)
 		return articles, err
 	}
+	// 	resp, err := client.Do(req)
+	// if err != nil {
+	// 	log.Printf("can not request, err:%s\n", err)
+	// 	return articles, err
+	// }
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)

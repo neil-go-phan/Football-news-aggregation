@@ -73,14 +73,23 @@ func (s *articleService)APISearchArticlesTagsAndKeyword(keyword string, formated
 		query = querySearchArticlesBothTagAndKeyword(keyword, filterQueries)
 	}
 
-	json.NewEncoder(&buffer).Encode(query)
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return articles, fmt.Errorf("encode query failed")
+	}
+
 	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
 	if err != nil {
 		return articles, fmt.Errorf("request to elastic search fail")
 	}
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return articles, fmt.Errorf("decode respose from elastic search failed")
+	}
+
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
 		articles = append(articles, newEntitiesArticleFromMap(article))
@@ -95,14 +104,23 @@ func (s *articleService)APISearchAll(search_type string, scroll string, size str
 
 	query := querySearchAllArticles()
 
-	json.NewEncoder(&buffer).Encode(query)
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return articles, fmt.Errorf("encode query failed")
+	}
+
 	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
 	if err != nil {
 		return articles, fmt.Errorf("request to elastic search fail")
 	}
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return articles, fmt.Errorf("decode respose from elastic search failed")
+	}
+
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
 		articles = append(articles, newEntitiesArticleFromMap(article))

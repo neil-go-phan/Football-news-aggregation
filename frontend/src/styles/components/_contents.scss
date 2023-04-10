@@ -110,4 +110,110 @@
       }
     }
   }
+
+  &__content {
+    &--title {
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    &--scheduleOnleague {
+      .match {
+        // background-color: #fff;
+        font-size: 14px;
+        position: relative;
+        padding: 12px 0;
+        width: 100%;
+        display: flex;
+        border-bottom: solid 1px #eaeaea;
+        line-height: 1.5;
+        .timeAndRound {
+          width: 20%;
+          .time {
+            display: inline-block;
+            width: 60%;
+          }
+          .round {
+            display: inline-block;
+            width: 30%;
+            text-align: right;
+          }
+        }
+        .club1 {
+          p {
+            margin-bottom: 0;
+          }
+          img {
+            margin-left: 10px;
+            height: 20px;
+            width: 20px;
+            border-radius: 100%;
+          }
+          width: 27%;
+          text-align: right;
+        }
+        .club2 {
+          p {
+            margin-bottom: 0;
+          }
+          img {
+            height: 20px;
+            width: 20px;
+            border-radius: 100%;
+            margin-right: 10px;
+          }
+          width: 27%;
+          text-align: left;
+        }
+        .score {
+          text-align: center;
+          padding: 0 6px px;
+          width: 14%;
+          span {
+            display: inline-block;
+            background: #37b349;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            width: 48px;
+            height: 24px;
+            line-height: 24px;
+            border-radius: 16px;
+            text-align: center;
+          }
+        }
+        .detail {
+          width: 10%;
+          text-align: right;
+          a {
+            display: inline-block;
+            height: 32px;
+            line-height: 32px;
+            width: 32px;
+            text-align: center;
+            position: relative;
+            background: #f2f2f2;
+            border-radius: 100%;
+            svg {
+              display: inline-block;
+              font-size: 12px;
+              color: #3faa55;
+              font-weight: bold;
+            }
+          }
+        }
+      }
+      .leagueName {
+        background-color: #f2f2f2;
+        padding: 10px px 12px;
+        font-weight: bold;
+        h3 {
+          color: #222;
+          font-size: 1.3rem;
+          margin: 0;
+        }
+      }
+    }
+  }
 }

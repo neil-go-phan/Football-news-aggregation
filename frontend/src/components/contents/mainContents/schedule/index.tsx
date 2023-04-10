@@ -32,7 +32,6 @@ export default function Schedule() {
   const handleSchedule = (data: Schedules) => {
     setSchedule(data)
   }
-  console.log(schedule)
   return (
     <div className='schedule'>
       <DateBar handleSchedule={handleSchedule}/>

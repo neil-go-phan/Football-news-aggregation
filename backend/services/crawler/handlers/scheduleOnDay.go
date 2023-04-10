@@ -15,7 +15,8 @@ func (s *gRPCServer) GetSchedulesOnDay(ctx context.Context, date *pb.Date) (*pb.
 
 	log.Println("Start scrapt schedule on date", date.GetDate())
 
-	schedules, err := crawlSchedulesAndStreamResult(date)
+	schedules, err := crawlSchedulesAndParse(date)
+	fmt.Println(schedules.DateFormated)
 	if err != nil {
 		log.Printf("error occurred while get schedule for day: %s, err: %v \n", date.GetDate(), err)
 	}
@@ -24,9 +25,8 @@ func (s *gRPCServer) GetSchedulesOnDay(ctx context.Context, date *pb.Date) (*pb.
 	return schedules, nil
 }
 
-func crawlSchedulesAndStreamResult(date *pb.Date) (*pb.SchedulesReponse, error) {
+func crawlSchedulesAndParse(date *pb.Date) (*pb.SchedulesReponse, error) {
 	dateIn := date.GetDate()
-	fmt.Println(dateIn)
 	ok := checkDateFormat(dateIn)
 	if !ok {
 		log.Println("Date is invalid")
@@ -53,9 +53,7 @@ func checkDateFormat(dateStr string) bool {
 }
 
 func crawledSchedulesToPbSchedules(crawledSchedules entities.ScheduleOnDay) *pb.SchedulesReponse {
-	pbSchedules := &pb.SchedulesReponse{
-		DateFormated: crawledSchedules.Date,
-	}
+	pbSchedules := &pb.SchedulesReponse{}
 	for _, scheduleOnLeague := range crawledSchedules.ScheduleOnLeagues {
 		pbSchedule := &pb.ScheduleOnLeague{
 			LeagueName: scheduleOnLeague.LeagueName,
@@ -80,6 +78,6 @@ func crawledSchedulesToPbSchedules(crawledSchedules entities.ScheduleOnDay) *pb.
 		}
 		pbSchedules.ScheduleOnLeagues = append(pbSchedules.ScheduleOnLeagues, pbSchedule)
 	}
-
+	pbSchedules.DateFormated = crawledSchedules.Date
 	return pbSchedules
 }

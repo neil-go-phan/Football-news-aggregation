@@ -90,7 +90,10 @@ func main() {
 	articleRoute.Setup(r)
 	schedulesRoute.Setup(r)
 
-	r.Run(":8080")
+	err = r.Run(":8080")
+	if err != nil {
+		log.Fatalln("error occurred when run server")
+	}
 }
 
 func readConfigFromJSON(JsonPath string) (entities.HtmlClasses, entities.Leagues, entities.Tags, error) {
@@ -213,13 +216,13 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 	year, currentMonth, _ := time.Now().Date()
 	var wg sync.WaitGroup
 
-	for month := 0; month < int(currentMonth + 2); month++ {
+	for month := 1; month <= int(currentMonth + 2); month++ {
 		// loop each day in current month
 		wg.Add(1)
-		t := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC)
+		t := time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
 		go func(t time.Time, month int) {
 			for day := 1; day <= t.Day(); day++ {
-				date := time.Date(year, time.Month(month+1), day, 0, 0, 0, 0, time.UTC)
+				date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 				schedulesService.GetSchedules(date.Format("02-01-2006"))
 			}
 			defer wg.Done()

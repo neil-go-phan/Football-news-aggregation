@@ -1,5 +1,6 @@
 import axiosClient from '@/helpers/axiosClient';
 import { _ROUTES } from '@/helpers/constants';
+import { formatRoute } from '@/helpers/format';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
@@ -11,15 +12,7 @@ export default function SidebarNav() {
   const [leagues, setLeagues] = useState<Array<any>>([]);
   const [expanded, setExpanded] = useState(false);
 
-  const formatRoute = (league: string) => {
-    const route = league
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/Đ/g, 'D');
 
-    return route.replaceAll(' ', '+');
-  };
 
   useEffect(() => {
     const getLeagues = async () => {

@@ -12,5 +12,5 @@ func main() {
 		log.Fatalln("cannot load env: ", err)
 	}
 	handlers.GRPCServer(env.GRPCPort)
-}
+} 
 

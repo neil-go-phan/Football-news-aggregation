@@ -67,15 +67,6 @@ func (s *schedulesService) GetSchedules(date string) {
 						log.Println("error occurred while overwrite leagueConfig.JSON:", err)
 					}
 				}
-				// auto store new tags
-				// isNewTag := s.storeNewTag(schedule.LeagueName)
-				// if isNewTag {
-				// 	log.Println("detect a new tag: ", helper.FormatVietnamese(schedule.LeagueName))
-				// 	err = s.tagsService.WriteTagsJSON()
-				// 	if err != nil {
-				// 		log.Println("error occurred while overwrite tagConfigs.JSON:", err)
-				// 	}
-				// }
 			}
 
 		}(schedule)
@@ -91,7 +82,11 @@ func (s *schedulesService) APIGetScheduleOnDay(date time.Time) (entities.Schedul
 
 	query := querySearchScheduleOnDay(date)
 
-	json.NewEncoder(&buffer).Encode(query)
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return scheduleOnDay, fmt.Errorf("encode query failed")
+	}
+
 	resp, err := s.es.Search(s.es.Search.WithIndex(SCHEDULE_INDEX_NAME), s.es.Search.WithBody(&buffer))
 	if err != nil {
 		return scheduleOnDay, fmt.Errorf("request to elastic search fail")
@@ -101,7 +96,11 @@ func (s *schedulesService) APIGetScheduleOnDay(date time.Time) (entities.Schedul
 	scheduleOnDay.DateWithWeekday = date.Weekday().String()
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return scheduleOnDay, fmt.Errorf("decode respose from elastic search failed")
+	}
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 
 		scheduleOnLeague := hit.(map[string]interface{})["_source"].(map[string]interface{})
@@ -209,7 +208,7 @@ func (s *schedulesService) storeNewLeague(newLeague string) bool {
 // }
 
 func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.ScheduleElastic {
-	schedules := make([]entities.ScheduleElastic, len(pbSchedule.GetScheduleOnLeagues()))
+	schedules := make([]entities.ScheduleElastic,0)
 	date, err := time.Parse("02-01-2006", pbSchedule.GetDateFormated())
 	if err != nil {
 		log.Println("error when parse date:", err)
@@ -217,10 +216,7 @@ func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.Sc
 	}
 
 	for _, scheduleOnLeagueResp := range pbSchedule.GetScheduleOnLeagues() {
-		schedule := entities.ScheduleElastic{
-			Date:       date,
-			LeagueName: strings.TrimSpace(scheduleOnLeagueResp.GetLeagueName()),
-		}
+		schedule := entities.ScheduleElastic{}
 		for _, matchResp := range scheduleOnLeagueResp.GetMatchs() {
 			match := entities.Match{
 				Time:  strings.TrimSpace(matchResp.Time),
@@ -238,8 +234,11 @@ func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.Sc
 			}
 			schedule.Matchs = append(schedule.Matchs, match)
 		}
+		schedule.Date = date;
+		schedule.LeagueName = strings.TrimSpace(scheduleOnLeagueResp.GetLeagueName())
 		schedules = append(schedules, schedule)
 	}
+	
 	return schedules
 }
 

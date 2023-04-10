@@ -63,8 +63,14 @@ func CrawlSchedules(date string) (entities.ScheduleOnDay, error) {
 			match.Club1.Name = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Name)).Text()
 			match.Club2.Name = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Text()
 			m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Children()
-			match.Club1.Logo, _ = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Children().Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Logo)).Attr("src")
-			match.Club2.Logo, _ = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Children().Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
+			m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Name)).Each(func(i int, s *goquery.Selection) {
+				attr, _ := s.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
+				match.Club1.Logo = attr
+			})
+			m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Each(func(i int, s *goquery.Selection) {
+				attr, _ := s.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
+				match.Club2.Logo = attr
+			})
 			schedule.Matchs = append(schedule.Matchs, match)
 		})
 

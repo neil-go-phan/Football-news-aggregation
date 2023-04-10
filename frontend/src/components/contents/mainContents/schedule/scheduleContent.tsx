@@ -2,42 +2,55 @@ import React, { FunctionComponent } from 'react';
 import { Schedules } from '.';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import Link from 'next/link';
+import { _ROUTES } from '@/helpers/constants';
+import { formatRoute, formatVietnameseDate } from '@/helpers/format';
+import Image from 'next/image';
 
 type Props = {
   schedule: Schedules | undefined;
 };
 
 const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
-  // TODI: refactor this duck-typing login
+
+  // TODO: refactor this duck-typing logic
   if (schedule) {
     if (schedule.schedule_on_leagues !== null) {
-      const title = new Date(schedule.date).toISOString().split('T')[0];
+      const title = formatVietnameseDate(new Date(schedule.date));
+
       return (
-        <div className="schedule__content">
+        <div className="schedule__content p-3">
           <h2 className="schedule__content--title">{title}</h2>
           {schedule?.schedule_on_leagues.map((scheduleOnLeague) => (
-            <div className="schedule__content--scheduleOnleague">
-              <div className="leagueName">
+            <div key={`schedule__content--scheduleOnleague--${scheduleOnLeague.league_name}`} className="match">
+              <div className="leagueName p-2">
                 <h3>{scheduleOnLeague.league_name}</h3>
               </div>
               {scheduleOnLeague.matchs.map((match) => (
-                <div className="match">
-                  <div className="time">{match.time}</div>
+                <div key={`scheduleOnleague--match--${match.match_detail_id}`} className="match">
+                  <div className="timeAndRound">
+                    <div className="time">{match.time}</div>
+                    <div className="round">{match.round}</div>{' '}
+                  </div>
                   <div className="club1">
                     <p>
                       {match.club_1.name}
-                      <img src={match.club_1.logo}></img>
+                      <Image alt='club-logo' src={match.club_1.logo}></Image>
                     </p>
                   </div>
-                  <div className="score">{match.scores}</div>
+                  <div className="score">
+                    <span>{match.scores}</span>
+                  </div>
                   <div className="club2">
                     <p>
+                      <Image alt='club-logo' src={match.club_2.logo}></Image>
                       {match.club_2.name}
-                      <img src={match.club_2.logo}></img>
                     </p>
                   </div>
                   <div className="detail">
-                    <FontAwesomeIcon icon={faChevronRight} />
+                    <Link href={`${_ROUTES.MATCH_DETAIL_PAGE}/${formatRoute(match.match_detail_id)}`}>
+                      <FontAwesomeIcon icon={faChevronRight} />
+                    </Link>
                   </div>
                 </div>
               ))}
