@@ -9,7 +9,7 @@ import React, {
 import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
 import { Schedules } from '.';
-import { formatVietnameseDate } from '@/helpers/format';
+import { formatVietnameseDate, formatISO8601Date } from '@/helpers/format';
 
 const WEEKDAYS = [
   'Chủ nhật',
@@ -33,23 +33,6 @@ type Props = {
 const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
   const route = useRouter();
   const [date, setDate] = useState<Date>();
-
-  const formatISO8601Date = (date: Date): string => {
-    let month, year, day;
-    year = date.getFullYear();
-    if (date.getMonth() + 1 < 10) {
-      month = `0${date.getMonth() + 1}`;
-    } else {
-      month = date.getMonth() + 1;
-    }
-    if (date.getDate() < 10) {
-      day = `0${date.getDate()}`;
-    } else {
-      day = date.getDate();
-    }
-
-    return `${year}-${month}-${day}`;
-  };
 
   const getFollowingDays = (day: number): string => {
     let today = new Date();

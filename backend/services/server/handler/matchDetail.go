@@ -37,6 +37,7 @@ func (matchDetailHandler *MatchDetailHandler) APIGetMatchDetail(c *gin.Context) 
 	dateString := c.Query("date")
 	club1Name := c.Query("club_1")
 	club2Name := c.Query("club_2")
+
 	date, err := time.Parse(DATE_LAYOUT, dateString)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Date invalid"})

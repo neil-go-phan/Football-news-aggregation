@@ -64,7 +64,7 @@ func FormatDate(date string) string {
 func ReadHtmlClassScheduleJSON() (entities.HtmlSchedulesClass, error){
 	var classes entities.HtmlSchedulesClass
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	env, err := LoadEnv(".")
+	env, err := LoadEnv("./")
 	if err != nil {
 		log.Fatalln("cannot load env: ", err)
 	}
@@ -92,11 +92,11 @@ func ReadHtmlClassScheduleJSON() (entities.HtmlSchedulesClass, error){
 func ReadXPathClassMatchDetailJSON() (entities.XPathMatchDetail, error){
 	var classes entities.XPathMatchDetail
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	env, err := LoadEnv(".")
+	env, err := LoadEnv("./")
 	if err != nil {
 		log.Fatalln("cannot load env: ", err)
 	}
-	classesJson, err := os.Open(fmt.Sprintf("%sxPathMatchDetail.json.json", env.JsonPath))
+	classesJson, err := os.Open(fmt.Sprintf("%sxPathMatchDetail.json", env.JsonPath))
 	if err != nil {
 		log.Println(err)
 		return classes, err

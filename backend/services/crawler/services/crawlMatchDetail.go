@@ -2,7 +2,7 @@ package services
 
 import (
 	"crawler/entities"
-	"crawler/helper"
+
 	"fmt"
 	"log"
 	"strings"
@@ -61,13 +61,8 @@ var SUBSTITUTION_EVENT = []string{
 	"thay_nguoi",
 }
 
-func CrawlMatchDetail(matchUrl string) (entities.MatchDetail, error) {
+func CrawlMatchDetail(matchUrl string, xPath entities.XPathMatchDetail) (entities.MatchDetail, error) {
 	var matchDetail entities.MatchDetail
-	xPath, err := crawlerhelpers.ReadXPathClassMatchDetailJSON()
-	if err != nil {
-		log.Println("can not read file htmlSchedulesClass.json, err: ", err)
-		return matchDetail, err
-	}
 
 	doc, err := htmlquery.LoadURL(matchUrl)
 	if err != nil {

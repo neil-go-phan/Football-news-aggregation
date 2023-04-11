@@ -68,13 +68,11 @@ func main() {
 	schedulesHandler := handler.NewSchedulesHandler(schedulesService)
 	schedulesRoute := routes.NewScheduleRoutes(schedulesHandler)
 
-	// matchDetailHandler := handler.NewMatchDetailHandler(matchDetailService)
+	matchDetailHandler := handler.NewMatchDetailHandler(matchDetailService)
+	matchDetailRoute := routes.NewMatchDetailRoutes(matchDetailHandler)
 
 	// first run
-	// go func() {
-		seedDataFirstRun(articleService, schedulesService, matchDetailService)
-	// }()
-	
+	// seedDataFirstRun(articleService, schedulesService, matchDetailService)
 
 	// cronjob Setup
 	go func() {
@@ -95,6 +93,7 @@ func main() {
 	leaguesRoutes.Setup(r)
 	articleRoute.Setup(r)
 	schedulesRoute.Setup(r)
+	matchDetailRoute.Setup(r)
 
 	err = r.Run(":8080")
 	if err != nil {
@@ -230,14 +229,16 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 			for day := 1; day <= t.Day(); day++ {
 				date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 				schedulesService.GetSchedules(date.Format("02-01-2006"))
+				matchUrls := schedulesService.GetMatchURLsOnDay()
+				matchDetailService.GetMatchDetailFromCrawler(matchUrls)
+				schedulesService.ClearMatchURLsOnDay()
 			}
 			defer wg.Done()
 		}(t, month)
-		
+
 	}
 	wg.Wait()
-	matchUrls := schedulesService.GetMatchURLsOnDay()
-	matchDetailService.GetMatchDetailFromCrawler(matchUrls)
-		// Get articles
+
+	// Get articles
 	articleService.GetArticles()
 }

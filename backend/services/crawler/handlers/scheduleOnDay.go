@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-
+	"crawler/helper"
 	"crawler/entities"
 	pb "crawler/proto"
 
@@ -16,9 +16,14 @@ import (
 func (s *gRPCServer) GetSchedulesOnDay(ctx context.Context, date *pb.Date) (*pb.SchedulesReponse, error) {
 
 	log.Println("Start scrapt schedule on date", date.GetDate())
+	
+	htmlClasses, err := crawlerhelpers.ReadHtmlClassScheduleJSON()
+	if err != nil {
+		log.Println("can not read file htmlSchedulesClass.json, err: ", err)
+	}
 
-	schedules, err := crawlSchedulesAndParse(date)
-	fmt.Println(schedules.DateFormated)
+	schedules, err := crawlSchedulesAndParse(date, htmlClasses)
+
 	if err != nil {
 		log.Printf("error occurred while get schedule for day: %s, err: %v \n", date.GetDate(), err)
 	}
@@ -27,7 +32,7 @@ func (s *gRPCServer) GetSchedulesOnDay(ctx context.Context, date *pb.Date) (*pb.
 	return schedules, nil
 }
 
-func crawlSchedulesAndParse(date *pb.Date) (*pb.SchedulesReponse, error) {
+func crawlSchedulesAndParse(date *pb.Date, htmlClasses entities.HtmlSchedulesClass) (*pb.SchedulesReponse, error) {
 	dateIn := date.GetDate()
 	ok := checkDateFormat(dateIn)
 	if !ok {
@@ -35,7 +40,7 @@ func crawlSchedulesAndParse(date *pb.Date) (*pb.SchedulesReponse, error) {
 		return nil, fmt.Errorf("date %s is invalid", dateIn)
 	}
 
-	schedulesCrawl, err := services.CrawlSchedules(dateIn)
+	schedulesCrawl, err := services.CrawlSchedules(dateIn, htmlClasses)
 	if err != nil {
 		return nil, fmt.Errorf("error occurred during crawl schedule on day %s, err: %v", dateIn, err)
 	}

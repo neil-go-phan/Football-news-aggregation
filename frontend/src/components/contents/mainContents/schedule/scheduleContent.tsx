@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 import { _ROUTES } from '@/helpers/constants';
-import { formatRoute, formatVietnameseDate } from '@/helpers/format';
+import { formatISO8601Date, formatRoute, formatVietnameseDate } from '@/helpers/format';
 import Image from 'next/image';
 
 type Props = {
@@ -66,7 +66,7 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
                     <Link
                     href={{ pathname: `${_ROUTES.MATCH_DETAIL_PAGE}/${formatRoute(
                       match.match_detail_link
-                    )}`, query: { date: schedule.date, club_1: match.club_1.name, club_2: match.club_2.name } }}
+                    )}`, query: { date: formatISO8601Date(new Date(schedule.date)), club_1: match.club_1.name, club_2: match.club_2.name } }}
                     >
                       <FontAwesomeIcon icon={faChevronRight} />
                     </Link>

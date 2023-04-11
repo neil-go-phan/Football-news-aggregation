@@ -5,7 +5,7 @@ import (
 	"crawler/services"
 	"log"
 	"sync"
-
+	"crawler/helper"
 	pb "crawler/proto"
 
 	jsoniter "github.com/json-iterator/go"
@@ -16,21 +16,26 @@ var AMOUNT_REQUEST_PER_GOROUTINE = 10
 func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerService_GetMatchDetailServer) error {
 	matchUrls := configs.GetUrl()
 
+	xPath, err := crawlerhelpers.ReadXPathClassMatchDetailJSON()
+	if err != nil {
+		log.Println("can not read file htmlSchedulesClass.json, err: ", err)
+	}
+
 	matchUrlsChunk := matchUrlsChunk(matchUrls, AMOUNT_REQUEST_PER_GOROUTINE)
 	var wg sync.WaitGroup
 	log.Println("Start scrapt match detail")
 
 	for _, matchUrl := range matchUrlsChunk {
 		wg.Add(1)
-		go func(matchUrl []string, wg *sync.WaitGroup) {
+		go func(matchUrl []string, wg *sync.WaitGroup, xPath entities.XPathMatchDetail) {
 			for _, url := range matchUrl {
-				err := crawlMatchDetailAndStreamResult(stream, url)
+				err := crawlMatchDetailAndStreamResult(stream, url, xPath)
 				if err != nil {
 					log.Printf("error occurred while request to url: %s, err: %v \n", matchUrl, err)
 				}
 			}
 			defer wg.Done()
-		}(matchUrl, &wg)
+		}(matchUrl, &wg, xPath)
 	} 
 	wg.Wait()
 	log.Println("Finish scrapt match detail")
@@ -53,10 +58,10 @@ func matchUrlsChunk(matchUrls []string, chunkSize int) [][]string {
 	return chunks
 }
 
-func crawlMatchDetailAndStreamResult(stream pb.CrawlerService_GetMatchDetailServer, matchUrl string) error {
+func crawlMatchDetailAndStreamResult(stream pb.CrawlerService_GetMatchDetailServer, matchUrl string, xPath entities.XPathMatchDetail) error {
 	log.Println("request to URL: ", matchUrl)
 
-	matchDetailEntity, err := services.CrawlMatchDetail(matchUrl)
+	matchDetailEntity, err := services.CrawlMatchDetail(matchUrl, xPath)
 	if err != nil {
 		log.Printf("error occurred during crawl match detail process: url: %v, err: %v \n", matchUrl, err)
 	}

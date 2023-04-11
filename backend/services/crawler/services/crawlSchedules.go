@@ -11,14 +11,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func CrawlSchedules(date string) (entities.ScheduleOnDay, error) {
+func CrawlSchedules(date string, htmlClasses entities.HtmlSchedulesClass) (entities.ScheduleOnDay, error) {
 	// date format: dd-mm-yyyy
 	var schedules entities.ScheduleOnDay
-	htmlClasses, err := crawlerhelpers.ReadHtmlClassScheduleJSON()
-	if err != nil {
-		log.Println("can not read file htmlSchedulesClass.json, err: ", err)
-		return schedules, err
-	}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf(`https://bongda24h.vn/LiveScore/AjaxLivescore?date=%s&leagueId=0`, date), nil)
 	if err != nil {

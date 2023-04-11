@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"server/entities"
+	serverhelper "server/helper"
 	"strings"
 	"time"
 
@@ -61,7 +62,7 @@ func (s *matchDetailService) GetMatchDetailFromCrawler(matchURLs entities.MatchU
 			if err != nil {
 				log.Printf("cannot receive %v\n", err)
 			}
-			
+
 			matchDetail := pbMatchDetailToEntityMatchDetail(resp)
 			upsertMatchDetailElastic(matchDetail, s.es, date)
 			// fmt.Printf("entity: %v", a.MatchOverview)
@@ -73,9 +74,51 @@ func (s *matchDetailService) GetMatchDetailFromCrawler(matchURLs entities.MatchU
 	log.Printf("finished.")
 }
 
-func (s *matchDetailService)APIGetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error) {
-	matchDetail := entities.MatchDetail{}
+func (s *matchDetailService) APIGetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error) {
+	var matchDetail entities.MatchDetail
+
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	var buffer bytes.Buffer
+
+	docID := strings.ToLower(fmt.Sprintf("$date=%s$match=%svs%s", date, serverhelper.FormatElasticSearchIndexName(club1Name) , serverhelper.FormatElasticSearchIndexName(club2Name)))
+	fmt.Println(docID)
+
+	query := querySearchMatchDetailByID(docID)
+
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return matchDetail, fmt.Errorf("encode query failed")
+	}
+
+	resp, err := s.es.Search(s.es.Search.WithIndex(MATCH_DETAIL_INDEX_NAME), s.es.Search.WithBody(&buffer))
+	if err != nil {
+		return matchDetail, fmt.Errorf("request to elastic search fail")
+	}
+
+	var result map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return matchDetail, fmt.Errorf("decode respose from elastic search failed")
+	}
+	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
+
+		matchDetailElastic := hit.(map[string]interface{})["_source"].(map[string]interface{})
+		fmt.Println(matchDetailElastic)
+	}
+
 	return matchDetail, nil
+}
+
+func querySearchMatchDetailByID(docID string) map[string]interface{} {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"term": map[string]interface{}{
+				"_id": docID,
+			},
+		},
+	}
+	return query
 }
 
 func pbMatchDetailToEntityMatchDetail(pbMatchDetail *pb.MatchDetail) entities.MatchDetail {
@@ -96,12 +139,12 @@ func pbMatchDetailToEntityMatchDetail(pbMatchDetail *pb.MatchDetail) entities.Ma
 func upsertMatchDetailElastic(matchDetail entities.MatchDetail, es *elasticsearch.Client, date time.Time) {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-	docID := strings.ToLower(fmt.Sprintf("$date=%s$match=%s vs %s", date, matchDetail.MatchDetailTitle.Club1.Name, matchDetail.MatchDetailTitle.Club2.Name))
+	docID := strings.ToLower(fmt.Sprintf("$date=%s$match=%svs%s", date, serverhelper.FormatElasticSearchIndexName(matchDetail.MatchDetailTitle.Club1.Name) , serverhelper.FormatElasticSearchIndexName(matchDetail.MatchDetailTitle.Club2.Name)))
 
 	var buffer bytes.Buffer
 
 	query := map[string]interface{}{
-		"doc": matchDetail,
+		"doc":           matchDetail,
 		"doc_as_upsert": true,
 	}
 	json.NewEncoder(&buffer).Encode(query)
