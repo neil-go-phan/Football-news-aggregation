@@ -27,7 +27,7 @@ func NewArticleHandler(handler services.ArticleServices) *ArticleHandler {
 func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 	keyword := c.Query("q")
 	tags := c.Query("tags")
-	formatedTags := helper.FortmatTagsFromRequest(tags)
+	formatedTags := serverhelper.FortmatTagsFromRequest(tags)
 
 	// request to elasticsearch
 	keyword= strings.TrimSpace(keyword)
@@ -52,9 +52,8 @@ func (articleHandler *ArticleHandler) GetAllFromElastic(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }
 
-func (articleHandler *ArticleHandler) SignalToCrawler(cronjob *cron.Cron) {
-	articleHandler.handler.GetArticles()
-	_, err := cronjob.AddFunc("@every 0h01m", func() { articleHandler.handler.GetArticles() })
+func (articleHandler *ArticleHandler) SignalToCrawlerAfter10Min(cronjob *cron.Cron) {
+	_, err := cronjob.AddFunc("@every 0h10m", func() { articleHandler.handler.GetArticles() })
 	if err != nil {
 		log.Println("error occurred while seting up getArticle cronjob: ", err)
 	}

@@ -37,9 +37,9 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
   const getTagParam = (): string => {
     let tagParam: string = '';
     if (searchTags.indexOf(getDefaultTag()) < 0) {
-      tagParam += getDefaultTag() + ',';
+      tagParam += `${getDefaultTag()},`
     }
-    searchTags.forEach((tag) => (tagParam += tag + ','));
+    searchTags.forEach((tag) => (tagParam += `${tag},`));
     tagParam = tagParam.slice(0, tagParam.length - 1);
     return tagParam;
   };
@@ -81,6 +81,7 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
   useEffect(() => {
     setkeyword('');
     requestArticle('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath]);
 
   const onSearchSubmit = async (event: React.FormEvent) => {
@@ -102,22 +103,22 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
 
   return (
     <Form onSubmit={(event) => onSearchSubmit(event)}>
-      <InputGroup className='mb-3 news__searchBar--search'>
-        <span className='icon'>
+      <InputGroup className="mb-3 news__searchBar--search">
+        <span className="icon">
           <FontAwesomeIcon icon={faMagnifyingGlass} />
         </span>
-        <div className='tags'>
+        <div className="tags">
           {searchTags.map((tag) => (
-            <div key={`search_tag_name_${tag}`} className='tag'>
+            <div key={`search_tag_name_${tag}`} className="tag">
               <span>{tag}</span>
-              <span className='tag--icon' onClick={() => handleDeleteTag(tag)}>
+              <span className="tag--icon" onClick={() => handleDeleteTag(tag)}>
                 <FontAwesomeIcon icon={faX} />
               </span>
             </div>
           ))}
         </div>
         <input
-          placeholder='Tìm kiếm'
+          placeholder="Tìm kiếm"
           value={keyword}
           onChange={(event) => setkeyword(event.target.value)}
         />

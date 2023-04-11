@@ -2,7 +2,7 @@ package services
 
 import (
 	"crawler/entities"
-	"crawler/helpers"
+	"crawler/helper"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,14 +11,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func CrawlSchedules(date string) (entities.ScheduleOnDay, error) {
+func CrawlSchedules(date string, htmlClasses entities.HtmlSchedulesClass) (entities.ScheduleOnDay, error) {
 	// date format: dd-mm-yyyy
 	var schedules entities.ScheduleOnDay
-	htmlClasses, err := helpers.ReadHtmlClassScheduleJSON()
-	if err != nil {
-		log.Println("can not read file htmlSchedulesClass.json, err: ", err)
-		return schedules, err
-	}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf(`https://bongda24h.vn/LiveScore/AjaxLivescore?date=%s&leagueId=0`, date), nil)
 	if err != nil {
@@ -41,30 +36,36 @@ func CrawlSchedules(date string) (entities.ScheduleOnDay, error) {
 		return schedules, err
 	}
 
-	dateFind := doc.Find(helpers.FormatClassName(htmlClasses.Date)).Text()
-	schedules.DateWithWeekday = helpers.FormatDate(dateFind)
+	schedules.Date = date
 
-	doc.Find(helpers.FormatClassName(htmlClasses.LeagueClass)).Each(func(i int, s *goquery.Selection) {
+	doc.Find(crawlerhelpers.FormatClassName(htmlClasses.LeagueClass)).Each(func(i int, s *goquery.Selection) {
 		var schedule entities.ScheduleOnLeague
 
 		schedule.LeagueName = s.Find("h3").Text()
 
 		// Tìm các match thuộc về league hiện tại
-		matches := s.NextUntil(helpers.FormatClassName(htmlClasses.LeagueClass))
+		matches := s.NextUntil(crawlerhelpers.FormatClassName(htmlClasses.LeagueClass))
 		matches.Each(func(j int, m *goquery.Selection) {
 			var match entities.Match
-			match.Time = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Time)).Text()
-			match.Round = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Round)).Text()
+			match.Time = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Time)).Text()
+			match.Round = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Round)).Text()
 			match.Time = strings.TrimSpace(strings.Replace(match.Time, match.Round, "", -1))
-			match.Scores = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Scores)).Text()
-			m.Find(fmt.Sprintf("%s a", helpers.FormatClassName(htmlClasses.HtmlMatchClass.MatchDetailLink))).Each(func(i int, s *goquery.Selection) {
+			match.Scores = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Scores)).Text()
+			m.Find(fmt.Sprintf("%s a", crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.MatchDetailLink))).Each(func(i int, s *goquery.Selection) {
 				href, _ := s.Attr("href")
 				match.MatchDetailLink = href
 			})
-			match.Club1.Name = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Name)).Text()
-			match.Club2.Name = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Text()
-			match.Club1.Logo, _ = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Logo)).Attr("src")
-			match.Club2.Logo, _ = m.Find(helpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
+			match.Club1.Name = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Name)).Text()
+			match.Club2.Name = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Text()
+			m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Children()
+			m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Name)).Each(func(i int, s *goquery.Selection) {
+				attr, _ := s.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
+				match.Club1.Logo = attr
+			})
+			m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Each(func(i int, s *goquery.Selection) {
+				attr, _ := s.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
+				match.Club2.Logo = attr
+			})
 			schedule.Matchs = append(schedule.Matchs, match)
 		})
 

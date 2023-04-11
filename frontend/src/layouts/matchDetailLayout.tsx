@@ -1,20 +1,14 @@
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { Button, Container, Navbar } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import Head from 'next/head';
 import { SidebarOverlay, Sidebar } from '@/components/sideBar';
-export default function AdminLayout({ children }: PropsWithChildren) {
-  // Show status for xs screen
-  const [isShowSmallScreenSidebar, setIsShowSmallScreenSidebar] =
-    useState(false);
-  const toggleIsShowSmallScreenSidebar = () => {
-    setIsShowSmallScreenSidebar(!isShowSmallScreenSidebar);
-  };
+function MatchDetailLayout({ children }: PropsWithChildren) {
   return (
     <>
       <Head>
-        <title>Tổng hợp tin tức bóng đá</title>
+        <title>Chi tiết trận đấu</title>
         <meta name="description" content="Neil intern demo 1" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
@@ -25,23 +19,9 @@ export default function AdminLayout({ children }: PropsWithChildren) {
             <Navbar.Brand className="text-light" href="/">
               Tin tức bóng đá
             </Navbar.Brand>
-            <Button
-              variant="link"
-              className="sidebar-toggler d-md-none px-md-0 me-md-3 rounded-0 shadow-none"
-              type="button"
-              onClick={toggleIsShowSmallScreenSidebar}
-            >
-              <FontAwesomeIcon icon={faBars} />
-            </Button>
           </Container>
         </Navbar>
-        <div className="d-flex body flex-grow-1 p-2">
-          <div className="col-xs-0 col-md-2">
-            <Sidebar smallScreen={false} />
-          </div>
-
-          <div className="col-12 col-md-10">{children}</div>
-        </div>
+        <div className="body flex-grow-1 p-2">{children}</div>
         {/* Footer */}
         <footer className="footer flex-column flex-md-row border-top d-flex align-items-center justify-content-between px-4 py-2 bg-secondary text-light">
           <div>
@@ -58,11 +38,8 @@ export default function AdminLayout({ children }: PropsWithChildren) {
           </div>
         </footer>
       </div>
-
-      <SidebarOverlay
-        isShowSidebar={isShowSmallScreenSidebar}
-        toggleSidebar={toggleIsShowSmallScreenSidebar}
-      />
     </>
   );
 }
+
+export default MatchDetailLayout;

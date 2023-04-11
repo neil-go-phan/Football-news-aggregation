@@ -17,9 +17,9 @@ func NewTagsRoutes(tagsHandler *handler.TagsHandler) *TagsRoutes{
 	return routes
 }
 
-func (articleRoutes *TagsRoutes)Setup(r *gin.Engine) {
+func (tagsRoutes *TagsRoutes)Setup(r *gin.Engine) {
 	routes := r.Group("tags")
 	{
-		routes.GET("list", articleRoutes.tagsHandler.ListTags)
+		routes.GET("list", tagsRoutes.tagsHandler.ListTags)
 	}
 }

@@ -25,7 +25,7 @@ type Match struct {
 	Club1           Club   `json:"club_1"`
 	Club2           Club   `json:"club_2"`
 	Scores          string `json:"scores"`
-	MatchDetailLink string `json:"match_detail_id"`
+	MatchDetailLink string `json:"match_detail_link"`
 }
 
 type Club struct {

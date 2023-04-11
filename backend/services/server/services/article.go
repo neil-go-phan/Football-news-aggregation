@@ -1,13 +1,13 @@
 package services
 
 import (
-	"server/entities"
-	"server/helper"
 	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"log"
+	"server/entities"
+	"server/helper"
 	"strings"
 
 	pb "server/proto"
@@ -21,11 +21,12 @@ import (
 
 var PREV_ARTICLES = make(map[string]bool)
 var ARTICLES_INDEX_NAME = "articles"
+
 type articleService struct {
 	conn               *grpc.ClientConn
 	es                 *elasticsearch.Client
 	htmlClassesService *htmlClassesService
-	leaguesService    *leaguesService
+	leaguesService     *leaguesService
 	tagsService        *tagsService
 }
 
@@ -34,18 +35,16 @@ func NewArticleService(leagues *leaguesService, htmlClass *htmlClassesService, t
 		conn:               conn,
 		es:                 es,
 		htmlClassesService: htmlClass,
-		leaguesService:    leagues,
+		leaguesService:     leagues,
 		tagsService:        tags,
 	}
 	return articleService
 }
 
-func (s *articleService)APISearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article, error) {
+func (s *articleService) APISearchArticlesTagsAndKeyword(keyword string, formatedTags []string) ([]entities.Article, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
-
-
 
 	var filterQueries []map[string]interface{}
 	for _, tag := range formatedTags {
@@ -55,7 +54,7 @@ func (s *articleService)APISearchArticlesTagsAndKeyword(keyword string, formated
 		}
 	}
 
-	// default is search all 
+	// default is search all
 	query := querySearchAllArticles()
 
 	if len(filterQueries) == 0 && keyword != "" {
@@ -73,14 +72,23 @@ func (s *articleService)APISearchArticlesTagsAndKeyword(keyword string, formated
 		query = querySearchArticlesBothTagAndKeyword(keyword, filterQueries)
 	}
 
-	json.NewEncoder(&buffer).Encode(query)
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return articles, fmt.Errorf("encode query failed")
+	}
+
 	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
 	if err != nil {
 		return articles, fmt.Errorf("request to elastic search fail")
 	}
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return articles, fmt.Errorf("decode respose from elastic search failed")
+	}
+
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
 		articles = append(articles, newEntitiesArticleFromMap(article))
@@ -88,21 +96,30 @@ func (s *articleService)APISearchArticlesTagsAndKeyword(keyword string, formated
 	return articles, nil
 }
 
-func (s *articleService)APISearchAll(search_type string, scroll string, size string) ([]entities.Article ,error) {
+func (s *articleService) APISearchAll(search_type string, scroll string, size string) ([]entities.Article, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
 
 	query := querySearchAllArticles()
 
-	json.NewEncoder(&buffer).Encode(query)
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return articles, fmt.Errorf("encode query failed")
+	}
+
 	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
 	if err != nil {
 		return articles, fmt.Errorf("request to elastic search fail")
 	}
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return articles, fmt.Errorf("decode respose from elastic search failed")
+	}
+
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
 		articles = append(articles, newEntitiesArticleFromMap(article))
@@ -113,13 +130,13 @@ func (s *articleService)APISearchAll(search_type string, scroll string, size str
 func querySearchAllArticles() map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
-			"match_all" : map[string]interface{}{},
+			"match_all": map[string]interface{}{},
 		},
 	}
 	return query
 }
 
-func querySearchArticlesOnlySearchKeyword(keyword string) map[string]interface{}{
+func querySearchArticlesOnlySearchKeyword(keyword string) map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -135,7 +152,7 @@ func querySearchArticlesOnlySearchKeyword(keyword string) map[string]interface{}
 	return query
 }
 
-func querySearchArticlesOnlyTag(filterQueries []map[string]interface{}) map[string]interface{}{
+func querySearchArticlesOnlyTag(filterQueries []map[string]interface{}) map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -150,7 +167,7 @@ func querySearchArticlesOnlyTag(filterQueries []map[string]interface{}) map[stri
 	return query
 }
 
-func querySearchArticlesBothTagAndKeyword(keyword string, filterQueries []map[string]interface{}) map[string]interface{}{
+func querySearchArticlesBothTagAndKeyword(keyword string, filterQueries []map[string]interface{}) map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -177,7 +194,7 @@ func (s *articleService) GetArticles() {
 
 	in := &pb.AllConfigsArticles{
 		HtmlClasses: &pb.HTMLClasses{
-			ArticleClass:     s.htmlClassesService.HtmlClasses.ArticleClass,
+			ArticleClass:            s.htmlClassesService.HtmlClasses.ArticleClass,
 			ArticleTitleClass:       s.htmlClassesService.HtmlClasses.ArticleTitleClass,
 			ArticleDescriptionClass: s.htmlClassesService.HtmlClasses.ArticleDescriptionClass,
 			ArticleLinkClass:        s.htmlClassesService.HtmlClasses.ArticleLinkClass,
@@ -198,6 +215,13 @@ func (s *articleService) GetArticles() {
 	go func() {
 		for {
 			resp, err := stream.Recv()
+			if err == io.EOF {
+				done <- true //means stream is finished
+				return
+			}
+			if err != nil {
+				log.Printf("cannot receive %v\n", err)
+			}
 
 			league := resp.GetLeague()
 
@@ -208,13 +232,6 @@ func (s *articleService) GetArticles() {
 
 			saveToMapSearchResult(respArticles, mapSearchResult)
 
-			if err == io.EOF {
-				done <- true //means stream is finished
-				return
-			}
-			if err != nil {
-				log.Printf("cannot receive %v\n", err)
-			}
 		}
 	}()
 
@@ -224,7 +241,7 @@ func (s *articleService) GetArticles() {
 }
 
 // Nếu gửi từng bài bào lên elastic check thì mỗi lần tìm sẽ gửi vài ngàn request
-// C1: Server lưu kết quả cào ở lần trước đó, sau đó lấy kết quả mới so sánh với cũ, nếu có bài báo nào mới thì sẽ check lại với elasticsearch. Elasticsearch chưa có thì thêm vào
+// Solution: Server lưu kết quả cào ở lần trước đó, sau đó lấy kết quả mới so sánh với cũ, nếu có bài báo nào mới thì sẽ check lại với elasticsearch. Elasticsearch chưa có thì thêm vào
 
 func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, league string, tags []string) {
 
@@ -284,17 +301,28 @@ func saveToMapSearchResult(respArticles []*pb.Article, mapSearchResult map[strin
 
 func newEntitiesArticleFromMap(respArticle map[string]interface{}) entities.Article {
 	// type assertion []interface{} to []string
-	tagInterface := respArticle["tags"].([]interface{})
-	tags := make([]string, len(tagInterface))
-	for i, tag := range tagInterface {
-		tags[i] = tag.(string)
-	}
+	// tagInterface := respArticle["tags"].([]interface{})
+	// tags := make([]string, len(tagInterface))
+	// for i, tag := range tagInterface {
+	// 	tags[i] = tag.(string)
+	// }
 
-	article := entities.Article{
-		Title:       respArticle["title"].(string),
-		Description: respArticle["description"].(string),
-		Link:        respArticle["link"].(string),
-		Tags:        tags,
+	// article := entities.Article{
+	// 	Title:       respArticle["title"].(string),
+	// 	Description: respArticle["description"].(string),
+	// 	Link:        respArticle["link"].(string),
+	// 	Tags:        tags,
+	// }
+
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	article := entities.Article{}
+	articleByte, err := json.Marshal(respArticle)
+	if err != nil {
+		log.Printf("error occrus when marshal elastic response article: %s", err)
+	}
+	err = json.Unmarshal(articleByte, &article)
+	if err != nil {
+		log.Printf("error occrus when unmarshal elastic response to entity article: %s", err)
 	}
 	return article
 }
@@ -341,14 +369,14 @@ func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Cli
 
 func checkTags(article *pb.Article, tags []string, keyword string) []string {
 	articleTags := make(map[string]bool)
-	articleTags[helper.FormatVietnamese(keyword)] = true
+	articleTags[serverhelper.FormatVietnamese(keyword)] = true
 
 	for _, tag := range tags {
-		formatedTag := helper.FormatVietnamese(tag)
+		formatedTag := serverhelper.FormatVietnamese(tag)
 		_, ok := articleTags[formatedTag]
 
 		if !ok {
-			if strings.Contains(helper.FormatVietnamese(article.Description), formatedTag) || strings.Contains(helper.FormatVietnamese(article.Title), formatedTag) {
+			if strings.Contains(serverhelper.FormatVietnamese(article.Description), formatedTag) || strings.Contains(serverhelper.FormatVietnamese(article.Title), formatedTag) {
 				articleTags[tag] = true
 			}
 		}

@@ -1,0 +1,70 @@
+{
+  "match_detail_title": {
+    "match_score_id" :"//*[@id='match-score']",
+    "club_1": {
+      "club_name" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c1-result']/*[@class='name-clb1']/h3[@class='name-tie']",
+      "club_logo" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c1-result']/*[@class='logo-thumb1']//img"
+    },
+    "club_2": {
+      "club_name" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c3-result']/*[@class='name-clb2']/h3[@class='name-tie']",
+      "club_logo" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c3-result']/*[@class='logo-thumb2']//img"
+    }
+  },
+  "match_overview": {
+    "id": "//*[@id='sec1']",
+    "club_1_overview": {
+      "list": "//*[@id='sec1']/ul[1]/li",
+      "info": "/text()",
+      "time": "//span[@class='ic-the']",
+      "img": "//span[@class='ic-the']/img"
+
+    },
+    "club_2_overview": {
+      "list": "//*[@id='sec1']/ul[2]/li",
+      "info": "/text()",
+      "time": "//span[@class='ic-the']",
+      "img": "//span[@class='ic-the']/img"
+    }
+  },
+  "match_statistics" : {
+    "list_item": "//*[@id='sec5']/div/*[@class='box-statistics']//div[contains(@class, 'statistics-item')]",
+    "item": {
+      "stat_club1": "//span[contains(@class, 'statistics_number1')]",
+      "stat_content": "//span[contains(@class, 'statistics_text')]",
+      "stat_club2": "//span[contains(@class, 'statistics_number2')]"
+    }
+  },
+  "match_lineup" : {
+    "lineup":"//div[@class='team']",
+    "club1" : {
+      "club_name": "/div[1]//div[@class='club-logo-text']",
+      "formation": "/div[1]//div[@class='f-right-text']",
+      "pitch_row": {
+        "list": "/div[@class='team-body']/div[1]/div[@class='Pitch-Row']",
+        "list_player": {
+          "list": "/div[@class='Pitch-item']",
+          "player_number": "/div[@class='team-player']//div[@class='team-number']",
+          "player_name": "/div[@class='team-player']/div[@class='text-name']"
+        }
+
+      }
+    },
+    "club2" : {
+      "club_name": "/div[3]//div[@class='club-logo-text']",
+      "formation": "/div[3]//div[@class='f-right-text']",
+      "pitch_row": {
+        "list": "/div[@class='team-body']/div[2]/div[@class='Pitch-Row']",
+        "list_player": {
+          "list": "/div[@class='Pitch-item']",
+          "player_number": "/div[@class='team-player']//div[@class='team-number']",
+          "player_name": "/div[@class='team-player']/div[@class='text-name']"
+        }
+      }
+    }
+  },
+  "match_progress":{
+    "events": "//*[@id='pd9bokuevy']//div[contains(@class ,'live-row')]",
+    "event_time": "//span[@class='time-die']",
+    "event_content": "//div[@class='the-article-content']//p"
+  }
+}

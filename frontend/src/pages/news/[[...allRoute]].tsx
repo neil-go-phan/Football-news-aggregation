@@ -1,14 +1,11 @@
-
-
 import Contents from '@/components/contents';
-import ClientLayout from '@/layouts/clientLayout';
-
+import NewsLayout from '@/layouts/newsLayout';
 
 export default function FootballNews() {
   // check routes
   return (
-    <ClientLayout>
+    <NewsLayout>
       <Contents />
-    </ClientLayout>
+    </NewsLayout>
   );
 }
