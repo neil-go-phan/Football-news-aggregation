@@ -96,7 +96,7 @@ func ReadXPathClassMatchDetailJSON() (entities.XPathMatchDetail, error){
 	if err != nil {
 		log.Fatalln("cannot load env: ", err)
 	}
-	classesJson, err := os.Open(fmt.Sprintf("%sxPathMatchDetailClass.json", env.JsonPath))
+	classesJson, err := os.Open(fmt.Sprintf("%sxPathMatchDetail.json.json", env.JsonPath))
 	if err != nil {
 		log.Println(err)
 		return classes, err

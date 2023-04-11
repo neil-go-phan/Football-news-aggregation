@@ -19,7 +19,7 @@ type Match = {
   club_1: Club;
   club_2: Club;
   scores: string;
-  match_detail_id: string;
+  match_detail_link: string;
 };
 
 type Club = {

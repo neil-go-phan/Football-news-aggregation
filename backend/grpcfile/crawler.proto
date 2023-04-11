@@ -34,98 +34,97 @@ message ArticlesReponse {
 } 
 
 message SchedulesReponse {
-  string DateFormated = 1;
-  repeated ScheduleOnLeague ScheduleOnLeagues = 2;
+  string date_formated = 1;
+  repeated ScheduleOnLeague schedule_on_leagues = 2;
 } 
 
 message ScheduleOnLeague {
-  string LeagueName = 1;
-  repeated Match Matchs = 2;
+  string league_name = 1;
+  repeated Match matchs = 2;
 } 
 
 message Match {
-  string Time = 1;
-  string Round = 2;
-  Club Club1 = 3;
-  Club Club2 = 4;
-  string Scores = 6;
-  string MatchDetailLink = 7;
+  string time = 1;
+  string round = 2;
+  Club club_1 = 3;
+  Club club_2 = 4;
+  string scores = 6;
+  string match_detail_link = 7;
 } 
 
 message Club {
-  string Name = 1;
-  string Logo = 2;
+  string name = 1;
+  string logo = 2;
 } 
 
 
 message MatchDetail {
-	MatchDetailTitle MatchDetailTitle =2;
-	MatchOverview MatchOverview =3;
-	MatchStatistics MatchStatistics =4;
-	MatchLineup MatchLineup=5;
-	MatchProgress MatchProgress =6;
+	MatchDetailTitle match_detail_title =2;
+	MatchOverview match_overview =3;
+	MatchStatistics match_statistics =4;
+	MatchLineup match_lineup=5;
+	MatchProgress match_progress =6;
 }
 
 message MatchDetailTitle {
-	Club Club1 =1;
-	Club Club2 =2;
-	string MatchScore =3;
+	Club club_1 =1;
+	Club club_2 =2;
+	string match_score =3;
 }
 
 message MatchOverview {
-  repeated OverviewItem Club1Overview = 1;
-  repeated OverviewItem Club2Overview = 2;
+  repeated OverviewItem club_1_overview = 1;
+  repeated OverviewItem club_2_overview = 2;
 }
 
 message OverviewItem {
-	string Info =1;
-	string ImageType =2;
-	string Time =3;
+	string info =1;
+	string image_type =2;
+	string time =3;
 }
 
 message MatchStatistics {
-  repeated StatisticsItem Statistics = 1;
+  repeated StatisticsItem statistics = 1;
 }
 
 message StatisticsItem {
-	string StatClub1  =1;
-	string StatContent =2;
-	string StatClub2  =3;
+	string stat_club_1  =1;
+	string stat_content =2;
+	string stat_club_2  =3;
 }
 
 message MatchProgress {
-  repeated MatchEvent Events = 1;
+  repeated MatchEvent events = 1;
 }
 message MatchEvent {
-	string Time =1;
-	string Content=2; 
+	string time =1;
+	string content=2; 
 }
 
 message MatchLineup {
-	MatchLineUpDetail LineupClub1=1; 
-	MatchLineUpDetail LineupClub2 =2;
+	MatchLineUpDetail lineup_club_1=1; 
+	MatchLineUpDetail lineup_club_2 =2;
 }
 
 message MatchLineUpDetail {
-	string ClubName=1; 
-	string Formation =2;
-  repeated PitchRows PitchRow = 3;
+	string club_name=1; 
+	string formation =2;
+  repeated PitchRows pitch_row = 3;
 }
 
 message PitchRows {
-  repeated PitchRowsDetail PitchRowsDetail = 1;
+  repeated PitchRowsDetail pitch_rows_detail = 1;
 }
 
 message PitchRowsDetail {
-	string PlayerName=1; 
-	string PlayerNumber =2;
+	string player_name=1; 
+	string player_number =2;
 }
 
 message Date {
-  string Date = 1;
+  string date = 1;
 }
 
 message MatchURLs {
   repeated string url = 1;
 }
-

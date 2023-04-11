@@ -9,6 +9,8 @@ import (
 
 	"crawler/entities"
 	pb "crawler/proto"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 func (s *gRPCServer) GetSchedulesOnDay(ctx context.Context, date *pb.Date) (*pb.SchedulesReponse, error) {
@@ -53,31 +55,15 @@ func checkDateFormat(dateStr string) bool {
 }
 
 func crawledSchedulesToPbSchedules(crawledSchedules entities.ScheduleOnDay) *pb.SchedulesReponse {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	pbSchedules := &pb.SchedulesReponse{}
-	for _, scheduleOnLeague := range crawledSchedules.ScheduleOnLeagues {
-		pbSchedule := &pb.ScheduleOnLeague{
-			LeagueName: scheduleOnLeague.LeagueName,
-		}
-		for _, match := range scheduleOnLeague.Matchs {
-			pgMatch := &pb.Match{
-				Time:            match.Time,
-				Round:           match.Round,
-				Scores:          match.Scores,
-				MatchDetailLink: match.MatchDetailLink,
-				Club1: &pb.Club{
-					Name: match.Club1.Name,
-					Logo: match.Club1.Logo,
-				},
-				Club2: &pb.Club{
-					Name: match.Club2.Name,
-					Logo: match.Club2.Logo,
-				},
-			}
-
-			pbSchedule.Matchs = append(pbSchedule.Matchs, pgMatch)
-		}
-		pbSchedules.ScheduleOnLeagues = append(pbSchedules.ScheduleOnLeagues, pbSchedule)
+  scheduleByte, err := json.Marshal(crawledSchedules)
+	if err != nil {
+		log.Printf("error occrus when marshal crawled schedules: %s", err)
 	}
-	pbSchedules.DateFormated = crawledSchedules.Date
+  err = json.Unmarshal(scheduleByte, pbSchedules)
+	if err != nil {
+		log.Printf("error occrus when unmarshal crawled schedules to proto.Schedules: %s", err)
+	}
 	return pbSchedules
 }

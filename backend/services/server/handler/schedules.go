@@ -23,7 +23,7 @@ func NewSchedulesHandler(handler services.SchedulesServices) *ScheduleHandler {
 	return schedulesHandler
 }
 
-func (schedulesHandler *ScheduleHandler) SignalToCrawler(cronjob *cron.Cron) {
+func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.Cron) {
 	_, err := cronjob.AddFunc("0 0 * * *", func() { schedulesHandler.handler.GetSchedules(time.Now().Format("02-01-2006")) })
 	if err != nil {
 		log.Println("error occurred while seting up getSchedules cronjob: ", err)

@@ -23,15 +23,14 @@ type schedulesService struct {
 	conn           *grpc.ClientConn
 	es             *elasticsearch.Client
 	leaguesService *leaguesService
-	tagsService    *tagsService
+	matchURLsOnDay entities.MatchURLsOnDay
 }
 
-func NewSchedulesService(leagues *leaguesService, tags *tagsService, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesService {
+func NewSchedulesService(leagues *leaguesService, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesService {
 	schedulesService := &schedulesService{
 		conn:           conn,
 		es:             es,
 		leaguesService: leagues,
-		tagsService:    tags,
 	}
 	return schedulesService
 }
@@ -51,21 +50,27 @@ func (s *schedulesService) GetSchedules(date string) {
 	// store schedule in elastic search
 	var wg sync.WaitGroup
 	elasticSchedules := PbSchedulesToScheduleElastic(pbSchedules)
+	dateCasted, err := time.Parse("02-01-2006", pbSchedules.GetDateFormated())
+	if err != nil {
+		log.Println("error when parse date:", err)
+		// handler err later
+	}
+	s.matchURLsOnDay.Date = dateCasted
 	for _, schedule := range elasticSchedules {
 		wg.Add(1)
 		go func(schedule entities.ScheduleElastic) {
 			defer wg.Done()
+
+			// push matchUrl on day
+			matchUrls := getMatchUrlOnDay(schedule)
+			s.matchURLsOnDay.Urls = append(s.matchURLsOnDay.Urls, matchUrls...)
 			exist := checkScheduleWithElasticSearch(schedule, s.es)
+
 			if !exist {
-				storeScheduleElasticsearch(schedule, s.es)
-				// auto store new league
-				isNewLeague := s.storeNewLeague(schedule.LeagueName)
-				if isNewLeague {
-					log.Println("detect a new league: ", schedule.LeagueName)
-					err = s.leaguesService.WriteLeaguesJSON()
-					if err != nil {
-						log.Println("error occurred while overwrite leagueConfig.JSON:", err)
-					}
+				isExisteague := s.checkIfLeagueExist(schedule.LeagueName)
+				
+				if isExisteague {
+					storeScheduleElasticsearch(schedule, s.es)
 				}
 			}
 
@@ -132,7 +137,7 @@ func checkScheduleWithElasticSearch(schedule entities.ScheduleElastic, es *elast
 		Index:      SCHEDULE_INDEX_NAME,
 		DocumentID: strings.ToLower(fmt.Sprintf("$DATE=%s,$LEAGUE=%s", schedule.Date.Format("02-01-2006"), schedule.LeagueName)),
 	}
-	
+
 	resp, err := req.Do(context.Background(), es)
 	if err != nil {
 		log.Printf("Error checking if document exists: %s\n", err)
@@ -178,18 +183,34 @@ func storeScheduleElasticsearch(schedule entities.ScheduleElastic, es *elasticse
 	}
 }
 
-func (s *schedulesService) storeNewLeague(newLeague string) bool {
+func getMatchUrlOnDay(schedule entities.ScheduleElastic) []string {
+	matchUrls := make([]string, 0)
+	for _, match := range schedule.Matchs {
+		url := fmt.Sprintf("https://bongda24h.vn%s", match.MatchDetailLink)
+		matchUrls = append(matchUrls, url)
+	}
+	return matchUrls
+}
+
+func (s *schedulesService) GetMatchURLsOnDay() entities.MatchURLsOnDay {
+	return s.matchURLsOnDay
+}
+
+func (s *schedulesService) ClearMatchURLsOnDay() {
+	s.matchURLsOnDay = entities.MatchURLsOnDay{}
+}
+
+func (s *schedulesService) checkIfLeagueExist(checkLeague string) bool {
 	// detect new league
-	if newLeague == "" {
+	if checkLeague == "" {
 		return false
 	}
 	for _, league := range s.leaguesService.leagues.Leagues {
-		if newLeague == league {
-			return false
+		if strings.EqualFold(checkLeague, league) {
+			return true
 		}
 	}
-	s.leaguesService.leagues.Leagues = append(s.leaguesService.leagues.Leagues, newLeague)
-	return true
+	return false
 }
 
 // func (s *schedulesService) storeNewTag(newTags string) bool {
@@ -208,63 +229,41 @@ func (s *schedulesService) storeNewLeague(newLeague string) bool {
 // }
 
 func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.ScheduleElastic {
-	schedules := make([]entities.ScheduleElastic,0)
+	schedules := make([]entities.ScheduleElastic, 0)
 	date, err := time.Parse("02-01-2006", pbSchedule.GetDateFormated())
 	if err != nil {
 		log.Println("error when parse date:", err)
 		// handler err later
 	}
-
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	for _, scheduleOnLeagueResp := range pbSchedule.GetScheduleOnLeagues() {
 		schedule := entities.ScheduleElastic{}
-		for _, matchResp := range scheduleOnLeagueResp.GetMatchs() {
-			match := entities.Match{
-				Time:  strings.TrimSpace(matchResp.Time),
-				Round: strings.TrimSpace(matchResp.Round),
-				Club1: entities.Club{
-					Name: strings.TrimSpace(matchResp.Club1.Name),
-					Logo: strings.TrimSpace(matchResp.Club1.Logo),
-				},
-				Club2: entities.Club{
-					Name: strings.TrimSpace(matchResp.Club2.Name),
-					Logo: strings.TrimSpace(matchResp.Club2.Logo),
-				},
-				Scores:          strings.TrimSpace(matchResp.Scores),
-				MatchDetailLink: strings.TrimSpace(matchResp.MatchDetailLink),
-			}
-			schedule.Matchs = append(schedule.Matchs, match)
+		scheduleByte, err := json.Marshal(scheduleOnLeagueResp)
+		if err != nil {
+			log.Printf("error occrus when marshal crawled schedules: %s", err)
 		}
-		schedule.Date = date;
-		schedule.LeagueName = strings.TrimSpace(scheduleOnLeagueResp.GetLeagueName())
+		err = json.Unmarshal(scheduleByte, &schedule)
+		if err != nil {
+			log.Printf("error occrus when unmarshal crawled schedules to proto.Schedules: %s", err)
+		}
+		schedule.Date = date
 		schedules = append(schedules, schedule)
 	}
-	
+
 	return schedules
 }
 
 func newEntitiesScheduleOnLeaguesFromMap(respScheduleOnLeague map[string]interface{}) entities.ScheduleOnLeague {
-	// type assertion []interface{} to []interface {}
-	matchsInterface := respScheduleOnLeague["matchs"].([]interface{})
-
-	matchs := make([]entities.Match, len(matchsInterface))
-	for i, matchInterface := range matchsInterface {
-		matchParse := matchInterface.(map[string]interface{})
-		matchs[i].Time = matchParse["time"].(string)
-		matchs[i].Round = matchParse["round"].(string)
-		matchs[i].Scores = matchParse["scores"].(string)
-		matchs[i].MatchDetailLink = matchParse["match_detail_id"].(string)
-		matchs[i].Scores = matchParse["scores"].(string)
-
-		club1 := matchParse["club_1"].(map[string]interface{})
-		club2 := matchParse["club_2"].(map[string]interface{})
-		matchs[i].Club1.Name = club1["name"].(string)
-		matchs[i].Club1.Logo = club1["logo"].(string)
-		matchs[i].Club2.Name = club2["name"].(string)
-		matchs[i].Club2.Logo = club2["logo"].(string)
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	scheduleOnLeague := entities.ScheduleOnLeague{}
+	scheduleByte, err := json.Marshal(respScheduleOnLeague)
+	if err != nil {
+		log.Printf("error occrus when marshal elastic response schedules: %s", err)
 	}
-	scheduleOnLeague := entities.ScheduleOnLeague{
-		LeagueName: respScheduleOnLeague["league_name"].(string),
-		Matchs:     matchs,
+	err = json.Unmarshal(scheduleByte, &scheduleOnLeague)
+	if err != nil {
+		log.Printf("error occrus when unmarshal elastic response to entity schedules: %s", err)
 	}
+
 	return scheduleOnLeague
 }

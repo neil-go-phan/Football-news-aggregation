@@ -26,5 +26,12 @@ type ArticleServices interface {
 
 type SchedulesServices interface {
 	APIGetScheduleOnDay(date time.Time) (entities.ScheduleOnDay, error)
+	GetMatchURLsOnDay() entities.MatchURLsOnDay
+	ClearMatchURLsOnDay()
 	GetSchedules(date string)
+}
+
+type MatchDetailServices interface {
+	GetMatchDetailFromCrawler(matchURLs entities.MatchURLsOnDay)
+	APIGetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error)
 }

@@ -11,6 +11,7 @@ import (
 	"crawler/entities"
 	"crawler/helper"
 	pb "crawler/proto"
+
 )
 
 var PAGES = 5
@@ -83,6 +84,5 @@ func crawledArticlesToPbActicles(crawlArticles []entities.Article, league string
 		}
 		pbArticles.Articles = append(pbArticles.Articles, pbArticle)
 	}
-
 	return pbArticles
 }

@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var ELASTIC_SEARCH_INDEXES = []string{services.ARTICLES_INDEX_NAME, services.SCHEDULE_INDEX_NAME}
+var ELASTIC_SEARCH_INDEXES = []string{services.ARTICLES_INDEX_NAME, services.SCHEDULE_INDEX_NAME, services.MATCH_DETAIL_INDEX_NAME}
 
 type EnvConfig struct {
 	ElasticsearchAddress string `mapstructure:"ELASTICSEARCH_ADDRESS"`
@@ -53,7 +53,8 @@ func main() {
 	leaguesService := services.NewleaguesService(leaguesconfig, env.JsonPath)
 	tagsService := services.NewTagsService(tagsConfig, env.JsonPath)
 	articleService := services.NewArticleService(leaguesService, htmlClassesService, tagsService, conn, es)
-	schedulesService := services.NewSchedulesService(leaguesService, tagsService, conn, es)
+	schedulesService := services.NewSchedulesService(leaguesService, conn, es)
+	matchDetailService := services.NewMatchDetailervice(conn, es)
 
 	tagsHandler := handler.NewTagsHandler(tagsService)
 	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
@@ -67,15 +68,20 @@ func main() {
 	schedulesHandler := handler.NewSchedulesHandler(schedulesService)
 	schedulesRoute := routes.NewScheduleRoutes(schedulesHandler)
 
+	// matchDetailHandler := handler.NewMatchDetailHandler(matchDetailService)
+
 	// first run
-	seedDataFirstRun(articleService, schedulesService)
-	// cronjob Setup
+	// go func() {
+		seedDataFirstRun(articleService, schedulesService, matchDetailService)
+	// }()
 	
+
+	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
 
-		// articleHandler.SignalToCrawler(cronjob)
-		schedulesHandler.SignalToCrawler(cronjob)
+		// articleHandler.SignalToCrawlerAfter10Min(cronjob)
+		schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
 
 		cronjob.Run()
 	}()
@@ -211,12 +217,12 @@ func createIndex(es *elasticsearch.Client, indexName string) error {
 	return nil
 }
 
-func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices) {
-	// Get schedule for year
+func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchDetailService services.MatchDetailServices) {
+	// Get schedule from january to current month + 2
 	year, currentMonth, _ := time.Now().Date()
 	var wg sync.WaitGroup
 
-	for month := 1; month <= int(currentMonth + 2); month++ {
+	for month := 4; month <= int(currentMonth); month++ {
 		// loop each day in current month
 		wg.Add(1)
 		t := time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
@@ -227,8 +233,11 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 			}
 			defer wg.Done()
 		}(t, month)
+		
 	}
 	wg.Wait()
+	matchUrls := schedulesService.GetMatchURLsOnDay()
+	matchDetailService.GetMatchDetailFromCrawler(matchUrls)
 		// Get articles
 	articleService.GetArticles()
 }

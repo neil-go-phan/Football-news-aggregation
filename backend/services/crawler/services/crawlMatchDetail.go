@@ -69,7 +69,7 @@ func CrawlMatchDetail(matchUrl string) (entities.MatchDetail, error) {
 		return matchDetail, err
 	}
 
-	doc, err := htmlquery.LoadURL(fmt.Sprintf(`https://bongda24h.vn%s`, matchUrl))
+	doc, err := htmlquery.LoadURL(matchUrl)
 	if err != nil {
 		log.Println("can not get match detail on url: ", matchUrl, " err: ", err)
 		return matchDetail, err
@@ -129,35 +129,30 @@ func CrawlMatchDetail(matchUrl string) (entities.MatchDetail, error) {
 
 func findMatchTitle(doc *html.Node, matchDetail *entities.MatchDetail, xPath entities.XPathMatchDetail) error {
 	matchScoreNode, err := htmlquery.Query(doc, xPath.MatchDetailTitle.MatchScore)
-	if err != nil {
-		return err
+	if err == nil && matchScoreNode != nil  {
+		matchDetail.MatchDetailTitle.MatchScore = htmlquery.InnerText(matchScoreNode)
 	}
-	matchDetail.MatchDetailTitle.MatchScore = htmlquery.InnerText(matchScoreNode)
 
 	matchClub1NameNode, err := htmlquery.Query(doc, xPath.MatchDetailTitle.Club1.Name)
-	if err != nil {
-		return err
+	if err == nil && matchClub1NameNode != nil  {
+		matchDetail.MatchDetailTitle.Club1.Name = htmlquery.InnerText(matchClub1NameNode)
 	}
-	matchDetail.MatchDetailTitle.Club1.Name = htmlquery.InnerText(matchClub1NameNode)
-
+	
 	matchClub1LogoNode, err := htmlquery.Query(doc, xPath.MatchDetailTitle.Club1.Logo)
-	if err != nil {
-		return err
+	if err == nil && matchClub1LogoNode != nil  {
+		matchDetail.MatchDetailTitle.Club1.Logo = htmlquery.SelectAttr(matchClub1LogoNode, "src")
 	}
-	matchDetail.MatchDetailTitle.Club1.Logo = htmlquery.SelectAttr(matchClub1LogoNode, "src")
 
 	matchClub2NameNode, err := htmlquery.Query(doc, xPath.MatchDetailTitle.Club2.Name)
-	if err != nil {
-		return err
+	if err == nil && matchClub2NameNode != nil  {
+		matchDetail.MatchDetailTitle.Club2.Name = htmlquery.InnerText(matchClub2NameNode)
 	}
-	matchDetail.MatchDetailTitle.Club2.Name = htmlquery.InnerText(matchClub2NameNode)
-
+	
 	matchClub2LogoNode, err := htmlquery.Query(doc, xPath.MatchDetailTitle.Club2.Logo)
-	if err != nil {
-		return err
+	if err == nil && matchClub2LogoNode != nil  {
+		matchDetail.MatchDetailTitle.Club2.Logo = htmlquery.SelectAttr(matchClub2LogoNode, "src")
 	}
-	matchDetail.MatchDetailTitle.Club2.Logo = htmlquery.SelectAttr(matchClub2LogoNode, "src")
-
+	
 	return nil
 }
 
@@ -168,24 +163,31 @@ func findMatchOverview(doc *html.Node, matchDetail *entities.MatchDetail, xPath 
 	}
 	for _, node := range club1OverviewList {
 		var overView entities.OverviewItem
+
 		timeNode, err := htmlquery.Query(node, xPath.MatchOverview.Club1OverviewClass.Time)
-		if err != nil {
+
+		if err == nil && timeNode != nil {
+			overView.Time = htmlquery.InnerText(timeNode)
+		} else {
 			log.Printf("cant find club1 overview event time\n")
 		}
-		overView.Time = htmlquery.InnerText(timeNode)
 
 		imgNode, err := htmlquery.Query(node, xPath.MatchOverview.Club1OverviewClass.Img)
-		if err != nil {
+
+		if err == nil && imgNode != nil {
+			overView.ImageType = getOverviewEventImgType(imgNode)
+		} else {
 			log.Printf("cant find club1 overview event img\n")
 		}
-		overView.ImageType = getOverviewEventImgType(imgNode)
-
+		
 		infoNode, err := htmlquery.Query(node, xPath.MatchOverview.Club1OverviewClass.Info)
-		if err != nil {
+
+		if err == nil && infoNode != nil  {
+			overView.Info = htmlquery.InnerText(infoNode)
+		} else {
 			log.Printf("cant find club1 overview event img\n")
 		}
-		overView.Info = htmlquery.InnerText(infoNode)
-
+		
 		matchDetail.MatchOverview.Club1Overview = append(matchDetail.MatchOverview.Club1Overview, overView)
 	}
 
@@ -195,23 +197,30 @@ func findMatchOverview(doc *html.Node, matchDetail *entities.MatchDetail, xPath 
 	}
 	for _, node := range club2OverviewList {
 		var overView entities.OverviewItem
+
 		timeNode, err := htmlquery.Query(node, xPath.MatchOverview.Club2OverviewClass.Time)
-		if err != nil {
+
+		if err == nil && timeNode != nil {
+			overView.Time = htmlquery.InnerText(timeNode)
+		} else {
 			log.Printf("cant find club2 overview event time\n")
 		}
-		overView.Time = htmlquery.InnerText(timeNode)
 
 		imgNode, err := htmlquery.Query(node, xPath.MatchOverview.Club2OverviewClass.Img)
-		if err != nil {
+
+		if err == nil && imgNode != nil {
+			overView.ImageType = getOverviewEventImgType(imgNode)
+		} else {
 			log.Printf("cant find club2 overview event img\n")
 		}
-		overView.ImageType = getOverviewEventImgType(imgNode)
 
 		infoNode, err := htmlquery.Query(node, xPath.MatchOverview.Club2OverviewClass.Info)
-		if err != nil {
-			log.Printf("cant find club2 overview event img\n")
+
+		if err == nil && infoNode != nil  {
+			overView.Info = htmlquery.InnerText(infoNode)
+		} else {
+			log.Printf("cant find club1 overview event img\n")
 		}
-		overView.Info = htmlquery.InnerText(infoNode)
 
 		matchDetail.MatchOverview.Club2Overview = append(matchDetail.MatchOverview.Club2Overview, overView)
 	}
@@ -253,24 +262,32 @@ func findMatchStatistics(doc *html.Node, matchDetail *entities.MatchDetail, xPat
 
 	for _, node := range statsList {
 		var stats entities.StatisticsItem
+
 		statClub1Node, err := htmlquery.Query(node, xPath.MatchStatistics.StatisticsItem.StatClub1)
-		if err != nil {
+
+		if err == nil && statClub1Node != nil{
+			stats.StatClub1 = htmlquery.InnerText(statClub1Node)
+		}else {
 			log.Printf("cant find stat club 1 node\n")
 		}
-		stats.StatClub1 = htmlquery.InnerText(statClub1Node)
 
 		statClub2Node, err := htmlquery.Query(node, xPath.MatchStatistics.StatisticsItem.StatClub2)
-		if err != nil {
+
+		if err == nil && statClub2Node != nil{
+			stats.StatClub2 = htmlquery.InnerText(statClub2Node)
+		}else {
 			log.Printf("cant find stat club 2 node\n")
 		}
-		stats.StatClub2 = htmlquery.InnerText(statClub2Node)
+		
 
 		statContentNode, err := htmlquery.Query(node, xPath.MatchStatistics.StatisticsItem.StatContent)
-		if err != nil {
-			log.Printf("cant find stat club 1 node\n")
-		}
-		stats.StatContent = htmlquery.InnerText(statContentNode)
 
+		if err == nil && statContentNode != nil{
+			stats.StatContent = htmlquery.InnerText(statContentNode)
+		}else {
+			log.Printf("cant find stat content node\n")
+		}
+		
 		matchDetail.MatchStatistics.Statistics = append(matchDetail.MatchStatistics.Statistics, stats)
 	}
 	return nil
@@ -283,18 +300,23 @@ func findMatchProgress(doc *html.Node, matchDetail *entities.MatchDetail, xPath 
 	}
 	for _, node := range eventList {
 		var event entities.MatchEvent
+		
 		timeNode, err := htmlquery.Query(node, xPath.MatchProgress.EventTime)
-		if err != nil {
+
+		if err == nil && timeNode != nil {
+			event.Time = htmlquery.InnerText(timeNode)
+		}else {
 			log.Printf("cant find event time node\n")
 		}
-		event.Time = htmlquery.InnerText(timeNode)
-
+		
 		contentNode, err := htmlquery.Query(node, xPath.MatchProgress.EventContent)
-		if err != nil {
+
+		if err == nil && contentNode != nil {
+			event.Content = htmlquery.InnerText(contentNode)
+		}else {
 			log.Printf("cant find event content node\n")
 		}
-		event.Content = htmlquery.InnerText(contentNode)
-
+		
 		matchDetail.MatchProgress.Events = append(matchDetail.MatchProgress.Events, event)
 	}
 	return nil
@@ -302,33 +324,42 @@ func findMatchProgress(doc *html.Node, matchDetail *entities.MatchDetail, xPath 
 
 func findMatchLineUp(doc *html.Node, matchDetail *entities.MatchDetail, xPath entities.XPathMatchDetail) error {
 	lineUpNode, err := htmlquery.Query(doc, xPath.MatchLineup.Lineup)
-	if err != nil {
+	if err != nil || lineUpNode == nil {
 		return fmt.Errorf("cant find line up node")
 	}
+
 	// club name and formation
 	club1NameNode, err := htmlquery.Query(lineUpNode, xPath.MatchLineup.Club1.ClubName)
-	if err != nil {
+	
+	if err == nil && club1NameNode != nil{
+		matchDetail.MatchLineup.LineupClub1.ClubName = htmlquery.InnerText(club1NameNode)
+	} else {
 		log.Printf("cant find club 1 name %s\n", err)
 	}
-	matchDetail.MatchLineup.LineupClub1.ClubName = htmlquery.InnerText(club1NameNode)
 
 	club1FormationNode, err := htmlquery.Query(lineUpNode, xPath.MatchLineup.Club1.Formation)
-	if err != nil {
+
+	if err == nil && club1FormationNode != nil{
+		matchDetail.MatchLineup.LineupClub1.Formation = htmlquery.InnerText(club1FormationNode)
+	} else {
 		log.Printf("cant find club 1 formation %s\n", err)
 	}
-	matchDetail.MatchLineup.LineupClub1.Formation = htmlquery.InnerText(club1FormationNode)
 
 	club2NameNode, err := htmlquery.Query(lineUpNode, xPath.MatchLineup.Club2.ClubName)
-	if err != nil {
+
+	if err == nil && club2NameNode != nil{
+		matchDetail.MatchLineup.LineupClub2.ClubName = htmlquery.InnerText(club2NameNode)
+	} else {
 		log.Printf("cant find club 2 name %s\n", err)
 	}
-	matchDetail.MatchLineup.LineupClub2.ClubName = htmlquery.InnerText(club2NameNode)
 
 	club2FormationNode, err := htmlquery.Query(lineUpNode, xPath.MatchLineup.Club2.Formation)
-	if err != nil {
+
+	if err == nil && club2FormationNode != nil{
+		matchDetail.MatchLineup.LineupClub2.Formation = htmlquery.InnerText(club2FormationNode)
+	} else {
 		log.Printf("cant find club 2 formation %s\n", err)
 	}
-	matchDetail.MatchLineup.LineupClub2.Formation = htmlquery.InnerText(club2FormationNode)
 
 	//club1 pitch row
 	club1PitchRowNodes, err := htmlquery.QueryAll(lineUpNode, xPath.MatchLineup.Club1.PitchRows.List)
@@ -337,24 +368,31 @@ func findMatchLineUp(doc *html.Node, matchDetail *entities.MatchDetail, xPath en
 	}
 	for _, node := range club1PitchRowNodes {
 		var pitchRow entities.PitchRows
+
 		playerList, err := htmlquery.QueryAll(node, xPath.MatchLineup.Club1.PitchRows.ListPlayer.List)
+
 		if err != nil {
 			log.Printf("cant find club 1 pitch row player list %s\n", err)
 			continue
 		}
 		for _, playerNode := range playerList {
 			var pitchRowDetail entities.PitchRowsDetail
+
 			playerNameNode, err := htmlquery.Query(playerNode, xPath.MatchLineup.Club1.PitchRows.ListPlayer.PlayerName)
-			if err != nil {
+
+			if err == nil && playerNameNode != nil{
+				pitchRowDetail.PlayerName = htmlquery.InnerText(playerNameNode)
+			}else {
 				log.Printf("cant find club 1 pitch row player name %s\n", err)
 			}
-			pitchRowDetail.PlayerName = htmlquery.InnerText(playerNameNode)
 
 			playerNumberNode, err := htmlquery.Query(playerNode, xPath.MatchLineup.Club1.PitchRows.ListPlayer.PlayerNumber)
-			if err != nil {
+
+			if err == nil && playerNumberNode != nil{
+				pitchRowDetail.PlayerNumber = htmlquery.InnerText(playerNumberNode)
+			}else {
 				log.Printf("cant find club 1 pitch row player number %s\n", err)
 			}
-			pitchRowDetail.PlayerNumber = htmlquery.InnerText(playerNumberNode)
 
 			pitchRow.PitchRowsDetail = append(pitchRow.PitchRowsDetail, pitchRowDetail)
 		}
@@ -376,17 +414,22 @@ func findMatchLineUp(doc *html.Node, matchDetail *entities.MatchDetail, xPath en
 		}
 		for _, playerNode := range playerList {
 			var pitchRowDetail entities.PitchRowsDetail
+
 			playerNameNode, err := htmlquery.Query(playerNode, xPath.MatchLineup.Club2.PitchRows.ListPlayer.PlayerName)
-			if err != nil {
+
+			if err == nil && playerNameNode != nil {
+				pitchRowDetail.PlayerName = htmlquery.InnerText(playerNameNode)
+			} else {
 				log.Printf("cant find club 2 pitch row player name %s\n", err)
 			}
-			pitchRowDetail.PlayerName = htmlquery.InnerText(playerNameNode)
-
+			
 			playerNumberNode, err := htmlquery.Query(playerNode, xPath.MatchLineup.Club2.PitchRows.ListPlayer.PlayerNumber)
-			if err != nil {
+
+			if err == nil && playerNumberNode != nil {
+				pitchRowDetail.PlayerNumber = htmlquery.InnerText(playerNumberNode)
+			} else {
 				log.Printf("cant find club 2 pitch row player number %s\n", err)
-			}
-			pitchRowDetail.PlayerNumber = htmlquery.InnerText(playerNumberNode)
+			}	
 
 			pitchRow.PitchRowsDetail = append(pitchRow.PitchRowsDetail, pitchRowDetail)
 		}

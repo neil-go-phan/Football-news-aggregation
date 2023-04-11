@@ -76,7 +76,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
       });
       handleSchedule(data.schedules);
     } catch (error) {
-      toast.error('Error occurred while get schedule today', {
+      toast.error(`Error occurred while get schedule on ${formatVietnameseDate(date)}`, {
         position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
@@ -91,7 +91,8 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
 
   useEffect(() => {
     const today = new Date();
-    requestScheduleDate(today);
+    handleOnClickChooseDay(today);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.asPath]);
 

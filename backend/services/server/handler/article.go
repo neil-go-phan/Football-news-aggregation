@@ -52,7 +52,7 @@ func (articleHandler *ArticleHandler) GetAllFromElastic(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }
 
-func (articleHandler *ArticleHandler) SignalToCrawler(cronjob *cron.Cron) {
+func (articleHandler *ArticleHandler) SignalToCrawlerAfter10Min(cronjob *cron.Cron) {
 	_, err := cronjob.AddFunc("@every 0h10m", func() { articleHandler.handler.GetArticles() })
 	if err != nil {
 		log.Println("error occurred while seting up getArticle cronjob: ", err)

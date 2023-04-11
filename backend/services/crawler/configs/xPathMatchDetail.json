@@ -2,11 +2,11 @@
   "match_detail_title": {
     "match_score_id" :"//*[@id='match-score']",
     "club_1": {
-      "club_name" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c1-result']/*[@class='name-clb1']/h3[@class='name-tie']/a",
+      "club_name" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c1-result']/*[@class='name-clb1']/h3[@class='name-tie']",
       "club_logo" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c1-result']/*[@class='logo-thumb1']//img"
     },
     "club_2": {
-      "club_name" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c3-result']/*[@class='name-clb2']/h3[@class='name-tie']/a",
+      "club_name" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c3-result']/*[@class='name-clb2']/h3[@class='name-tie']",
       "club_logo" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c3-result']/*[@class='logo-thumb2']//img"
     }
   },
@@ -35,7 +35,7 @@
     }
   },
   "match_lineup" : {
-    "lineup":"/html/body/main/div/div[2]/section/div/section[1]/div/div[4]/div[1]/div[@class='team']",
+    "lineup":"//div[@class='team']",
     "club1" : {
       "club_name": "/div[1]//div[@class='club-logo-text']",
       "formation": "/div[1]//div[@class='f-right-text']",
