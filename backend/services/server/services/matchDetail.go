@@ -104,7 +104,7 @@ func (s *matchDetailService) APIGetMatchDetail(date time.Time, club1Name string,
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 
 		matchDetailElastic := hit.(map[string]interface{})["_source"].(map[string]interface{})
-		fmt.Println(matchDetailElastic)
+		matchDetail = newEntitiesMatchDetailFromMap(matchDetailElastic)
 	}
 
 	return matchDetail, nil
@@ -119,6 +119,22 @@ func querySearchMatchDetailByID(docID string) map[string]interface{} {
 		},
 	}
 	return query
+}
+
+func newEntitiesMatchDetailFromMap(respMatchDetail map[string]interface{}) entities.MatchDetail {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	matchDetail := entities.MatchDetail{}
+
+	matchDetailByte, err := json.Marshal(respMatchDetail)
+	if err != nil {
+		log.Printf("error occrus when marshal elastic response match detail: %s\n", err)
+	}
+	
+	err = json.Unmarshal(matchDetailByte, &matchDetail)
+	if err != nil {
+		log.Printf("error occrus when unmarshal elastic response to entity match detail: %s\n", err)
+	}
+	return matchDetail
 }
 
 func pbMatchDetailToEntityMatchDetail(pbMatchDetail *pb.MatchDetail) entities.MatchDetail {

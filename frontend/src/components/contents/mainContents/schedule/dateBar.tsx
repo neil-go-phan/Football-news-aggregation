@@ -30,6 +30,20 @@ type Props = {
   handleSchedule: (data: Schedules) => void;
 };
 
+// eslint-disable-next-line react/display-name
+const BtnCustomInput = React.forwardRef<
+  HTMLButtonElement,
+  { onClick: React.MouseEventHandler<HTMLButtonElement> }
+>(({ onClick }, ref) => (
+  <button className="btnTriggerDate" onClick={onClick} ref={ref}>
+    Chọn ngày
+  </button>
+));
+
+const CustomInput = React.forwardRef<HTMLButtonElement, CustomInputProps>(
+  ({ onClick }, ref) => <BtnCustomInput onClick={onClick} ref={ref} />
+);
+
 const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
   const route = useRouter();
   const [date, setDate] = useState<Date>();
@@ -59,16 +73,19 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
       });
       handleSchedule(data.schedules);
     } catch (error) {
-      toast.error(`Error occurred while get schedule on ${formatVietnameseDate(date)}`, {
-        position: 'top-right',
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'light',
-      });
+      toast.error(
+        `Error occurred while get schedule on ${formatVietnameseDate(date)}`,
+        {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'light',
+        }
+      );
     }
   };
 
@@ -79,18 +96,6 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.asPath]);
 
-  // eslint-disable-next-line react/display-name
-  const BtnCustomInput = forwardRef<
-    HTMLButtonElement,
-    { onClick: React.MouseEventHandler<HTMLButtonElement> }
-  >(({ onClick }, ref) => (
-    <button className="btnTriggerDate" onClick={onClick} ref={ref}>
-      Chọn ngày
-    </button>
-  ));
-  const CustomInput: React.FunctionComponent<CustomInputProps> = ({
-    onClick,
-  }) => <BtnCustomInput onClick={onClick} />;
   return (
     <div className="schedule__dateBar d-flex px-3">
       <div className="schedule__dateBar--weekdays d-flex col-10">

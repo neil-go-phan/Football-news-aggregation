@@ -300,26 +300,14 @@ func saveToMapSearchResult(respArticles []*pb.Article, mapSearchResult map[strin
 }
 
 func newEntitiesArticleFromMap(respArticle map[string]interface{}) entities.Article {
-	// type assertion []interface{} to []string
-	// tagInterface := respArticle["tags"].([]interface{})
-	// tags := make([]string, len(tagInterface))
-	// for i, tag := range tagInterface {
-	// 	tags[i] = tag.(string)
-	// }
-
-	// article := entities.Article{
-	// 	Title:       respArticle["title"].(string),
-	// 	Description: respArticle["description"].(string),
-	// 	Link:        respArticle["link"].(string),
-	// 	Tags:        tags,
-	// }
-
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	article := entities.Article{}
+
 	articleByte, err := json.Marshal(respArticle)
 	if err != nil {
 		log.Printf("error occrus when marshal elastic response article: %s", err)
 	}
+	
 	err = json.Unmarshal(articleByte, &article)
 	if err != nil {
 		log.Printf("error occrus when unmarshal elastic response to entity article: %s", err)

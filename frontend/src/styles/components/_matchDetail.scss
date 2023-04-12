@@ -1,0 +1,345 @@
+.matchDetail {
+  &__relatedNews {
+    &--line {
+      width: 100%;
+      border: 1px solid #dee2e6;
+    }
+    &--title {
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    &--news {
+      .showmore {
+        font-size: 0.8rem;
+        cursor: pointer;
+        text-align: center;
+        margin-top: 10px;
+      }
+    }
+  }
+
+  &__content {
+    &--title {
+      padding: 10px 0;
+      border-bottom: solid 1px #eaeaea;
+      h1 {
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .result {
+        .col-4 {
+          display: block;
+        }
+        .club1 {
+          float: right;
+        }
+        .club1 {
+          margin-right: auto;
+          margin-left: 0;
+        }
+        .clubName {
+          font-weight: bold;
+          font-size: 20px;
+        }
+        .match-score {
+          text-align: center;
+          font-size: 50px;
+          font-weight: bold;
+          color: #37b349;
+          line-height: 64px;
+        }
+        .logo {
+          width: 80px;
+        }
+        .logo1 {
+          margin-right: 20px;
+        }
+        .logo2 {
+          margin-left: 20px;
+        }
+      }
+    }
+
+    &--navbar {
+      margin: 20px auto;
+      background: #f1f1f1;
+      width: 80%;
+      .nav--item {
+        border-left: solid 1px #e0e0e0;
+        border-bottom: solid 2px #f1f1f1;
+        &:hover {
+          a {
+            color: #05b349;
+          }
+          border-bottom: solid 2px #05b349;
+        }
+        .item {
+          display: inline-block;
+          width: 100%;
+          text-decoration: none;
+          text-align: center;
+          padding: 10px;
+          color: #222;
+        }
+        .hidden {
+          color: #66666691;
+        }
+      }
+    }
+
+    &--overview {
+      .club {
+        font-size: 14px;
+        padding: 0 15px;
+        .item {
+          padding: 14px;
+          border-bottom: solid 1px #eaeaea;
+        }
+        .more-info {
+          float: right;
+          img {
+            width: 15px;
+            margin-right: 5px;
+          }
+        }
+      }
+    }
+
+    &--statistics {
+      padding: 20px 16px;
+      width: 100%;
+      display: block;
+      font-size: 14px;
+      max-width: 480px;
+      border: solid 1px #eaeaea;
+      border-radius: 8px;
+      margin: 20px auto;
+      .title {
+        font-weight: bold;
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .statHead {
+        padding: 16px 0;
+        .col-6 {
+          display: block;
+        }
+        .club2 {
+          float: right;
+        }
+        .clubName {
+          font-weight: bold;
+        }
+        .logo {
+          width: 40px;
+        }
+        .logo1 {
+          margin-right: 20px;
+        }
+        .logo2 {
+          margin-left: 20px;
+        }
+      }
+      .detail {
+        .stats-item {
+          width: 100%;
+          border-radius: 5px;
+          min-height: 34px;
+          line-height: 34px;
+          padding: 0 34px;
+          text-align: center;
+          position: relative;
+          border: solid 1px #eaeaea;
+          margin: 10px;
+          .name {
+            span {
+              display: inline-block;
+              height: 34px;
+              line-height: 34px;
+              text-align: center;
+              min-width: 34px;
+              background: #e3e3e3;
+              border-radius: 5px;
+              font-weight: bold;
+              font-size: 15px;
+            }
+            .active {
+              background: #05b349;
+            }
+          }
+          .club2 {
+            float: right;
+          }
+        }
+      }
+    }
+
+    &--lineup {
+      width: 100%;
+      margin: 16px 0;
+      text-align: center;
+      border-top: solid 1px #eaeaea;
+      .title {
+        font-weight: bold;
+        font-size: 1.5rem;
+        text-align: center;
+        margin: 10px 0;
+      }
+      .team {
+        display: inline-block;
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        border: solid 1px #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        .team-head {
+          float: left;
+          width: 100%;
+          padding: 12px;
+          position: relative;
+          .formation {
+            float: right;
+          }
+          .team-name {
+            float: left;
+            img {
+              float: left;
+              height: 24px;
+              width: 24px;
+              margin-right: 16px;
+              border: none;
+              max-width: 100%;
+            }
+            .clubName {
+              display: grid;
+              font-size: 16px;
+              font-weight: bold;
+            }
+          }
+        }
+        .team-body {
+          position: relative;
+          width: 100%;
+          float: left;
+          height: 720px;
+          background: url(/images/san-bong.jpg) repeat-y;
+          background-size: 100% 720px;
+          background-color: #6d9b50;
+          .team1 {
+            svg {
+              color: #fff;
+            }
+            .player-number {
+              color: #000;
+            }
+          }
+          .team2 {
+            svg {
+              color: #000;
+            }
+            .player-number {
+              color: #fff;
+            }
+          }
+          .team-content {
+            height: 50%;
+            display: flex;
+            position: relative;
+            line-height: normal;
+            z-index: 20;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.5rem;
+            .pitch-row {
+              align-items: flex-start;
+              display: flex;
+              .pitch-item {
+                flex: 1 1;
+                .team-player {
+                  display: grid;
+                  place-items: center;
+                  text-align: center;
+                  .img {
+                    display: flex;
+                    flex: 1 1;
+                    justify-content: center;
+                    text-align: center;
+                    svg {
+                      font-size: 2rem;
+                    }
+                    .player-number {
+                      align-items: center;
+                      display: flex;
+                      height: 2rem;
+                      width: 2rem;
+                      justify-content: center;
+                      font-weight: bold;
+                      font-size: 0.85rem;
+                      position: absolute;
+                    }
+                  }
+                  .name {
+                    margin-top: 0.25rem;
+                    padding: 0 3px;
+                    text-align: center;
+                    font-size: 13px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    -webkit-line-clamp: 2;
+                    line-height: 18px;
+                    display: -webkit-box;
+                    -webkit-box-orient: vertical;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    &--process {
+      border-top: solid 1px #eaeaea;
+      padding: 20px 0;
+      .showmore {
+        font-size: 0.8rem;
+        cursor: pointer;
+        text-align: center;
+        margin-top: 10px;
+      }
+      .title {
+        font-weight: bold;
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .events {
+        width: 100%;
+        .event-detail {
+          border-bottom: solid 1px #eaeaea;
+          padding: 16px 0;
+          padding-left: 100px;
+          .time {
+            span {
+              background: #16b855;
+              color: #fff;
+              height: 32px;
+              display: inline-block;
+              min-width: 32px;
+              line-height: 32px;
+              text-align: center;
+              font-size: 17px;
+              border-radius: 10px;
+              font-weight: bold;
+              padding: 0 5px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

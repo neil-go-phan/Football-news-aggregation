@@ -21,7 +21,7 @@ export const formatRoute = (league: string) => {
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D');
 
-  return route.replaceAll(' ', '+');
+  return route.toLowerCase().replaceAll(' ', '+');
 };
 
 export const formatISO8601Date = (date: Date): string => {
