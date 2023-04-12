@@ -3,7 +3,11 @@
   &__tags {
     &--line {
       width: 100%;
-      border: 1px solid #dee2e6;;
+      border: 1px solid #dee2e6;
+    }
+    &--title {
+      font-size: 1rem;
+      font-weight: bold;
     }
     &--list {
       .tag {

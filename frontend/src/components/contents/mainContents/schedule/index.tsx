@@ -22,7 +22,7 @@ type Match = {
   match_detail_link: string;
 };
 
-type Club = {
+export type Club = {
   name: string;
   logo: string;
 };

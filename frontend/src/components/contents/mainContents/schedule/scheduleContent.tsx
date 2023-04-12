@@ -64,7 +64,7 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
                   </div>
                   <div className="detail">
                     <Link
-                    href={{ pathname: `${_ROUTES.MATCH_DETAIL_PAGE}/${formatRoute(
+                    href={{ pathname: `${_ROUTES.MATCH_DETAIL_PAGE}${formatRoute(
                       match.match_detail_link
                     )}`, query: { date: formatISO8601Date(new Date(schedule.date)), club_1: match.club_1.name, club_2: match.club_2.name } }}
                     >
