@@ -2,6 +2,7 @@ import React, { FunctionComponent, ReactNode } from 'react';
 import { MatchDetailTitle, MatchLineup, PitchRows } from './index';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShirt } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image';
 
 type Props = {
   matchLineUp: MatchLineup | null;
@@ -13,11 +14,10 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
   matchTitle,
 }) => {
   const renderPitchRow = (pitchRows: Array<PitchRows>): ReactNode => {
-    console.log(pitchRows);
     return (
       <>
-        {pitchRows.map((row) => (
-          <div className="pitch-row">{renderPlayer(row)}</div>
+        {pitchRows.map((row, index) => (
+          <div className="pitch-row" key={`pitch-row-${index}`}>{renderPlayer(row)}</div>
         ))}
       </>
     );
@@ -27,7 +27,7 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
     return (
       <>
         {row.pitch_rows_detail.map((player) => (
-          <div className="pitch-item">
+          <div className="pitch-item" key={`pitch-item-${player.player_name}`}>
             <div className="team-player">
               <div className="img">
                 <FontAwesomeIcon icon={faShirt} />
@@ -48,7 +48,7 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
         <div className="team">
           <div className="team-head">
             <div className="team-name">
-              <img
+              <Image
                 src={matchTitle.club_1.logo}
                 alt={`${matchTitle.club_1.name} logo`}
                 className="logo"
@@ -79,7 +79,7 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
 
           <div className="team-head">
             <div className="team-name">
-              <img
+              <Image
                 src={matchTitle.club_2.logo}
                 alt={`${matchTitle.club_2.name} logo`}
                 className="logo"

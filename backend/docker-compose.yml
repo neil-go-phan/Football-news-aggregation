@@ -1,5 +1,12 @@
 version: '3.9'
 services:
+  redis: 
+    image: redis:7.2-rc-alpine
+    environment:
+    ports:
+      - "6379:6379"
+
+
   elasticsearch:
     image: elasticsearch:7.17.9
     environment:
@@ -14,6 +21,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - JSON_PATH=/app/configs/
+      - GRPC_PORT=:8000
     ports:
       - "8000"
 

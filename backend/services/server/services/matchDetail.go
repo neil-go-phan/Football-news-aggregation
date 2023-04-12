@@ -163,7 +163,10 @@ func upsertMatchDetailElastic(matchDetail entities.MatchDetail, es *elasticsearc
 		"doc":           matchDetail,
 		"doc_as_upsert": true,
 	}
-	json.NewEncoder(&buffer).Encode(query)
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		log.Printf("error occrus when encoding query: %s\n", err)
+	}
 
 	req := esapi.UpdateRequest{
 		Index:      MATCH_DETAIL_INDEX_NAME,

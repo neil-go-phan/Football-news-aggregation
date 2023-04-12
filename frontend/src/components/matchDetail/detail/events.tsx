@@ -12,14 +12,16 @@ const MatchEventsComponent: FunctionComponent<Props> = ({ matchProcess }) => {
     return (
       <>
         {eventsForDisplay.map((event) => {
-          return <div className='event-detail d-flex'>
-            <div className="time col-3">
-              <span>{event.time}</span>
+          return (
+            <div className="event-detail d-flex" key={`event-detail-${event.content}`}>
+              <div className="time col-3">
+                <span>{event.time}</span>
+              </div>
+              <div className="content col-9">
+                <span>{event.content}</span>
+              </div>
             </div>
-            <div className="content col-9">
-              <span>{event.content}</span>
-            </div>
-          </div>;
+          );
         })}
       </>
     );
@@ -31,8 +33,8 @@ const MatchEventsComponent: FunctionComponent<Props> = ({ matchProcess }) => {
         <div className="events">
           {matchProcess.events ? renderEvents(matchProcess.events) : <></>}
           <p className="showmore" onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'Show less' : 'Show more...'}
-        </p>
+            {expanded ? 'Show less' : 'Show more...'}
+          </p>
         </div>
       </div>
     );

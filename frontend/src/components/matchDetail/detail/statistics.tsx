@@ -1,5 +1,6 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { MatchDetailTitle, MatchStatistics, StatisticsItem } from './index';
+import Image from 'next/image';
 
 type Props = {
   matchStatistics: MatchStatistics | null;
@@ -11,24 +12,43 @@ const MatchStatsComponent: FunctionComponent<Props> = ({
   matchTitle,
 }) => {
   const renderStatsItem = (statsItem: Array<StatisticsItem>): ReactNode => {
-    const isStat1Bigger = (stat1:string, stat2:string):boolean => {
-      const stat1Number = +stat1
-      const stat2Number = +stat2
+    const isStat1Bigger = (stat1: string, stat2: string): boolean => {
+      const stat1Number = +stat1;
+      const stat2Number = +stat2;
       if (stat1Number >= stat2Number) {
-        return true
+        return true;
       }
-      return false
-    }
+      return false;
+    };
     return (
       <div className="detail">
         {statsItem.map((item) => (
-          <div className="stats-item d-flex" key={`stats-${item.stat_club_1}-${item.stat_club_2}-${item.stat_content}`}>
+          <div
+            className="stats-item d-flex"
+            key={`stats-${item.stat_club_1}-${item.stat_club_2}-${item.stat_content}`}
+          >
             <div className="name club1 col-3">
-              <span className={isStat1Bigger(item.stat_club_1, item.stat_club_2) ? "active" : ""}>{item.stat_club_1}</span>
+              <span
+                className={
+                  isStat1Bigger(item.stat_club_1, item.stat_club_2)
+                    ? 'active'
+                    : ''
+                }
+              >
+                {item.stat_club_1}
+              </span>
             </div>
             <div className="statContent col-6">{item.stat_content}</div>
             <div className="name club2 col-3">
-              <span className={isStat1Bigger(item.stat_club_1, item.stat_club_2) ? "" : "active"}>{item.stat_club_2}</span>
+              <span
+                className={
+                  isStat1Bigger(item.stat_club_1, item.stat_club_2)
+                    ? ''
+                    : 'active'
+                }
+              >
+                {item.stat_club_2}
+              </span>
             </div>
           </div>
         ))}
@@ -42,7 +62,7 @@ const MatchStatsComponent: FunctionComponent<Props> = ({
         <div className="statHead d-flex">
           <div className="club col-6">
             <div className="club1">
-              <img
+              <Image
                 src={matchTitle.club_1.logo}
                 alt={`${matchTitle.club_1.name} logo`}
                 className="logo logo1"
@@ -57,7 +77,7 @@ const MatchStatsComponent: FunctionComponent<Props> = ({
               <span className="clubName clubName2">
                 {matchTitle.club_2.name}
               </span>
-              <img
+              <Image
                 src={matchTitle.club_2.logo}
                 alt={`${matchTitle.club_2.name} logo`}
                 className="logo logo2"

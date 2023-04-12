@@ -31,7 +31,7 @@ type Props = {
 };
 
 // eslint-disable-next-line react/display-name
-const BtnCustomInput = React.forwardRef<
+const BtnCustomInput = forwardRef<
   HTMLButtonElement,
   { onClick: React.MouseEventHandler<HTMLButtonElement> }
 >(({ onClick }, ref) => (
@@ -39,7 +39,7 @@ const BtnCustomInput = React.forwardRef<
     Chọn ngày
   </button>
 ));
-
+// eslint-disable-next-line react/display-name
 const CustomInput = React.forwardRef<HTMLButtonElement, CustomInputProps>(
   ({ onClick }, ref) => <BtnCustomInput onClick={onClick} ref={ref} />
 );

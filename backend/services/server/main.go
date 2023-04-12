@@ -72,7 +72,7 @@ func main() {
 	matchDetailRoute := routes.NewMatchDetailRoutes(matchDetailHandler)
 
 	// first run
-	// seedDataFirstRun(articleService, schedulesService, matchDetailService)
+	seedDataFirstRun(articleService, schedulesService, matchDetailService)
 
 	// cronjob Setup
 	go func() {
