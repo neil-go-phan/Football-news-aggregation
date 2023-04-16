@@ -30,7 +30,7 @@ func NewMatchDetailHandler(handler services.MatchDetailServices) *MatchDetailHan
 // }
 
 func (matchDetailHandler *MatchDetailHandler) SignalToCrawler(matchUrl entities.MatchURLsOnDay) {
-	matchDetailHandler.handler.GetMatchDetailFromCrawler(matchUrl)
+	matchDetailHandler.handler.GetMatchDetailsOnDayFromCrawler(matchUrl)
 }
 
 func (matchDetailHandler *MatchDetailHandler) APIGetMatchDetail(c *gin.Context) {

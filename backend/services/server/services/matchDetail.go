@@ -18,6 +18,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 // var PREV_ARTICLES = make(map[string]bool)
@@ -26,17 +27,19 @@ var MATCH_DETAIL_INDEX_NAME = "match_detail"
 type matchDetailService struct {
 	conn *grpc.ClientConn
 	es   *elasticsearch.Client
+	articleService *articleService
 }
 
-func NewMatchDetailervice(conn *grpc.ClientConn, es *elasticsearch.Client) *matchDetailService {
+func NewMatchDetailervice(conn *grpc.ClientConn, es *elasticsearch.Client, articleService *articleService) *matchDetailService {
 	matchDetailService := &matchDetailService{
 		conn: conn,
 		es:   es,
+		articleService: articleService,
 	}
 	return matchDetailService
 }
 
-func (s *matchDetailService) GetMatchDetailFromCrawler(matchURLs entities.MatchURLsOnDay) {
+func (s *matchDetailService) GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) {
 	client := pb.NewCrawlerServiceClient(s.conn)
 
 	in := &pb.MatchURLs{
@@ -51,7 +54,9 @@ func (s *matchDetailService) GetMatchDetailFromCrawler(matchURLs entities.MatchU
 
 	done := make(chan bool)
 	log.Printf("Start get stream of match detail...\n")
-	// recieve stream of article from crawler
+
+	// matchDetailGoogleKeyword := make([]string, 0)
+
 	go func(date time.Time) {
 		for {
 			resp, err := stream.Recv()
@@ -61,17 +66,29 @@ func (s *matchDetailService) GetMatchDetailFromCrawler(matchURLs entities.MatchU
 			}
 			if err != nil {
 				log.Printf("cannot receive %v\n", err)
+				status, _ := status.FromError(err)
+				if status.Code().String() == "Unavailable" {
+					log.Printf("gRPC server is down ! %v\n", err)
+					done <- true //means stream is finished
+					return
+				}
 			}
 
 			matchDetail := pbMatchDetailToEntityMatchDetail(resp)
 			upsertMatchDetailElastic(matchDetail, s.es, date)
-			// fmt.Printf("entity: %v", a.MatchOverview)
+
+			// keyword := fmt.Sprintf("%s %s vs %s", serverhelper.FormatDateToVietnamesDateSting(date), matchDetail.MatchDetailTitle.Club1.Name, matchDetail.MatchDetailTitle.Club2.Name)
+			// matchDetailGoogleKeyword = append(matchDetailGoogleKeyword, keyword)
 
 		}
 	}(matchURLs.Date)
 
 	<-done
-	log.Printf("finished.")
+
+	log.Printf("finished crawl match detail")
+	log.Printf("Start crawl match related article")
+
+	// s.articleService.GetArticles(matchDetailGoogleKeyword)
 }
 
 func (s *matchDetailService) APIGetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error) {

@@ -9,6 +9,8 @@ type Props = {
   matchTitle: MatchDetailTitle | null;
 };
 
+const CLUB_LOGO_LINEUP_SIDE = 24 // pixel
+
 const MatchLineUpComponent: FunctionComponent<Props> = ({
   matchLineUp,
   matchTitle,
@@ -51,6 +53,8 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
               <Image
                 src={matchTitle.club_1.logo}
                 alt={`${matchTitle.club_1.name} logo`}
+                width={CLUB_LOGO_LINEUP_SIDE}
+                height={CLUB_LOGO_LINEUP_SIDE}
                 className="logo"
               />
               <div className="clubName">{matchTitle.club_1.name}</div>
@@ -82,6 +86,8 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
               <Image
                 src={matchTitle.club_2.logo}
                 alt={`${matchTitle.club_2.name} logo`}
+                width={CLUB_LOGO_LINEUP_SIDE}
+                height={CLUB_LOGO_LINEUP_SIDE}
                 className="logo"
               />
               <div className="clubName">{matchTitle.club_2.name}</div>

@@ -15,6 +15,11 @@
         margin-top: 5px;
       }
     }
+    &--loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     &--showmore{
       font-size: 0.8rem;
       cursor: pointer;

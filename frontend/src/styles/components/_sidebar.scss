@@ -31,7 +31,11 @@ $sidebar-overlay-z-index: 1025;
   transition: margin-left 0.15s, margin-right 0.15s, box-shadow 0.075s,
     transform 0.15s, width 0.15s, z-index 0s ease 0.15s;
   z-index: $sidebar-z-index;
-
+  &--loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   &--showmore{
     font-size: 0.8rem;
     cursor: pointer;

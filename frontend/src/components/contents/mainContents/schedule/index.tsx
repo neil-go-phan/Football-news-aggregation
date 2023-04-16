@@ -6,14 +6,14 @@ export type Schedules = {
   date: string;
   date_with_weekday: string;
   schedule_on_leagues: Array<ScheduleOnLeague>;
-};
+} | undefined;
 
-type ScheduleOnLeague = {
+export type ScheduleOnLeague = {
   league_name: string;
   matchs: Array<Match>;
 };
 
-type Match = {
+export type Match = {
   time: string;
   round: string;
   club_1: Club;

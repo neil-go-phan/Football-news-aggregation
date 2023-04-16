@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { Schedules } from '.';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
@@ -10,6 +9,7 @@ import {
   formatVietnameseDate,
 } from '@/helpers/format';
 import Image from 'next/image';
+import { Schedules } from '.';
 
 type Props = {
   schedule: Schedules | undefined;

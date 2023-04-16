@@ -12,22 +12,27 @@ import (
 
 type leaguesService struct {
 	leagues entities.Leagues
-	path string
+	path    string
 }
 
-func NewleaguesService(leagues entities.Leagues, path string) *leaguesService{
+func NewleaguesService(leagues entities.Leagues, path string) *leaguesService {
 	keyword := &leaguesService{
-		leagues: leagues,	
-		path: path,
+		leagues: leagues,
+		path:    path,
 	}
 	return keyword
 }
 
-func (s *leaguesService)ListLeagues() (entities.Leagues) {
+func (s *leaguesService) AddLeague(newLeague []string) {
+	s.leagues.Leagues = append(s.leagues.Leagues, newLeague...)
+	s.WriteLeaguesJSON()
+}
+
+func (s *leaguesService) ListLeagues() entities.Leagues {
 	return s.leagues
 }
 
-func ReadleaguesJSON(jsonPath string) (entities.Leagues, error){
+func ReadleaguesJSON(jsonPath string) (entities.Leagues, error) {
 	var leaguesConfig entities.Leagues
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
@@ -52,7 +57,7 @@ func ReadleaguesJSON(jsonPath string) (entities.Leagues, error){
 	return leaguesConfig, nil
 }
 
-func (s *leaguesService)WriteLeaguesJSON() error {
+func (s *leaguesService) WriteLeaguesJSON() error {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	file, err := os.Create(fmt.Sprintf("%sleaguesConfig.json", s.path))
 	if err != nil {

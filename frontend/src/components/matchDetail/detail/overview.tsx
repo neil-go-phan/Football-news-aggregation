@@ -5,6 +5,8 @@ type Props = {
   matchOverview: MatchOverview | null;
 };
 
+const EVENT_IMAGE_SIZE = 15 //pixel
+
 const MatchOverviewComponent: FunctionComponent<Props> = ({
   matchOverview,
 }) => {
@@ -39,6 +41,8 @@ const MatchOverviewComponent: FunctionComponent<Props> = ({
                 <Image
                   src={checkImage(item.image_type)}
                   alt={item.image_type}
+                  width={EVENT_IMAGE_SIZE}
+                  height={EVENT_IMAGE_SIZE}
                   className="image"
                 />{' '}
                 <span className="time">{item.time}</span>

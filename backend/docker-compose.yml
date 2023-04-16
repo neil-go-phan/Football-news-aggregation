@@ -1,11 +1,5 @@
 version: '3.9'
 services:
-  # redis: 
-  #   image: redis:7.0-alpine
-  #   environment:
-  #   ports:
-  #     - "6379:6379"
-
 
   elasticsearch:
     image: elasticsearch:7.17.9

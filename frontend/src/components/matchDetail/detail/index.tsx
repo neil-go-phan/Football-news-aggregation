@@ -1,4 +1,3 @@
-import { Club } from '@/components/contents/mainContents/schedule';
 import axiosClient from '@/helpers/axiosClient';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
@@ -8,6 +7,7 @@ import MatchLineUpComponent from './lineUp';
 import MatchOverviewComponent from './overview';
 import MatchStatsComponent from './statistics';
 import MatchEventsComponent from './events';
+import { Club } from '@/components/contents/mainContents/schedule';
 
 export type MatchDetail = {
   match_detail_title: MatchDetailTitle;

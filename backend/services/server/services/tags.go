@@ -23,6 +23,10 @@ func NewTagsService(tags entities.Tags, path string) *tagsService{
 	return tag
 }
 
+func (s *tagsService)AddTag(newTags []string) {
+ 	s.Tags.Tags = append(s.Tags.Tags, newTags...)
+	s.WriteTagsJSON()
+}
 
 func ReadTagsJSON(jsonPath string) (entities.Tags, error){
 	var tagsConfig entities.Tags

@@ -1,44 +1,48 @@
-import axiosClient from '@/helpers/axiosClient';
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import React, { FunctionComponent, useState } from 'react';
 import Tag from '../../../../common/tag';
+import useGetTags, { Tags } from '@/helpers/cacheQuery/getTags';
+import { ThreeDots } from 'react-loader-spinner';
 
 const Tags: FunctionComponent = () => {
-  const [tags, setTags] = useState<Array<string>>([]);
   const [expanded, setExpanded] = useState(false);
-  useEffect(() => {
-    const getTags = async () => {
-      try {
-        const { data } = await axiosClient.get('tags/list');
-        setTags(data.tags.tags);
-      } catch (error) {
-        toast.error('Error occurred while geting tags', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'light',
-        });
-      }
-    };
-    getTags();
-  }, []);
 
-  const tagForDisplay = expanded ? tags : tags.slice(0, 10);
+  const { data, isLoading } = useGetTags();
+
+  if (!isLoading) {
+    const tagForDisplay: Tags = expanded ? data : data!.slice(0, 10);
+    return (
+      <div className="rightSideBar__tags">
+        <p className="rightSideBar__tags--title">Tags</p>
+        <div className="rightSideBar__tags--line mb-3"></div>
+        <div className="rightSideBar__tags--list">
+          {tagForDisplay!.map((tag) => (
+            <Tag key={`rightSideBar__tags_${tag}`} tagName={tag} />
+          ))}
+          <p
+            className="rightSideBar__tags--showmore"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? 'Show less' : 'Show more...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="rightSideBar__tags">
       <p className="rightSideBar__tags--title">Tags</p>
       <div className="rightSideBar__tags--line mb-3"></div>
       <div className="rightSideBar__tags--list">
-        {tagForDisplay.map((tag) => (
-          <Tag key={`rightSideBar__tags_${tag}`} tagName={tag} />
-        ))}
-        <p className="rightSideBar__tags--showmore" onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'Show less' : 'Show more...'}
-        </p>
+        <div className="rightSideBar__tags--loading">
+          <ThreeDots
+            height="50"
+            width="50"
+            radius="9"
+            color="#4fa94d"
+            ariaLabel="three-dots-loading"
+            visible={true}
+          />
+        </div>
       </div>
     </div>
   );

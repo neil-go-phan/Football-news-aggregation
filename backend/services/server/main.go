@@ -35,7 +35,7 @@ func main() {
 		log.Fatalln("cannot load env")
 	}
 	// load default config
-	classConfig, leaguesconfig, tagsConfig, err := readConfigFromJSON(env.JsonPath)
+	classConfig, leaguesconfig, tagsConfig, adminConfig, err := readConfigFromJSON(env.JsonPath)
 	if err != nil {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		log.Println("error occurred while connecting to elasticsearch node: ", err)
 	}
-	createElaticsearchIndex(es)
+	amountOfNewIndex := createElaticsearchIndex(es)
 
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
@@ -54,7 +54,8 @@ func main() {
 	tagsService := services.NewTagsService(tagsConfig, env.JsonPath)
 	articleService := services.NewArticleService(leaguesService, htmlClassesService, tagsService, conn, es)
 	schedulesService := services.NewSchedulesService(leaguesService, conn, es)
-	matchDetailService := services.NewMatchDetailervice(conn, es)
+	matchDetailService := services.NewMatchDetailervice(conn, es, articleService)
+	adminService := services.NewAdminService(adminConfig, env.JsonPath)
 
 	tagsHandler := handler.NewTagsHandler(tagsService)
 	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
@@ -71,8 +72,15 @@ func main() {
 	matchDetailHandler := handler.NewMatchDetailHandler(matchDetailService)
 	matchDetailRoute := routes.NewMatchDetailRoutes(matchDetailHandler)
 
-	// first run
-	seedDataFirstRun(articleService, schedulesService, matchDetailService)
+	adminHandler := handler.NewAdminHandler(adminService)
+	adminRoute := routes.NewAdminRoutes(adminHandler)
+
+  // check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
+	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
+		log.Println("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
+		seedDataFirstRun(articleService, schedulesService, matchDetailService)
+	}
+	// articleService.GetArticles(make([]string, 0))
 
 	// cronjob Setup
 	go func() {
@@ -94,6 +102,7 @@ func main() {
 	articleRoute.Setup(r)
 	schedulesRoute.Setup(r)
 	matchDetailRoute.Setup(r)
+	adminRoute.Setup(r)
 
 	err = r.Run(":8080")
 	if err != nil {
@@ -101,30 +110,37 @@ func main() {
 	}
 }
 
-func readConfigFromJSON(JsonPath string) (entities.HtmlClasses, entities.Leagues, entities.Tags, error) {
+func readConfigFromJSON(JsonPath string) (entities.HtmlClasses, entities.Leagues, entities.Tags, entities.Admin, error) {
 	var classConfig entities.HtmlClasses
 	var leaguesConfig entities.Leagues
 	var tagsConfig entities.Tags
+	var adminConfig entities.Admin
 
 	classConfig, err := services.ReadHtmlClassJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read htmlClassesConfig.json: ", err)
-		return classConfig, leaguesConfig, tagsConfig, err
+		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
 	}
 
 	leaguesConfig, err = services.ReadleaguesJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read leaguesConfig.json: ", err)
-		return classConfig, leaguesConfig, tagsConfig, err
+		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
 	}
 
 	tagsConfig, err = services.ReadTagsJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read tagsConfig.json: ", err)
-		return classConfig, leaguesConfig, tagsConfig, err
+		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
 	}
 
-	return classConfig, leaguesConfig, tagsConfig, nil
+	adminConfig, err = services.ReadAdminJSON(JsonPath)
+	if err != nil {
+		log.Println("Fail to read adminConfig.json: ", err)
+		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
+	}
+
+	return classConfig, leaguesConfig, tagsConfig, adminConfig, nil
 }
 
 func loadEnv(path string) (env EnvConfig, err error) {
@@ -166,8 +182,9 @@ func connectToElasticsearch(env EnvConfig) (*elasticsearch.Client, error) {
 	return es, nil
 }
 
-func createElaticsearchIndex(es *elasticsearch.Client) {
+func createElaticsearchIndex(es *elasticsearch.Client) int{
 	// check if index exist. if not exist, create new one, if exist, skip it
+	var amountOfNewIndex int = 0
 	for _, indexName := range ELASTIC_SEARCH_INDEXES {
 		exists, err := checkIndexExists(es, indexName)
 		if err != nil {
@@ -182,10 +199,13 @@ func createElaticsearchIndex(es *elasticsearch.Client) {
 				time.Sleep(10 * time.Second)
 				err = createIndex(es, indexName)
 			}
-			return
+			amountOfNewIndex += 1
+			continue
 		}
+
 		log.Printf("Index: %s is already exist, skip it...\n", indexName)
 	}
+	return amountOfNewIndex
 }
 
 func checkIndexExists(es *elasticsearch.Client, indexName string) (bool, error) {
@@ -230,7 +250,7 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 				date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 				schedulesService.GetSchedules(date.Format("02-01-2006"))
 				matchUrls := schedulesService.GetMatchURLsOnDay()
-				matchDetailService.GetMatchDetailFromCrawler(matchUrls)
+				matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 				schedulesService.ClearMatchURLsOnDay()
 			}
 			defer wg.Done()
@@ -240,5 +260,5 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 	wg.Wait()
 
 	// Get articles
-	articleService.GetArticles()
+	articleService.GetArticles(make([]string, 0))
 }

@@ -7,9 +7,9 @@ import React, {
   useState,
 } from 'react';
 import { toast } from 'react-toastify';
-import DatePicker from 'react-datepicker';
-import { Schedules } from '.';
+import DatePicker from 'react-datepicker'
 import { formatVietnameseDate, formatISO8601Date } from '@/helpers/format';
+import { Schedules } from '.';
 
 const WEEKDAYS = [
   'Chủ nhật',
@@ -66,10 +66,17 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
   };
 
   const requestScheduleDate = async (date: Date) => {
+    const { league } = route.query;
+    let leagueQuery
+    if (league === "Tin tức bóng đá") {
+      leagueQuery = ""
+    }else {
+      leagueQuery = league
+    }
     try {
-      const { data } = await axiosClient.get('schedules/on-day?', {
+      const { data } = await axiosClient.get('schedules/league-on-day?', {
         // eslint-disable-next-line camelcase
-        params: { date: formatISO8601Date(date) },
+        params: { date: formatISO8601Date(date), league: leagueQuery },
       });
       handleSchedule(data.schedules);
     } catch (error) {

@@ -7,6 +7,8 @@ type Props = {
   matchTitle: MatchDetailTitle | null;
 };
 
+const CLUB_LOGO_STATS_SIZE = 40 // pixel
+
 const MatchStatsComponent: FunctionComponent<Props> = ({
   matchStatistics,
   matchTitle,
@@ -65,6 +67,8 @@ const MatchStatsComponent: FunctionComponent<Props> = ({
               <Image
                 src={matchTitle.club_1.logo}
                 alt={`${matchTitle.club_1.name} logo`}
+                width={CLUB_LOGO_STATS_SIZE}
+                height={CLUB_LOGO_STATS_SIZE}
                 className="logo logo1"
               />
               <span className="clubName clubName1">
@@ -80,6 +84,8 @@ const MatchStatsComponent: FunctionComponent<Props> = ({
               <Image
                 src={matchTitle.club_2.logo}
                 alt={`${matchTitle.club_2.name} logo`}
+                width={CLUB_LOGO_STATS_SIZE}
+                height={CLUB_LOGO_STATS_SIZE}
                 className="logo logo2"
               />
             </div>

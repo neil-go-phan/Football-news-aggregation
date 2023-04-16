@@ -62,8 +62,7 @@ func (s *schedulesService) GetSchedules(date string) {
 			defer wg.Done()
 
 			// push matchUrl on day
-			matchUrls := getMatchUrlOnDay(schedule)
-			s.matchURLsOnDay.Urls = append(s.matchURLsOnDay.Urls, matchUrls...)
+
 			exist := checkScheduleWithElasticSearch(schedule, s.es)
 
 			if !exist {
@@ -71,6 +70,8 @@ func (s *schedulesService) GetSchedules(date string) {
 				
 				if isExisteague {
 					storeScheduleElasticsearch(schedule, s.es)
+					matchUrls := getMatchUrlOnDay(schedule)
+					s.matchURLsOnDay.Urls = append(s.matchURLsOnDay.Urls, matchUrls...)
 				}
 			}
 
@@ -80,12 +81,16 @@ func (s *schedulesService) GetSchedules(date string) {
 	wg.Wait()
 }
 
-func (s *schedulesService) APIGetScheduleOnDay(date time.Time) (entities.ScheduleOnDay, error) {
+func (s *schedulesService) APIGetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	var scheduleOnDay entities.ScheduleOnDay
 	var buffer bytes.Buffer
 
-	query := querySearchScheduleOnDay(date)
+	query := querySearchAllScheduleOnDay(date)
+
+	if league != "" {
+		query = querySearchScheduleLeagueOnDay(date, league)
+	}
 
 	err := json.NewEncoder(&buffer).Encode(query)
 	if err != nil {
@@ -106,6 +111,7 @@ func (s *schedulesService) APIGetScheduleOnDay(date time.Time) (entities.Schedul
 	if err != nil {
 		return scheduleOnDay, fmt.Errorf("decode respose from elastic search failed")
 	}
+
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 
 		scheduleOnLeague := hit.(map[string]interface{})["_source"].(map[string]interface{})
@@ -117,18 +123,41 @@ func (s *schedulesService) APIGetScheduleOnDay(date time.Time) (entities.Schedul
 	return scheduleOnDay, nil
 }
 
-func querySearchScheduleOnDay(dateISO8601 time.Time) map[string]interface{} {
+func querySearchAllScheduleOnDay(dateISO8601 time.Time) map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
-				"must": map[string]interface{}{
-					"match": map[string]interface{}{
+				"filter": map[string]interface{}{
+					"term": map[string]interface{}{
 						"date": dateISO8601,
 					},
 				},
 			},
 		},
 	}
+	return query
+}
+
+func querySearchScheduleLeagueOnDay(dateISO8601 time.Time, league string) map[string]interface{} {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"filter": []map[string]interface{}{
+					{
+						"term": map[string]interface{}{
+							"league_name.keyword": league,
+						},
+					},
+					{
+						"term": map[string]interface{}{
+							"date": dateISO8601,
+						},
+					},
+				},
+			},
+		},
+	}
+	
 	return query
 }
 
@@ -212,21 +241,6 @@ func (s *schedulesService) checkIfLeagueExist(checkLeague string) bool {
 	}
 	return false
 }
-
-// func (s *schedulesService) storeNewTag(newTags string) bool {
-// 	if newTags == "" {
-// 		return false
-// 	}
-// 	// detect new league
-// 	tagFormat := helper.FormatVietnamese(newTags)
-// 	for _, tag := range s.tagsService.Tags.Tags {
-// 		if tagFormat == tag {
-// 			return false
-// 		}
-// 	}
-// 	s.tagsService.Tags.Tags = append(s.tagsService.Tags.Tags, tagFormat)
-// 	return true
-// }
 
 func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.ScheduleElastic {
 	schedules := make([]entities.ScheduleElastic, 0)

@@ -6,6 +6,8 @@ type Props = {
   date: string | string[] | undefined;
 };
 
+const CLUB_LOGO_TITLE_SIZE = 80 //pixel
+
 const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
   if (matchTitle) {
     return (
@@ -17,6 +19,8 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
               <Image
                 src={matchTitle.club_1.logo}
                 alt={`${matchTitle.club_1.name} logo`}
+                width={CLUB_LOGO_TITLE_SIZE}
+                height={CLUB_LOGO_TITLE_SIZE}
                 className="logo logo1"
               />
               <span className="clubName clubName1">
@@ -33,6 +37,8 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
               <Image
                 src={matchTitle.club_2.logo}
                 alt={`${matchTitle.club_2.name} logo`}
+                width={CLUB_LOGO_TITLE_SIZE}
+                height={CLUB_LOGO_TITLE_SIZE}
                 className="logo logo2"
               />
             </div>
