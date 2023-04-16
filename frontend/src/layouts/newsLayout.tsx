@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars } from '@fortawesome/free-solid-svg-icons';
 import Head from 'next/head';
 import { SidebarOverlay, Sidebar } from '@/components/sideBar';
+import Link from 'next/link';
 export default function NewsLayout({ children }: PropsWithChildren) {
   // Show status for xs screen
   const [isShowSmallScreenSidebar, setIsShowSmallScreenSidebar] =
@@ -22,8 +23,10 @@ export default function NewsLayout({ children }: PropsWithChildren) {
       <div className="wrapper d-flex flex-column min-vh-100 bg-light">
         <Navbar bg="secondary" expand="lg">
           <Container fluid className="header-navbar d-flex align-items-center">
-            <Navbar.Brand className="text-light" href="/">
-              Tin tức bóng đá
+          <Navbar.Brand className="text-light">
+              <Link className="linkToHome" href="/">
+                Tin tức bóng đá
+              </Link>
             </Navbar.Brand>
             <Button
               variant="link"

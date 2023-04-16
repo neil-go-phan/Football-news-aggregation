@@ -50,10 +50,10 @@ func main() {
 	// createElaticsearchIndex(es)
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
-	leaguesService := services.NewleaguesService(leaguesconfig, env.JsonPath)
 	tagsService := services.NewTagsService(tagsConfig, env.JsonPath)
+	leaguesService := services.NewleaguesService(leaguesconfig,tagsService, env.JsonPath)
 	articleService := services.NewArticleService(leaguesService, htmlClassesService, tagsService, conn, es)
-	schedulesService := services.NewSchedulesService(leaguesService, conn, es)
+	schedulesService := services.NewSchedulesService(leaguesService,tagsService, conn, es)
 	matchDetailService := services.NewMatchDetailervice(conn, es, articleService)
 	adminService := services.NewAdminService(adminConfig, env.JsonPath)
 

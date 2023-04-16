@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"server/entities"
+	serverhelper "server/helper"
 	pb "server/proto"
 	"strings"
 	"sync"
@@ -23,14 +24,16 @@ type schedulesService struct {
 	conn           *grpc.ClientConn
 	es             *elasticsearch.Client
 	leaguesService *leaguesService
+	tagsService    *tagsService
 	matchURLsOnDay entities.MatchURLsOnDay
 }
 
-func NewSchedulesService(leagues *leaguesService, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesService {
+func NewSchedulesService(leagues *leaguesService, tags *tagsService, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesService {
 	schedulesService := &schedulesService{
 		conn:           conn,
 		es:             es,
 		leaguesService: leagues,
+		tagsService:    tags,
 	}
 	return schedulesService
 }
@@ -75,6 +78,7 @@ func (s *schedulesService) GetSchedules(date string) {
 					// check is schedule active // push matchUrl on day
 					isActive := s.isLeagueActive(schedule.LeagueName)
 					if isActive {
+						s.checkAndAddTag(schedule.LeagueName)
 						matchUrls := getMatchUrlOnDay(schedule)
 						s.matchURLsOnDay.Urls = append(s.matchURLsOnDay.Urls, matchUrls...)
 					}
@@ -120,9 +124,9 @@ func (s *schedulesService) APIGetAllScheduleLeagueOnDay(date time.Time) (entitie
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 
 		scheduleOnLeague := hit.(map[string]interface{})["_source"].(map[string]interface{})
-		
+
 		entityScheduleOnDay := newEntitiesScheduleOnLeaguesFromMap(scheduleOnLeague)
-		if checkIsScheduleOnActiveLeague(activeLeague,entityScheduleOnDay.LeagueName) {
+		if checkIsScheduleOnActiveLeague(activeLeague, entityScheduleOnDay.LeagueName) {
 			scheduleOnDay.ScheduleOnLeagues = append(scheduleOnDay.ScheduleOnLeagues, entityScheduleOnDay)
 		}
 	}
@@ -163,7 +167,7 @@ func (s *schedulesService) APIGetScheduleLeagueOnDay(date time.Time, league stri
 		scheduleOnLeague := hit.(map[string]interface{})["_source"].(map[string]interface{})
 
 		entityScheduleOnDay := newEntitiesScheduleOnLeaguesFromMap(scheduleOnLeague)
-		if checkIsScheduleOnActiveLeague(activeLeague,league) {
+		if checkIsScheduleOnActiveLeague(activeLeague, league) {
 			scheduleOnDay.ScheduleOnLeagues = append(scheduleOnDay.ScheduleOnLeagues, entityScheduleOnDay)
 		}
 	}
@@ -288,6 +292,9 @@ func (s *schedulesService) ClearMatchURLsOnDay() {
 
 func (s *schedulesService) isNewLeague(newLeaegueName string) bool {
 	// detect new league
+	if newLeaegueName == "" {
+		return false
+	}
 	for _, league := range s.leaguesService.leagues.Leagues {
 		if newLeaegueName == league.LeagueName {
 			return false
@@ -305,19 +312,20 @@ func (s *schedulesService) isLeagueActive(leaegueName string) bool {
 	}
 	return false
 }
-
-// func (s *schedulesService) checkIfLeagueExist(checkLeague string) bool {
-// 	// detect new league
-// 	if checkLeague == "" {
-// 		return false
-// 	}
-// 	for _, league := range s.leaguesService.leagues.Leagues {
-// 		if strings.EqualFold(checkLeague, league) {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
+func (s *schedulesService) checkAndAddTag(newTag string) {
+	// detect new tag
+	tagFormated := serverhelper.FormatVietnamese(newTag)
+	if tagFormated == "" {
+		return
+	}
+	for _, tag := range s.tagsService.Tags.Tags {
+		if tag == tagFormated {
+			return
+		}
+	}
+	log.Printf("Detect %s is new tag, add...", newTag)
+	s.tagsService.AddTag(newTag)
+}
 
 func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.ScheduleElastic {
 	schedules := make([]entities.ScheduleElastic, 0)

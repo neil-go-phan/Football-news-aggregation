@@ -3,7 +3,11 @@ export const _ROUTES = {
   MATCH_DETAIL_PAGE: '/match-detail',
   ADMIN_PAGE: '/admin',
   ADMIN_LOGIN: '/admin/login',
-  ADMIN_PROFILE: '/admin/profile'
+  ADMIN_TAGS: '/admin/tags',
+  ADMIN_LEAGUES: '/admin/leagues',
+  ADMIN_ARTICLES: '/admin/articles',
+  ADMIN_SCHEDULES: '/admin/schedules',
+  ADMIN_MATCHS: '/admin/matchs',
 }
 
 export const _REGEX = {

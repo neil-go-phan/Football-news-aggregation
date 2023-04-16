@@ -8,8 +8,8 @@ type Props = {
   matchLineUp: MatchLineup | null;
   matchTitle: MatchDetailTitle | null;
 };
-
-const CLUB_LOGO_LINEUP_SIDE = 24 // pixel
+// pixel
+const CLUB_LOGO_LINEUP_SIDE = 24 
 
 const MatchLineUpComponent: FunctionComponent<Props> = ({
   matchLineUp,

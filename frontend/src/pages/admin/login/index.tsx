@@ -62,7 +62,7 @@ const SignIn: NextPage = () => {
     let { username, password } = data;
     password = cryptoJS.SHA512(password).toString();
     try {
-      const res = await axiosClient.post(`admin/login`, {
+      const res = await axiosClient.post('admin/login', {
         username,
         password,
       });

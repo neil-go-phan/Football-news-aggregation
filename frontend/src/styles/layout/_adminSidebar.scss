@@ -18,7 +18,7 @@ $sidebar-overlay-z-index: 1025;
   --sidebar-width: 16rem;
 }
 
-.sidebar {
+.adminSidebar {
   flex: 0 0 var(--sidebar-width);
   width: var(--sidebar-width);
   background: $sidebar-background;
@@ -81,7 +81,7 @@ $sidebar-overlay-z-index: 1025;
     }
   }
 
-  .sidebar-toggler {
+  .adminSidebar-toggler {
     flex: 0 0 $sidebar-toggler-height;
     background: $sidebar-toggler-background;
     color: $sidebar-toggler-color;
@@ -147,6 +147,6 @@ $sidebar-overlay-z-index: 1025;
   }
 }
 
-.sidebar-overlay {
+.adminSidebar-overlay {
   z-index: $sidebar-overlay-z-index;
 }

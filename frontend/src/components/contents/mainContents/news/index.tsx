@@ -3,14 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import Article, { ArticleType } from './article';
 import SearchBar from './searchBar';
-import { useRouter } from 'next/router';
 
 export default function News() {
   const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const handleSearch = (searchResult: Array<ArticleType>) => {
     setArticles(searchResult);
   };
-  const route = useRouter()
   useEffect(() => {
     const requestArticleFirstTime = async () => {
       try {

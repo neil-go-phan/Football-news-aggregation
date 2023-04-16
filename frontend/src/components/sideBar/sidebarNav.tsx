@@ -15,8 +15,7 @@ export default function SidebarNav() {
 
   if (!isLoading) {
     if (data) {
-      var route = router.asPath.substring(0, router.asPath.indexOf('?'));
-      console.log(data)
+      let route = router.asPath.substring(0, router.asPath.indexOf('?'));
       const leaguesForDisplay: LeaguesNames = expanded ? data : data!.slice(0, 10);
       return (
         <ul className="list-unstyled">

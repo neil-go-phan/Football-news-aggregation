@@ -23,6 +23,7 @@ import (
 
 var PREV_ARTICLES = make(map[string]bool)
 var ARTICLES_INDEX_NAME = "articles"
+var DEFAULT_TAG = "tin tuc bong da"
 
 type articleService struct {
 	conn               *grpc.ClientConn
@@ -408,7 +409,12 @@ func checkTags(article *pb.Article, tags []string, keyword string) []string {
 	}
 
 	articleTagsSlice := make([]string, 0)
-
+	
+	_, ok := articleTags[DEFAULT_TAG]
+	if !ok {
+		articleTagsSlice = append(articleTagsSlice, DEFAULT_TAG)
+	}
+	
 	for tag := range articleTags {
 		articleTagsSlice = append(articleTagsSlice, tag)
 	}

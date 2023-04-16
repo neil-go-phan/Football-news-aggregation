@@ -30,7 +30,7 @@ func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 	formatedTags := serverhelper.FortmatTagsFromRequest(tags)
 
 	// request to elasticsearch
-	keyword= strings.TrimSpace(keyword)
+	keyword = strings.TrimSpace(keyword)
 	articles, err := articleHandler.handler.APISearchArticlesTagsAndKeyword(keyword, formatedTags)
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, "articles", err)
@@ -50,6 +50,16 @@ func (articleHandler *ArticleHandler) GetAllFromElastic(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
+}
+
+func (articleHandler *ArticleHandler) CrawlArticleLeague(c *gin.Context) {
+	leagueName := c.Query("league")
+
+	league := []string{leagueName}
+
+	articleHandler.handler.GetArticles(league)
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Signal crawl artilce success"})
 }
 
 func (articleHandler *ArticleHandler) SignalToCrawlerAfter10Min(cronjob *cron.Cron) {

@@ -10,7 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-regular-svg-icons';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
-import Swal from "sweetalert2";
+import Swal from 'sweetalert2';
 
 interface AdminProfileFormProperty {
   password: string;
@@ -84,7 +84,7 @@ const AdminProfile: React.FC<Props> = (props: Props) => {
     }
     try {
       const res = await axiosProtectedAPI.post(
-        `admin/change-password`,
+        'admin/change-password',
         {
           username: adminUsername,
           password,
@@ -97,10 +97,10 @@ const AdminProfile: React.FC<Props> = (props: Props) => {
       });
       props.handleIsProfileClose();
       Swal.fire({
-        title: "Success",
+        title: 'Success',
         text: res.data.message,
-        icon: "success",
-        confirmButtonText: "OK",
+        icon: 'success',
+        confirmButtonText: 'OK',
       });
     } catch (error: any) {
       setErrorMessage({
@@ -111,59 +111,59 @@ const AdminProfile: React.FC<Props> = (props: Props) => {
     reset({ password: '' });
   };
   return (
-    <div className="adminProfile">
+    <div className='adminProfile'>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <h2 className="adminProfile__title">Admin profile</h2>
-        <div className="adminProfile__line" />
+        <h2 className='adminProfile__title'>Admin profile</h2>
+        <div className='adminProfile__line' />
         <label> Username </label>
-        <InputGroup className="mb-3">
+        <InputGroup className='mb-3'>
           <InputGroup.Text>
             <FontAwesomeIcon icon={faUser} fixedWidth />
           </InputGroup.Text>
-          <Form.Control value={adminUsername} type="text" disabled />
+          <Form.Control value={adminUsername} type='text' disabled />
         </InputGroup>
 
         <label> Password </label>
-        <InputGroup className="mb-3">
+        <InputGroup className='mb-3'>
           <InputGroup.Text>
             <FontAwesomeIcon icon={faLock} fixedWidth />
           </InputGroup.Text>
           <Form.Control
             {...register('password')}
-            placeholder="Type your password"
-            type="password"
+            placeholder='Type your password'
+            type='password'
             required
           />
         </InputGroup>
 
         {errors.password && (
-          <p className="errorMessage">{errors.password.message}</p>
+          <p className='errorMessage'>{errors.password.message}</p>
         )}
 
         <label> Confirm password </label>
-        <InputGroup className="mb-3">
+        <InputGroup className='mb-3'>
           <InputGroup.Text>
             <FontAwesomeIcon icon={faLock} fixedWidth />
           </InputGroup.Text>
           <Form.Control
             {...register('password_confirmation')}
-            placeholder="Confirm your password"
-            type="password"
+            placeholder='Confirm your password'
+            type='password'
             required
           />
         </InputGroup>
         {errors.password_confirmation && (
-          <p className="errorMessage">{errors.password_confirmation.message}</p>
+          <p className='errorMessage'>{errors.password_confirmation.message}</p>
         )}
 
         {errorMessage.trigger && (
-          <p className="errorMessage errorFromServer">{errorMessage.message}</p>
+          <p className='errorMessage errorFromServer'>{errorMessage.message}</p>
         )}
 
         <Button
           className='w-100 px-4'
-          variant="primary"
-          type="submit"
+          variant='primary'
+          type='submit'
         >
           Change your password
         </Button>

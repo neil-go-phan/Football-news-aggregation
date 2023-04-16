@@ -12,7 +12,7 @@ import (
 	pb "crawler/proto"
 )
 
-var PAGES = 1
+var PAGES = 2
 
 func (s *gRPCServer) GetArticles(configs *pb.AllConfigsArticles, stream pb.CrawlerService_GetArticlesServer) error {
 	leagues := configs.GetLeagues()

@@ -1,9 +1,10 @@
-import { useQuery } from "react-query";
-import axiosClient from "../axiosClient";
-import { toast } from "react-toastify";
-
-const TAGS_STALE_TIME = 5 * (60 * 1000)// 5 min
-const TAGS_CACHE_TIME = 10 * (60 * 1000)// 10 min
+import { useQuery } from 'react-query';
+import axiosClient from '../axiosClient';
+import { toast } from 'react-toastify';
+// 5 min
+const TAGS_STALE_TIME = 5 * (60 * 1000)
+// 10 min
+const TAGS_CACHE_TIME = 10 * (60 * 1000)
 
 export type Tags = Array<string> | undefined
 
@@ -26,7 +27,7 @@ const callAPIGetTags = async ():Promise<Tags> => {
 }
 
 const useGetTags = () => {
-  const getTagsQuery = useQuery("tags", callAPIGetTags, {
+  const getTagsQuery = useQuery('tags', callAPIGetTags, {
     cacheTime: TAGS_CACHE_TIME,
     refetchOnWindowFocus: false,
     staleTime: TAGS_STALE_TIME,

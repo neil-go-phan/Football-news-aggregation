@@ -14,12 +14,14 @@ type LeaguesServices interface {
 	GetLeaguesName() []string 
 	GetLeaguesNameActive() []string
 	ListLeagues() (entities.Leagues)
+	ChangeStatus(leagueName string) (bool,error)
 	AddLeague(newLeaguesName string)
 }
 
 type TagsServices interface {
 	ListTags() (entities.Tags)
-	AddTag(newTags []string)
+	AddTag(newTags string)
+	DeleteTag(tag string)
 }
 
 type ArticleServices interface {
