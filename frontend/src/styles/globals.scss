@@ -4,13 +4,25 @@ $enable-negative-margins: true;
 @import "~nprogress/nprogress.css";
 @import 'react-toastify/dist/ReactToastify.css';
 @import "react-datepicker/dist/react-datepicker.css";
+@import "reactjs-popup/dist/index.css";
 
 @import "./components/progress";
 @import "./components/sidebar";
 
+// layout 
+@import "./layout/avatar";
+@import "./layout/footer";
+@import "./layout/header";
+@import "./layout/progress";
+@import "./layout/adminSidebar";
+
+// commom
+@import "./common/errorMessage";
 @import "./common/tag";
 
+// components
 @import "./components/rightSideBar";
 @import "./components/contents";
 @import "./components/matchDetail";
+@import "./components//admin"
 

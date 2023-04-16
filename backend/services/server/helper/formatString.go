@@ -1,8 +1,10 @@
 package serverhelper
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
+	"time"
 )
 
 func FormatVietnamese(stringInput string) string {
@@ -46,4 +48,9 @@ func FormatElasticSearchIndexName(indexName string) string {
 func FortmatTagsFromRequest(tags string) []string {
 	tagsSlice := strings.Split(tags, ",")
 	return tagsSlice
+}
+
+func FormatDateToVietnamesDateSting(date time.Time) string {
+	year, month, day := date.Date()
+	return fmt.Sprintf("%v/%v/%v", day, int(month), year)
 }

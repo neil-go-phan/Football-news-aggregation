@@ -10,7 +10,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func CrawlArticles(searchUrl string, page int, htmlClasses entities.HtmlArticleClass, proxy string) ([]entities.Article, error) {
+func CrawlArticles(searchUrl string, page int, htmlClasses entities.HtmlArticleClass) ([]entities.Article, error) {
 	var articles []entities.Article
 	req, err := http.NewRequest("GET", fmt.Sprintf(`%s&start=%d0`, searchUrl, page), nil)
 	if err != nil {
@@ -20,21 +20,18 @@ func CrawlArticles(searchUrl string, page int, htmlClasses entities.HtmlArticleC
 
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36")
 
-	// fmt.Println("proxy ", proxy)
-	// create a transport
 	// proxyUrl, err := url.Parse(fmt.Sprintf("http://%s", proxy))
 	// if err != nil {
 	// 	log.Println("error when parse proxy to url:", err)
 	// }
 
-	// create a client
 	// client := &http.Client{
 	// 	Timeout: time.Second * 10,
 	// 	Transport: &http.Transport{
 	// 		Proxy: http.ProxyURL(proxyUrl),
 	// 	},
 	// }
-	// fmt.Println(client)
+
 	// var resp *http.Response
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -53,6 +50,10 @@ func CrawlArticles(searchUrl string, page int, htmlClasses entities.HtmlArticleC
 		log.Printf("can not create goquery document, err:%s\n", err)
 		return articles, err
 	}
+
+	doc.Find("#recaptcha").Each(func(i int, s *goquery.Selection) {
+		log.Printf("Google detect you trying to crawl article. Please shut down crawler services or change proxy")
+	})
 
 	doc.Find(crawlerhelpers.FormatClassName(htmlClasses.ArticleClass)).Each(func(i int, s *goquery.Selection) {
 		var article entities.Article

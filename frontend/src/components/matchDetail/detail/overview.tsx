@@ -1,23 +1,27 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { MatchOverview, OverviewItem } from './index';
-
+import Image from 'next/image';
 type Props = {
   matchOverview: MatchOverview | null;
 };
 
-const MatchOverviewComponent: FunctionComponent<Props> = ({ matchOverview }) => {
+const EVENT_IMAGE_SIZE = 15 //pixel
+
+const MatchOverviewComponent: FunctionComponent<Props> = ({
+  matchOverview,
+}) => {
   const checkImage = (imgType: string): string => {
     switch (imgType) {
-      case 'goal':
-        return '/images/goal.png';
-      case 'yellow-card':
-        return '/images/yellow_card.png';
-      case 'red-card':
-        return '/images/red_card.png';
-      case 'substitution':
-        return '/images/substitution.png';
-      default:
-        return '';
+    case 'goal':
+      return '/images/goal.png';
+    case 'yellow-card':
+      return '/images/yellow_card.png';
+    case 'red-card':
+      return '/images/red_card.png';
+    case 'substitution':
+      return '/images/substitution.png';
+    default:
+      return '';
     }
   };
 
@@ -27,16 +31,18 @@ const MatchOverviewComponent: FunctionComponent<Props> = ({ matchOverview }) => 
     return (
       <>
         {overviewItems.map((item) => {
-          if (item.info === "") {
+          if (item.info === '') {
             return;
           }
           return (
             <div className="item" key={item.info}>
               {item.info}
               <span className="more-info">
-                <img
+                <Image
                   src={checkImage(item.image_type)}
                   alt={item.image_type}
+                  width={EVENT_IMAGE_SIZE}
+                  height={EVENT_IMAGE_SIZE}
                   className="image"
                 />{' '}
                 <span className="time">{item.time}</span>

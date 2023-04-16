@@ -34,7 +34,6 @@
   ],
   "rules": {
     "max-lines": ["error", 500],
-    "indent": ["error",2],
     "quotes": ["error", "single"],
     "curly": "error",
     "no-console": "error",

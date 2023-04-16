@@ -1,10 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { MatchDetailTitle } from './index';
-
+import Image from 'next/image';
 type Props = {
   matchTitle: MatchDetailTitle | null;
   date: string | string[] | undefined;
 };
+
+const CLUB_LOGO_TITLE_SIZE = 80 //pixel
 
 const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
   if (matchTitle) {
@@ -14,9 +16,11 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
         <div className="result d-flex">
           <div className="col-4">
             <div className="club1">
-              <img
+              <Image
                 src={matchTitle.club_1.logo}
                 alt={`${matchTitle.club_1.name} logo`}
+                width={CLUB_LOGO_TITLE_SIZE}
+                height={CLUB_LOGO_TITLE_SIZE}
                 className="logo logo1"
               />
               <span className="clubName clubName1">
@@ -30,9 +34,11 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
               <span className="clubName clubName2">
                 {matchTitle.club_2.name}
               </span>
-              <img
+              <Image
                 src={matchTitle.club_2.logo}
                 alt={`${matchTitle.club_2.name} logo`}
+                width={CLUB_LOGO_TITLE_SIZE}
+                height={CLUB_LOGO_TITLE_SIZE}
                 className="logo logo2"
               />
             </div>

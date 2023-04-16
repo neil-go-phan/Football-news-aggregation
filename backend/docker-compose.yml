@@ -1,5 +1,6 @@
 version: '3.9'
 services:
+
   elasticsearch:
     image: elasticsearch:7.17.9
     environment:
@@ -14,6 +15,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - JSON_PATH=/app/configs/
+      - GRPC_PORT=:8000
     ports:
       - "8000"
 

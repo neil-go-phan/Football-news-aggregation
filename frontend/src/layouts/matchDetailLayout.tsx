@@ -1,9 +1,8 @@
 import React, { PropsWithChildren } from 'react';
-import { Button, Container, Navbar } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { Container, Navbar } from 'react-bootstrap';
+
 import Head from 'next/head';
-import { SidebarOverlay, Sidebar } from '@/components/sideBar';
+
 function MatchDetailLayout({ children }: PropsWithChildren) {
   return (
     <>

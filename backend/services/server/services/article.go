@@ -7,8 +7,9 @@ import (
 	"io"
 	"log"
 	"server/entities"
-	"server/helper"
+	serverhelper "server/helper"
 	"strings"
+	"time"
 
 	pb "server/proto"
 
@@ -17,6 +18,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 var PREV_ARTICLES = make(map[string]bool)
@@ -53,6 +55,7 @@ func (s *articleService) APISearchArticlesTagsAndKeyword(keyword string, formate
 			filterQueries = append(filterQueries, tagQuery)
 		}
 	}
+	
 
 	// default is search all
 	query := querySearchAllArticles()
@@ -132,6 +135,11 @@ func querySearchAllArticles() map[string]interface{} {
 		"query": map[string]interface{}{
 			"match_all": map[string]interface{}{},
 		},
+		"sort": map[string]interface{}{
+			"created_at": map[string]interface{}{
+				"order": "desc",
+			},
+		},
 	}
 	return query
 }
@@ -148,6 +156,11 @@ func querySearchArticlesOnlySearchKeyword(keyword string) map[string]interface{}
 				},
 			},
 		},
+		"sort": map[string]interface{}{
+			"created_at": map[string]interface{}{
+				"order": "desc",
+			},
+		},
 	}
 	return query
 }
@@ -161,6 +174,11 @@ func querySearchArticlesOnlyTag(filterQueries []map[string]interface{}) map[stri
 						"must": filterQueries,
 					},
 				},
+			},
+		},
+		"sort": map[string]interface{}{
+			"created_at": map[string]interface{}{
+				"order": "desc",
 			},
 		},
 	}
@@ -184,12 +202,17 @@ func querySearchArticlesBothTagAndKeyword(keyword string, filterQueries []map[st
 				},
 			},
 		},
+		"sort": map[string]interface{}{
+			"created_at": map[string]interface{}{
+				"order": "desc",
+			},
+		},
 	}
 	return query
 }
 
 // GetArticles request crawler to scrapt data and sync new data with redis and elastic search
-func (s *articleService) GetArticles() {
+func (s *articleService) GetArticles(keywords []string) {
 	client := pb.NewCrawlerServiceClient(s.conn)
 
 	in := &pb.AllConfigsArticles{
@@ -201,6 +224,11 @@ func (s *articleService) GetArticles() {
 		},
 		Leagues: s.leaguesService.leagues.Leagues,
 	}
+
+	if len(keywords) != 0 {
+		in.Leagues = keywords
+	}
+
 	// send gRPC request to crawler
 	stream, err := client.GetArticles(context.Background(), in)
 	if err != nil {
@@ -221,6 +249,11 @@ func (s *articleService) GetArticles() {
 			}
 			if err != nil {
 				log.Printf("cannot receive %v\n", err)
+				status, _ := status.FromError(err)
+				if status.Code().String() == "Unavailable" {
+					done <- true //means stream is finished
+					return
+				}
 			}
 
 			league := resp.GetLeague()
@@ -262,7 +295,6 @@ func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, 
 				entityArticle := newEntitiesArticleFromPb(article, tags, league)
 				storeArticleInElasticsearch(entityArticle, es)
 			}
-			// checkWithRedis(article)
 		}
 	}
 }
@@ -291,8 +323,6 @@ func checkArtilceWithElasticSearch(article *pb.Article, es *elasticsearch.Client
 	return false
 }
 
-// func checkWithRedis(){}
-
 func saveToMapSearchResult(respArticles []*pb.Article, mapSearchResult map[string]bool) {
 	for _, article := range respArticles {
 		mapSearchResult[article.Title] = true
@@ -307,7 +337,7 @@ func newEntitiesArticleFromMap(respArticle map[string]interface{}) entities.Arti
 	if err != nil {
 		log.Printf("error occrus when marshal elastic response article: %s", err)
 	}
-	
+
 	err = json.Unmarshal(articleByte, &article)
 	if err != nil {
 		log.Printf("error occrus when unmarshal elastic response to entity article: %s", err)
@@ -330,7 +360,12 @@ func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string, league str
 func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Client) {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-	body, err := json.Marshal(article)
+	doc := entities.ElasticArticle{
+		Article:   article,
+		CreatedAt: time.Now(),
+	}
+
+	body, err := json.Marshal(doc)
 	if err != nil {
 		log.Printf("Error encoding article: %s\n", err)
 	}

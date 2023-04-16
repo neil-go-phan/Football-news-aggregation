@@ -20,6 +20,6 @@ func NewScheduleRoutes(schedulesHandler *handler.ScheduleHandler) *ScheduleRoute
 func (scheduleRoutes *ScheduleRoutes)Setup(r *gin.Engine) {
 	routes := r.Group("schedules")
 	{
-		routes.GET("on-day",  scheduleRoutes.schedulesHandler.APIGetScheduleOnDay)
+		routes.GET("league-on-day",  scheduleRoutes.schedulesHandler.APIGetScheduleLeagueOnDay)
 	}
 }

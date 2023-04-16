@@ -1,14 +1,13 @@
-import { Club } from '@/components/contents/mainContents/schedule';
 import axiosClient from '@/helpers/axiosClient';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import MatchTitle from './title';
-import MatchDetail from '..';
 import MatchLineUpComponent from './lineUp';
 import MatchOverviewComponent from './overview';
 import MatchStatsComponent from './statistics';
 import MatchEventsComponent from './events';
+import { Club } from '@/components/contents/mainContents/schedule';
 
 export type MatchDetail = {
   match_detail_title: MatchDetailTitle;
@@ -77,7 +76,6 @@ function Detail() {
   const router = useRouter();
   const { date, club_1, club_2 } = router.query;
   const [matchDetail, setMatchDetail] = useState<MatchDetail>();
-  console.log(matchDetail);
 
   useEffect(() => {
     const requestGetMatchDetail = async () => {
@@ -88,7 +86,7 @@ function Detail() {
         });
         setMatchDetail(data.match_detail);
       } catch (error) {
-        toast.error(`Error occurred while get match detail`, {
+        toast.error('Error occurred while get match detail', {
           position: 'top-right',
           autoClose: 3000,
           hideProgressBar: false,
@@ -101,6 +99,7 @@ function Detail() {
       }
     };
     requestGetMatchDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath]);
   if (matchDetail) {
     return (
@@ -148,13 +147,19 @@ function Detail() {
           </div>
         </div>
 
-        <MatchOverviewComponent matchOverview={matchDetail.match_overview}/>
+        <MatchOverviewComponent matchOverview={matchDetail.match_overview} />
 
-        <MatchStatsComponent matchStatistics={matchDetail.match_statistics} matchTitle={matchDetail.match_detail_title}/>
+        <MatchStatsComponent
+          matchStatistics={matchDetail.match_statistics}
+          matchTitle={matchDetail.match_detail_title}
+        />
 
-        <MatchLineUpComponent matchLineUp={matchDetail.match_lineup} matchTitle={matchDetail.match_detail_title}/>
+        <MatchLineUpComponent
+          matchLineUp={matchDetail.match_lineup}
+          matchTitle={matchDetail.match_detail_title}
+        />
 
-        <MatchEventsComponent matchProcess={matchDetail.match_progress}/>
+        <MatchEventsComponent matchProcess={matchDetail.match_progress} />
       </div>
     );
   } else {
