@@ -5,8 +5,8 @@ type Props = {
   matchTitle: MatchDetailTitle | null;
   date: string | string[] | undefined;
 };
-
-const CLUB_LOGO_TITLE_SIZE = 80 //pixel
+//pixel
+const CLUB_LOGO_TITLE_SIZE = 80;
 
 const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
   if (matchTitle) {

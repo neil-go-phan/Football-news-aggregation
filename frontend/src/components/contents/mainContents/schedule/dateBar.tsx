@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { toast } from 'react-toastify';
-import DatePicker from 'react-datepicker'
+import DatePicker from 'react-datepicker';
 import { formatVietnameseDate, formatISO8601Date } from '@/helpers/format';
 import { Schedules } from '.';
 
@@ -62,21 +62,46 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
 
   const handleOnClickChooseDay = (dateChose: Date) => {
     setDate(dateChose);
-    requestScheduleDate(dateChose);
+    const { league } = route.query;
+    if (league === 'Tin tức bóng đá') {
+      requestAllScheduleDate(dateChose);
+    } else {
+      requestScheduleOnLeagueDate(dateChose, league);
+    }
   };
 
-  const requestScheduleDate = async (date: Date) => {
-    const { league } = route.query;
-    let leagueQuery
-    if (league === "Tin tức bóng đá") {
-      leagueQuery = ""
-    }else {
-      leagueQuery = league
+  const requestAllScheduleDate = async (date: Date) => {
+    try {
+      const { data } = await axiosClient.get('schedules/all-league-on-day', {
+        // eslint-disable-next-line camelcase
+        params: { date: formatISO8601Date(date) },
+      });
+      handleSchedule(data.schedules);
+    } catch (error) {
+      toast.error(
+        `Error occurred while get schedule on ${formatVietnameseDate(date)}`,
+        {
+          position: 'top-right',
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'light',
+        }
+      );
     }
+  };
+
+  const requestScheduleOnLeagueDate = async (
+    date: Date,
+    league: string | string[] | undefined
+  ) => {
     try {
       const { data } = await axiosClient.get('schedules/league-on-day?', {
         // eslint-disable-next-line camelcase
-        params: { date: formatISO8601Date(date), league: leagueQuery },
+        params: { date: formatISO8601Date(date), league: league },
       });
       handleSchedule(data.schedules);
     } catch (error) {

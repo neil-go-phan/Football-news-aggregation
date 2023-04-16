@@ -6,8 +6,8 @@ type Props = {
   matchStatistics: MatchStatistics | null;
   matchTitle: MatchDetailTitle | null;
 };
-
-const CLUB_LOGO_STATS_SIZE = 40 // pixel
+// pixel
+const CLUB_LOGO_STATS_SIZE = 40 
 
 const MatchStatsComponent: FunctionComponent<Props> = ({
   matchStatistics,

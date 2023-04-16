@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from 'react';
 import { Container, Navbar } from 'react-bootstrap';
 
 import Head from 'next/head';
+import Link from 'next/link';
 
 function MatchDetailLayout({ children }: PropsWithChildren) {
   return (
@@ -15,8 +16,10 @@ function MatchDetailLayout({ children }: PropsWithChildren) {
       <div className="wrapper d-flex flex-column min-vh-100 bg-light">
         <Navbar bg="secondary" expand="lg">
           <Container fluid className="header-navbar d-flex align-items-center">
-            <Navbar.Brand className="text-light" href="/">
-              Tin tức bóng đá
+            <Navbar.Brand className="text-light">
+              <Link className="linkToHome" href="/">
+                Tin tức bóng đá
+              </Link>
             </Navbar.Brand>
           </Container>
         </Navbar>

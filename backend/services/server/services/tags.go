@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"server/entities"
+	serverhelper "server/helper"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -23,9 +24,27 @@ func NewTagsService(tags entities.Tags, path string) *tagsService{
 	return tag
 }
 
-func (s *tagsService)AddTag(newTags []string) {
- 	s.Tags.Tags = append(s.Tags.Tags, newTags...)
+func (s *tagsService)AddTag(newTags string) {
+	newTagFormated := serverhelper.FormatVietnamese(newTags)
+ 	s.Tags.Tags = append(s.Tags.Tags, newTagFormated)
+	fmt.Println("Tags:", s.Tags.Tags)
 	s.WriteTagsJSON()
+}
+
+func (s *tagsService)DeleteTag(tag string) {
+	tagFormated := serverhelper.FormatVietnamese(tag)
+	for index, tag := range s.Tags.Tags {
+		if tag == tagFormated {
+			s.Tags.Tags = remove(s.Tags.Tags, index)
+			break;
+		}
+	}
+	s.WriteTagsJSON()
+}
+
+func remove(slice []string, index int) []string {
+	slice[index] = slice[len(slice)-1]
+	return slice[:len(slice)-1]
 }
 
 func ReadTagsJSON(jsonPath string) (entities.Tags, error){

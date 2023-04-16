@@ -78,6 +78,7 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
                           club_1: match.club_1.name,
                           // eslint-disable-next-line camelcase
                           club_2: match.club_2.name,
+                          league: scheduleOnLeague.league_name
                         },
                       }}
                     >

@@ -22,5 +22,6 @@ func (articleRoutes *ArticleRoutes)Setup(r *gin.Engine) {
 	{
 		routes.GET("search-tag-keyword",  articleRoutes.articleHandler.SearchTagsAndKeyword)
 		routes.GET("search-all",  articleRoutes.articleHandler.GetAllFromElastic)
+		routes.GET("signal-crawler",  articleRoutes.articleHandler.CrawlArticleLeague)
 	}
 }

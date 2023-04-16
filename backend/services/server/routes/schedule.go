@@ -21,5 +21,6 @@ func (scheduleRoutes *ScheduleRoutes)Setup(r *gin.Engine) {
 	routes := r.Group("schedules")
 	{
 		routes.GET("league-on-day",  scheduleRoutes.schedulesHandler.APIGetScheduleLeagueOnDay)
+		routes.GET("all-league-on-day",  scheduleRoutes.schedulesHandler.APIGetAllScheduleLeagueOnDay)
 	}
 }

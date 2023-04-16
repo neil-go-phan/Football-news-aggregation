@@ -2,10 +2,7 @@ import axios from 'axios';
 import { getCookie, deleteCookie } from 'cookies-next';
 import { _ROUTES } from './constants';
 
-const unProtectedRoutes = [
-  _ROUTES.NEWS_PAGE,
-  _ROUTES.MATCH_DETAIL_PAGE
-]
+const unProtectedRoutes = [_ROUTES.NEWS_PAGE, _ROUTES.MATCH_DETAIL_PAGE];
 
 const axiosProtectedAPI = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_DOMAIN,
@@ -14,7 +11,6 @@ const axiosProtectedAPI = axios.create({
 
 axiosProtectedAPI.interceptors.request.use(
   async (config: any) => {
-    
     const token = getCookie('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
@@ -30,24 +26,19 @@ axiosProtectedAPI.interceptors.response.use(
   (response) => response,
   async (error: any) => {
     const config = error?.config;
-    try {
-      if (
-        error.response.status === 401 &&
-        !config?.sent &&
-        error.response.data.message === 'Unauthorized access'
-      ) {
-        return config;
-      }
-    } catch (err) {
+    if (
+      error.response.status === 401 &&
+      !config?.sent &&
+      error.response.data.message === 'Unauthorized access'
+    ) {
       deleteCookie('token');
+      if (!unProtectedRoutes.includes(window.location.pathname)) {
+        window.location.href = _ROUTES.ADMIN_LOGIN;
+      }
     }
-    deleteCookie('token');
-    if (!unProtectedRoutes.includes(window.location.pathname)) {
-      window.location.href = '/admin/login';
-    }
-    return error;
+
+    return config;
   }
 );
-
 
 export default axiosProtectedAPI;

@@ -29,11 +29,11 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
     if (isContainNewsPath === -1) {
       return '';
     }
-    const defaultTag = router.asPath.slice(6);
-
+    let defaultTag = router.asPath.slice(6);
+    defaultTag= defaultTag.substring(0, defaultTag.indexOf('?'));
     return defaultTag.replace('-', ' ');
   };
-
+ 
   const getTagParam = (): string => {
     let tagParam: string = '';
     if (searchTags.indexOf(getDefaultTag()) < 0) {
@@ -50,16 +50,6 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
         params: { q: searchKeyword.trim(), tags: getTagParam() },
       });
       props.handleSearch(data.articles);
-      toast.success(`Search keyword ${searchKeyword.trim()} success`, {
-        position: 'top-right',
-        autoClose: 100,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: 'light',
-      });
     } catch (error) {
       toast.error(
         `Error occurred while searching keyword ${searchKeyword.trim()}`,

@@ -11,13 +11,17 @@ type HtmlClassesServices interface {
 }
 
 type LeaguesServices interface {
+	GetLeaguesName() []string 
+	GetLeaguesNameActive() []string
 	ListLeagues() (entities.Leagues)
-	AddLeague(newLeagues []string)
+	ChangeStatus(leagueName string) (bool,error)
+	AddLeague(newLeaguesName string)
 }
 
 type TagsServices interface {
 	ListTags() (entities.Tags)
-	AddTag(newTags []string)
+	AddTag(newTags string)
+	DeleteTag(tag string)
 }
 
 type ArticleServices interface {
@@ -27,6 +31,7 @@ type ArticleServices interface {
 }
 
 type SchedulesServices interface {
+	APIGetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error)
 	APIGetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error)
 	GetMatchURLsOnDay() entities.MatchURLsOnDay
 	ClearMatchURLsOnDay()

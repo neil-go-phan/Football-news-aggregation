@@ -13,7 +13,7 @@ const MatchEventsComponent: FunctionComponent<Props> = ({ matchProcess }) => {
       <>
         {eventsForDisplay.map((event) => {
           return (
-            <div className="event-detail d-flex" key={`event-detail-${event.content}`}>
+            <div className="event-detail d-flex" key={`event-detail-${event.time}-${event.content}`}>
               <div className="time col-3">
                 <span>{event.time}</span>
               </div>

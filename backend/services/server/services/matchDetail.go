@@ -86,7 +86,7 @@ func (s *matchDetailService) GetMatchDetailsOnDayFromCrawler(matchURLs entities.
 	<-done
 
 	log.Printf("finished crawl match detail")
-	log.Printf("Start crawl match related article")
+	// log.Printf("Start crawl match related article")
 
 	// s.articleService.GetArticles(matchDetailGoogleKeyword)
 }

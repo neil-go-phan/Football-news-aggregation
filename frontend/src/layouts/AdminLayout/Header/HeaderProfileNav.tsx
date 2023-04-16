@@ -33,9 +33,8 @@ export default function HeaderProfileNav() {
 
   const handleLogout = () => {
     logged?.setIsLogged(false);
-    deleteCookie("token")
+    deleteCookie('token');
     router.push(_ROUTES.ADMIN_LOGIN);
-
   };
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);

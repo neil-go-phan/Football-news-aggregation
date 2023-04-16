@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"server/entities"
+	serverhelper "server/helper"
 	pb "server/proto"
 	"strings"
 	"sync"
@@ -23,14 +24,16 @@ type schedulesService struct {
 	conn           *grpc.ClientConn
 	es             *elasticsearch.Client
 	leaguesService *leaguesService
+	tagsService    *tagsService
 	matchURLsOnDay entities.MatchURLsOnDay
 }
 
-func NewSchedulesService(leagues *leaguesService, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesService {
+func NewSchedulesService(leagues *leaguesService, tags *tagsService, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesService {
 	schedulesService := &schedulesService{
 		conn:           conn,
 		es:             es,
 		leaguesService: leagues,
+		tagsService:    tags,
 	}
 	return schedulesService
 }
@@ -60,19 +63,27 @@ func (s *schedulesService) GetSchedules(date string) {
 		wg.Add(1)
 		go func(schedule entities.ScheduleElastic) {
 			defer wg.Done()
+			// auto store new league
+			isNewLeague := s.isNewLeague(schedule.LeagueName)
 
-			// push matchUrl on day
+			if isNewLeague {
+				log.Println("detect a new league: ", schedule.LeagueName)
+				s.leaguesService.AddLeague(schedule.LeagueName)
 
-			exist := checkScheduleWithElasticSearch(schedule, s.es)
+			} else {
+				exist := checkScheduleWithElasticSearch(schedule, s.es)
 
-			if !exist {
-				isExisteague := s.checkIfLeagueExist(schedule.LeagueName)
-				
-				if isExisteague {
+				if !exist {
 					storeScheduleElasticsearch(schedule, s.es)
-					matchUrls := getMatchUrlOnDay(schedule)
-					s.matchURLsOnDay.Urls = append(s.matchURLsOnDay.Urls, matchUrls...)
+					// check is schedule active // push matchUrl on day
+					isActive := s.isLeagueActive(schedule.LeagueName)
+					if isActive {
+						s.checkAndAddTag(schedule.LeagueName)
+						matchUrls := getMatchUrlOnDay(schedule)
+						s.matchURLsOnDay.Urls = append(s.matchURLsOnDay.Urls, matchUrls...)
+					}
 				}
+
 			}
 
 		}(schedule)
@@ -81,16 +92,12 @@ func (s *schedulesService) GetSchedules(date string) {
 	wg.Wait()
 }
 
-func (s *schedulesService) APIGetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error) {
+func (s *schedulesService) APIGetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	var scheduleOnDay entities.ScheduleOnDay
 	var buffer bytes.Buffer
 
 	query := querySearchAllScheduleOnDay(date)
-
-	if league != "" {
-		query = querySearchScheduleLeagueOnDay(date, league)
-	}
 
 	err := json.NewEncoder(&buffer).Encode(query)
 	if err != nil {
@@ -112,15 +119,68 @@ func (s *schedulesService) APIGetScheduleLeagueOnDay(date time.Time, league stri
 		return scheduleOnDay, fmt.Errorf("decode respose from elastic search failed")
 	}
 
+	activeLeague := s.leaguesService.GetLeaguesNameActive()
+
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 
 		scheduleOnLeague := hit.(map[string]interface{})["_source"].(map[string]interface{})
 
 		entityScheduleOnDay := newEntitiesScheduleOnLeaguesFromMap(scheduleOnLeague)
-		scheduleOnDay.ScheduleOnLeagues = append(scheduleOnDay.ScheduleOnLeagues, entityScheduleOnDay)
-
+		if checkIsScheduleOnActiveLeague(activeLeague, entityScheduleOnDay.LeagueName) {
+			scheduleOnDay.ScheduleOnLeagues = append(scheduleOnDay.ScheduleOnLeagues, entityScheduleOnDay)
+		}
 	}
 	return scheduleOnDay, nil
+}
+
+func (s *schedulesService) APIGetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error) {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	var scheduleOnDay entities.ScheduleOnDay
+	var buffer bytes.Buffer
+
+	query := querySearchScheduleLeagueOnDay(date, league)
+
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return scheduleOnDay, fmt.Errorf("encode query failed")
+	}
+
+	resp, err := s.es.Search(s.es.Search.WithIndex(SCHEDULE_INDEX_NAME), s.es.Search.WithBody(&buffer))
+	if err != nil {
+		return scheduleOnDay, fmt.Errorf("request to elastic search fail")
+	}
+
+	scheduleOnDay.Date = date
+	scheduleOnDay.DateWithWeekday = date.Weekday().String()
+
+	var result map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return scheduleOnDay, fmt.Errorf("decode respose from elastic search failed")
+	}
+
+	activeLeague := s.leaguesService.GetLeaguesNameActive()
+
+	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
+
+		scheduleOnLeague := hit.(map[string]interface{})["_source"].(map[string]interface{})
+
+		entityScheduleOnDay := newEntitiesScheduleOnLeaguesFromMap(scheduleOnLeague)
+		if checkIsScheduleOnActiveLeague(activeLeague, league) {
+			scheduleOnDay.ScheduleOnLeagues = append(scheduleOnDay.ScheduleOnLeagues, entityScheduleOnDay)
+		}
+	}
+	return scheduleOnDay, nil
+}
+
+func checkIsScheduleOnActiveLeague(activeLeaguesName []string, scheduleLeagueName string) bool {
+	for _, name := range activeLeaguesName {
+		if name == scheduleLeagueName {
+			return true
+		}
+	}
+	return false
 }
 
 func querySearchAllScheduleOnDay(dateISO8601 time.Time) map[string]interface{} {
@@ -134,6 +194,7 @@ func querySearchAllScheduleOnDay(dateISO8601 time.Time) map[string]interface{} {
 				},
 			},
 		},
+		"size": 1000,
 	}
 	return query
 }
@@ -157,7 +218,7 @@ func querySearchScheduleLeagueOnDay(dateISO8601 time.Time, league string) map[st
 			},
 		},
 	}
-	
+
 	return query
 }
 
@@ -229,17 +290,41 @@ func (s *schedulesService) ClearMatchURLsOnDay() {
 	s.matchURLsOnDay = entities.MatchURLsOnDay{}
 }
 
-func (s *schedulesService) checkIfLeagueExist(checkLeague string) bool {
+func (s *schedulesService) isNewLeague(newLeaegueName string) bool {
 	// detect new league
-	if checkLeague == "" {
+	if newLeaegueName == "" {
 		return false
 	}
 	for _, league := range s.leaguesService.leagues.Leagues {
-		if strings.EqualFold(checkLeague, league) {
+		if newLeaegueName == league.LeagueName {
+			return false
+		}
+	}
+	return true
+}
+
+func (s *schedulesService) isLeagueActive(leaegueName string) bool {
+	// detect new league
+	for _, league := range s.leaguesService.leagues.Leagues {
+		if leaegueName == league.LeagueName && league.Active {
 			return true
 		}
 	}
 	return false
+}
+func (s *schedulesService) checkAndAddTag(newTag string) {
+	// detect new tag
+	tagFormated := serverhelper.FormatVietnamese(newTag)
+	if tagFormated == "" {
+		return
+	}
+	for _, tag := range s.tagsService.Tags.Tags {
+		if tag == tagFormated {
+			return
+		}
+	}
+	log.Printf("Detect %s is new tag, add...", newTag)
+	s.tagsService.AddTag(newTag)
 }
 
 func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.ScheduleElastic {

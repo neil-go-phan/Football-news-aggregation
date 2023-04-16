@@ -30,6 +30,23 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 	}
 }
 
+func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Context) {
+	dateString := c.Query("date")
+	date, err := time.Parse(DATE_LAYOUT, dateString)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Date invalid"})
+	}
+
+	// request to elasticsearch
+	schedules, err := schedulesHandler.handler.APIGetAllScheduleLeagueOnDay(date)
+	if err != nil {
+		log.Printf("error occurred while services layer request to elastic search to get schedules on date: %s\n", date)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "schedules": schedules})
+}
+
+
 func (schedulesHandler *ScheduleHandler) APIGetScheduleLeagueOnDay(c *gin.Context) {
 	dateString := c.Query("date")
 	date, err := time.Parse(DATE_LAYOUT, dateString)

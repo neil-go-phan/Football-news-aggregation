@@ -4,7 +4,7 @@ export default function Home() {
   const router = useRouter()
   
   useEffect(() => {
-    router.push('/news/tin+tuc+bong+da')
+    router.push('/news/tin+tuc+bong+da?league=Tin+tức+bóng+đá')
   })
   
   return (

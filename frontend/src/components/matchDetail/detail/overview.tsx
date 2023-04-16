@@ -4,24 +4,24 @@ import Image from 'next/image';
 type Props = {
   matchOverview: MatchOverview | null;
 };
-
-const EVENT_IMAGE_SIZE = 15 //pixel
+//pixel
+const EVENT_IMAGE_SIZE = 15;
 
 const MatchOverviewComponent: FunctionComponent<Props> = ({
   matchOverview,
 }) => {
   const checkImage = (imgType: string): string => {
     switch (imgType) {
-    case 'goal':
-      return '/images/goal.png';
-    case 'yellow-card':
-      return '/images/yellow_card.png';
-    case 'red-card':
-      return '/images/red_card.png';
-    case 'substitution':
-      return '/images/substitution.png';
-    default:
-      return '';
+      case 'goal':
+        return '/images/goal.png';
+      case 'yellow-card':
+        return '/images/yellow_card.png';
+      case 'red-card':
+        return '/images/red_card.png';
+      case 'substitution':
+        return '/images/substitution.png';
+      default:
+        return '';
     }
   };
 

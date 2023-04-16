@@ -6,9 +6,6 @@ $enable-negative-margins: true;
 @import "react-datepicker/dist/react-datepicker.css";
 @import "reactjs-popup/dist/index.css";
 
-@import "./components/progress";
-@import "./components/sidebar";
-
 // layout 
 @import "./layout/avatar";
 @import "./layout/footer";
@@ -21,8 +18,10 @@ $enable-negative-margins: true;
 @import "./common/tag";
 
 // components
+@import "./components/progress";
+@import "./components/sidebar";
 @import "./components/rightSideBar";
 @import "./components/contents";
 @import "./components/matchDetail";
-@import "./components//admin"
+@import "./components//admin";
 
