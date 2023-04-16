@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"server/helper"
-	"server/services"
 	"log"
 	"net/http"
+	"server/helper"
+	"server/services"
 	"strings"
 
 	"github.com/gin-gonic/gin"

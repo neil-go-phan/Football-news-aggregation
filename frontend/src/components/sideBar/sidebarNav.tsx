@@ -1,5 +1,4 @@
-import axiosClient from '@/helpers/axiosClient';
-import useGetLeagues, { Leagues } from '@/helpers/cacheQuery/getLeagues';
+import useGetLeaguesName, { LeaguesNames } from '@/helpers/cacheQuery/getLeaguesNames';
 import { _ROUTES } from '@/helpers/constants';
 import { formatRoute } from '@/helpers/format';
 import Link from 'next/link';
@@ -12,38 +11,42 @@ export default function SidebarNav() {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
 
-  const { data, isLoading } = useGetLeagues();
+  const { data, isLoading } = useGetLeaguesName();
 
   if (!isLoading) {
-    var route = router.asPath.substring(0, router.asPath.indexOf('?'));
-    const leaguesForDisplay: Leagues = expanded ? data : data!.slice(0, 10);
-    return (
-      <ul className="list-unstyled">
-        {leaguesForDisplay!.map((league) => (
-          <Nav.Item
-            key={`navbar_item_${league}`}
-            className={`px-3 py-2 d-flex align-items-center nav__item ${
-              route === `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`
-                ? 'active'
-                : ''
-            }`}
-          >
-            <Link
-              href={{
-                pathname: `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`,
-                query: {league: league},
-              }}
-              className="text-decoration-none text-dark link"
+    if (data) {
+      var route = router.asPath.substring(0, router.asPath.indexOf('?'));
+      console.log(data)
+      const leaguesForDisplay: LeaguesNames = expanded ? data : data!.slice(0, 10);
+      return (
+        <ul className="list-unstyled">
+          {leaguesForDisplay!.map((league) => (
+            <Nav.Item
+              key={`navbar_item_${league}`}
+              className={`px-3 py-2 d-flex align-items-center nav__item ${
+                route === `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`
+                  ? 'active'
+                  : ''
+              }`}
             >
-              {league}
-            </Link>
-          </Nav.Item>
-        ))}
-        <p className="sidebar--showmore" onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'Show less' : 'Show more...'}
-        </p>
-      </ul>
-    );
+              <Link
+                href={{
+                  pathname: `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`,
+                  query: {league: league},
+                }}
+                className="text-decoration-none text-dark link"
+              >
+                {league}
+              </Link>
+            </Nav.Item>
+          ))}
+          <p className="sidebar--showmore" onClick={() => setExpanded(!expanded)}>
+            {expanded ? 'Show less' : 'Show more...'}
+          </p>
+        </ul>
+      );
+    }
+ 
   }
   return (
     <ul className="list-unstyled">

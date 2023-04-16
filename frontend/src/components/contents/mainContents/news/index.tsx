@@ -3,36 +3,39 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import Article, { ArticleType } from './article';
 import SearchBar from './searchBar';
+import { useRouter } from 'next/router';
 
 export default function News() {
   const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const handleSearch = (searchResult: Array<ArticleType>) => {
     setArticles(searchResult);
   };
-
+  const route = useRouter()
   useEffect(() => {
-    const requestArticle = async () => {
+    const requestArticleFirstTime = async () => {
       try {
-        const { data } = await axiosClient.get('article/search-all', {
-          // eslint-disable-next-line camelcase
-          params: { search_type: 'scan', scroll: '10m', size: 20 },
+        const { data } = await axiosClient.get('article/search-tag-keyword', {
+          params: { q: '', tags: 'tin+tuc+bong+da' },
         });
-        setArticles(data.articles);
+        setArticles(data.articles)
       } catch (error) {
-        toast.error('Error occurred while get articles', {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'light',
-        });
+        toast.error(
+          'Error occurred while searching keyword get article',
+          {
+            position: 'top-right',
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'light',
+          }
+        );
       }
     };
 
-    requestArticle();
+    requestArticleFirstTime();
   }, []);
 
   return (

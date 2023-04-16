@@ -47,7 +47,7 @@ func main() {
 		log.Println("error occurred while connecting to elasticsearch node: ", err)
 	}
 	amountOfNewIndex := createElaticsearchIndex(es)
-
+	// createElaticsearchIndex(es)
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
 	leaguesService := services.NewleaguesService(leaguesconfig, env.JsonPath)
@@ -249,6 +249,7 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 			for day := 1; day <= t.Day(); day++ {
 				date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 				schedulesService.GetSchedules(date.Format("02-01-2006"))
+
 				matchUrls := schedulesService.GetMatchURLsOnDay()
 				matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 				schedulesService.ClearMatchURLsOnDay()

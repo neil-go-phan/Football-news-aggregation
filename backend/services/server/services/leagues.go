@@ -23,13 +23,35 @@ func NewleaguesService(leagues entities.Leagues, path string) *leaguesService {
 	return keyword
 }
 
-func (s *leaguesService) AddLeague(newLeague []string) {
-	s.leagues.Leagues = append(s.leagues.Leagues, newLeague...)
+func (s *leaguesService) AddLeague(newLeaguesName string) {
+	newLeague := entities.League{
+		LeagueName: newLeaguesName,
+		Active: false,
+	}
+	s.leagues.Leagues = append(s.leagues.Leagues, newLeague)
 	s.WriteLeaguesJSON()
 }
 
 func (s *leaguesService) ListLeagues() entities.Leagues {
 	return s.leagues
+}
+
+func (s *leaguesService) GetLeaguesName() []string {
+	names := make([]string, 0)
+	for _,league := range s.leagues.Leagues {
+		names = append(names, league.LeagueName)
+	}
+	return names
+}
+
+func (s *leaguesService) GetLeaguesNameActive() []string {
+	names := make([]string, 0)
+	for _,league := range s.leagues.Leagues {
+		if league.Active {
+			names = append(names, league.LeagueName)
+		}
+	}
+	return names
 }
 
 func ReadleaguesJSON(jsonPath string) (entities.Leagues, error) {

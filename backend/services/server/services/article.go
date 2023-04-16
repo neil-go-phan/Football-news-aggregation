@@ -48,11 +48,11 @@ func (s *articleService) APISearchArticlesTagsAndKeyword(keyword string, formate
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
 
-	var filterQueries []map[string]interface{}
+	var filterTagQuery []map[string]interface{}
 	for _, tag := range formatedTags {
 		if tag != "" {
 			tagQuery := map[string]interface{}{"match_phrase": map[string]interface{}{"tags": tag}}
-			filterQueries = append(filterQueries, tagQuery)
+			filterTagQuery = append(filterTagQuery, tagQuery)
 		}
 	}
 	
@@ -60,19 +60,19 @@ func (s *articleService) APISearchArticlesTagsAndKeyword(keyword string, formate
 	// default is search all
 	query := querySearchAllArticles()
 
-	if len(filterQueries) == 0 && keyword != "" {
+	if len(filterTagQuery) == 0 && keyword != "" {
 		// search with only keyword
 		query = querySearchArticlesOnlySearchKeyword(keyword)
 	}
 
-	if len(filterQueries) != 0 && keyword == "" {
+	if len(filterTagQuery) != 0 && keyword == "" {
 		// search with only tags
-		query = querySearchArticlesOnlyTag(filterQueries)
+		query = querySearchArticlesOnlyTag(filterTagQuery)
 	}
 
-	if len(filterQueries) != 0 && keyword != "" {
+	if len(filterTagQuery) != 0 && keyword != "" {
 		// search with both tags and keyword
-		query = querySearchArticlesBothTagAndKeyword(keyword, filterQueries)
+		query = querySearchArticlesBothTagAndKeyword(keyword, filterTagQuery)
 	}
 
 	err := json.NewEncoder(&buffer).Encode(query)
@@ -165,13 +165,13 @@ func querySearchArticlesOnlySearchKeyword(keyword string) map[string]interface{}
 	return query
 }
 
-func querySearchArticlesOnlyTag(filterQueries []map[string]interface{}) map[string]interface{} {
+func querySearchArticlesOnlyTag(filterTagQuery []map[string]interface{}) map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
 				"filter": map[string]interface{}{
 					"bool": map[string]interface{}{
-						"must": filterQueries,
+						"must": filterTagQuery,
 					},
 				},
 			},
@@ -185,7 +185,7 @@ func querySearchArticlesOnlyTag(filterQueries []map[string]interface{}) map[stri
 	return query
 }
 
-func querySearchArticlesBothTagAndKeyword(keyword string, filterQueries []map[string]interface{}) map[string]interface{} {
+func querySearchArticlesBothTagAndKeyword(keyword string, filterTagQuery []map[string]interface{}) map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"bool": map[string]interface{}{
@@ -197,7 +197,7 @@ func querySearchArticlesBothTagAndKeyword(keyword string, filterQueries []map[st
 				},
 				"filter": map[string]interface{}{
 					"bool": map[string]interface{}{
-						"must": filterQueries,
+						"must": filterTagQuery,
 					},
 				},
 			},
@@ -215,6 +215,8 @@ func querySearchArticlesBothTagAndKeyword(keyword string, filterQueries []map[st
 func (s *articleService) GetArticles(keywords []string) {
 	client := pb.NewCrawlerServiceClient(s.conn)
 
+	
+
 	in := &pb.AllConfigsArticles{
 		HtmlClasses: &pb.HTMLClasses{
 			ArticleClass:            s.htmlClassesService.HtmlClasses.ArticleClass,
@@ -222,7 +224,7 @@ func (s *articleService) GetArticles(keywords []string) {
 			ArticleDescriptionClass: s.htmlClassesService.HtmlClasses.ArticleDescriptionClass,
 			ArticleLinkClass:        s.htmlClassesService.HtmlClasses.ArticleLinkClass,
 		},
-		Leagues: s.leaguesService.leagues.Leagues,
+		Leagues: s.leaguesService.GetLeaguesNameActive(),
 	}
 
 	if len(keywords) != 0 {

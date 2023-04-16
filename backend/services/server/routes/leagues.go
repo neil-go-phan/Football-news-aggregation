@@ -20,6 +20,6 @@ func NewLeaguesRoutes(leaguesHandler *handler.LeaguesHandler) *LeaguesRoutes{
 func (leagueRoute *LeaguesRoutes)Setup(r *gin.Engine) {
 	routes := r.Group("leagues")
 	{
-		routes.GET("list", leagueRoute.leaguesHandler.ListLeagues)
+		routes.GET("list-name", leagueRoute.leaguesHandler.GetLeaguesName)
 	}
 }
