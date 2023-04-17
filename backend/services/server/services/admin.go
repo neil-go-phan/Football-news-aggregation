@@ -79,7 +79,11 @@ func (s *adminService) ChangePassword(admin *AdminWithConfirmPassword, usernameT
 	newAdmin, err := ReadAdminJSON(s.path)
 if err != nil {
 	log.Printf("error occrus when trying to change admin password: %s\n", err)
-	s.WriteAdminJSON(&s.admin)
+	err := s.WriteAdminJSON(&s.admin)
+	if err != nil {
+		log.Printf("error occurs: %s", err)
+		return fmt.Errorf("internal server error")
+	}
 	return fmt.Errorf("internal server error")
 }
 

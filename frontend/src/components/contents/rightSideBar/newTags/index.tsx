@@ -3,7 +3,7 @@ import Tag from '../../../../common/tag';
 import useGetTags, { Tags } from '@/helpers/cacheQuery/getTags';
 import { ThreeDots } from 'react-loader-spinner';
 
-const Tags: FunctionComponent = () => {
+const NewTags: FunctionComponent = () => {
   const [expanded, setExpanded] = useState(false);
 
   const { data, isLoading } = useGetTags();
@@ -15,9 +15,12 @@ const Tags: FunctionComponent = () => {
         <p className="rightSideBar__tags--title">Tags</p>
         <div className="rightSideBar__tags--line mb-3"></div>
         <div className="rightSideBar__tags--list">
-          {tagForDisplay!.map((tag) => (
-            <Tag key={`rightSideBar__tags_${tag}`} tagName={tag} />
-          ))}
+          {tagForDisplay!.map((tag) => {
+            if (tag !== "tin tuc bong da") {
+              return (<Tag key={`rightSideBar__tags_${tag}`} tagName={tag} />)
+            }
+          }
+          )}
           <p
             className="rightSideBar__tags--showmore"
             onClick={() => setExpanded(!expanded)}
@@ -48,4 +51,4 @@ const Tags: FunctionComponent = () => {
   );
 };
 
-export default Tags;
+export default NewTags;

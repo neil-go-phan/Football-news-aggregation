@@ -16,7 +16,7 @@ function RelatedNews() {
       setArticles(data.articles)
     } catch (error) {
       toast.error(
-        `Error occurred while get article`,
+        'Error occurred while get article',
         {
           position: 'top-right',
           autoClose: 3000,
@@ -33,6 +33,7 @@ function RelatedNews() {
 
   useEffect(() => {
     requestArticle()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
   const tagForDisplay: Array<ArticleType> = expanded ? articles : articles!.slice(0, 3);

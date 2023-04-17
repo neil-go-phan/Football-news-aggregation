@@ -20,8 +20,8 @@ type LeaguesServices interface {
 
 type TagsServices interface {
 	ListTags() (entities.Tags)
-	AddTag(newTags string)
-	DeleteTag(tag string)
+	AddTag(newTags string) error
+	DeleteTag(tag string) error
 }
 
 type ArticleServices interface {

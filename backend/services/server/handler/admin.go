@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"net/http"
 	"server/services"
 
@@ -40,8 +41,12 @@ func (adminHandler *AdminHandler) Get(c *gin.Context) {
 
 func (adminHandler *AdminHandler) Login(c *gin.Context) {
 	var inputAdmin services.Admin
-	c.BindJSON(&inputAdmin)
-
+	err := c.BindJSON(&inputAdmin)
+	if err != nil {
+		log.Printf("error occrus: %s", err)
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "internal server error"})
+		return
+	}
 	token, err := adminHandler.handler.Login(&inputAdmin)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
@@ -59,10 +64,14 @@ func (adminHandler *AdminHandler) ChangePassword(c *gin.Context) {
 	}
 
 	var inputAdmin services.AdminWithConfirmPassword
-	c.BindJSON(&inputAdmin)
+	err := c.BindJSON(&inputAdmin)
+	if err != nil {
+		log.Printf("error occrus: %s", err)
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "internal server error"})
+		return
+	}
 
-
-	err := adminHandler.handler.CheckAdminUsernameToken(username.(string))
+	err = adminHandler.handler.CheckAdminUsernameToken(username.(string))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Unauthorized access"})
 		return

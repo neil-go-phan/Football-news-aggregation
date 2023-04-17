@@ -251,8 +251,10 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 				schedulesService.GetSchedules(date.Format("02-01-2006"))
 
 				matchUrls := schedulesService.GetMatchURLsOnDay()
+				fmt.Println("len before", len(matchUrls.Urls))
 				matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 				schedulesService.ClearMatchURLsOnDay()
+				fmt.Println("len after", len(matchUrls.Urls))
 			}
 			defer wg.Done()
 		}(t, month)

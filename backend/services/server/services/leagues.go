@@ -16,6 +16,8 @@ type leaguesService struct {
 	path    string
 }
 
+var DEFAULT_LEAGUE_NAME = "Tin tức bóng đá"
+
 func NewleaguesService(leagues entities.Leagues,tags *tagsService, path string) *leaguesService {
 	keyword := &leaguesService{
 		leagues: leagues,
@@ -31,12 +33,22 @@ func (s *leaguesService) AddLeague(newLeaguesName string) {
 		Active: false,
 	}
 	s.leagues.Leagues = append(s.leagues.Leagues, newLeague)
-	s.WriteLeaguesJSON()
+	err := s.WriteLeaguesJSON()
+	if err != nil {
+		log.Printf("error occurs: %s", err)
+	}
 }
 
 func (s *leaguesService) ListLeagues() entities.Leagues {
+
 	return s.leagues
 }
+
+// func removeLeague(slice []entities.League, index int) []entities.League {
+// 	slice[index] = slice[len(slice)-1]
+// 	return slice[:len(slice)-1]
+// }
+
 func (s *leaguesService) ChangeStatus(leagueName string) (bool, error){
 	for index, league := range s.leagues.Leagues {
 		if league.LeagueName == leagueName {
@@ -46,24 +58,20 @@ func (s *leaguesService) ChangeStatus(leagueName string) (bool, error){
 				return false, err
 			}
 			if s.leagues.Leagues[index].Active {
-				s.tagsService.AddTag(leagueName)
+				err := s.tagsService.AddTag(leagueName)
+				if err != nil {
+					return s.leagues.Leagues[index].Active, err
+				}
 			} else {
-				s.tagsService.DeleteTag(leagueName)
+				err := s.tagsService.DeleteTag(leagueName)
+				if err != nil {
+					return s.leagues.Leagues[index].Active, err
+				}
 			}
 			return s.leagues.Leagues[index].Active , nil
 		}
 	}
 	return false, fmt.Errorf("league not found")
-}
-
-func (s *leaguesService) Print(leagueName string) {
-	for _, league := range s.leagues.Leagues {
-		if league.LeagueName == leagueName {
-			fmt.Printf("FOUND: %s, status: %v\n", league.LeagueName, league.Active)
-			return 
-		}
-	}
-
 }
 
 func (s *leaguesService) GetLeaguesName() []string {

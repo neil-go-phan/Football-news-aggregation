@@ -24,27 +24,50 @@ func NewTagsService(tags entities.Tags, path string) *tagsService{
 	return tag
 }
 
-func (s *tagsService)AddTag(newTags string) {
+func (s *tagsService)AddTag(newTags string) error {
 	newTagFormated := serverhelper.FormatVietnamese(newTags)
- 	s.Tags.Tags = append(s.Tags.Tags, newTagFormated)
-	fmt.Println("Tags:", s.Tags.Tags)
-	s.WriteTagsJSON()
-}
-
-func (s *tagsService)DeleteTag(tag string) {
-	tagFormated := serverhelper.FormatVietnamese(tag)
-	for index, tag := range s.Tags.Tags {
-		if tag == tagFormated {
-			s.Tags.Tags = remove(s.Tags.Tags, index)
-			break;
-		}
+	_, err := s.checkTagExist(newTagFormated)
+	if err == nil {
+		return fmt.Errorf("tag %s already exist", newTagFormated)
 	}
-	s.WriteTagsJSON()
+ 	s.Tags.Tags = append(s.Tags.Tags, newTagFormated)
+	err = s.WriteTagsJSON()
+	if err != nil {
+		log.Printf("error occurs: %s", err)
+		return err
+	}
+	return nil
 }
 
-func remove(slice []string, index int) []string {
+func (s *tagsService)DeleteTag(tag string) error{
+	tagFormated := serverhelper.FormatVietnamese(tag)
+
+	index, err := s.checkTagExist(tagFormated)
+	if err != nil {
+		return err
+	}
+	s.Tags.Tags = removeTag(s.Tags.Tags, index)
+
+	err = s.WriteTagsJSON()
+	if err != nil {
+		log.Printf("error occurs: %s", err)
+		return err
+	}
+	return nil
+}
+
+func removeTag(slice []string, index int) []string {
 	slice[index] = slice[len(slice)-1]
 	return slice[:len(slice)-1]
+}
+
+func (s *tagsService)checkTagExist(tagCheck string) (int, error) {
+	for index, tag := range s.Tags.Tags {
+		if tag == tagCheck {
+			return index, nil
+		}
+	}
+	return -1, fmt.Errorf("tag %s not found", tagCheck)
 }
 
 func ReadTagsJSON(jsonPath string) (entities.Tags, error){

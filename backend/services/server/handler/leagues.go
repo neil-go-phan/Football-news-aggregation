@@ -28,7 +28,9 @@ func (leaguesHandler *LeaguesHandler) GetLeaguesName(c *gin.Context) {
 }
 
 func (leaguesHandler *LeaguesHandler) ListLeagues(c *gin.Context) {
+	
 	leagues := leaguesHandler.handler.ListLeagues()
+		// remove default league 
 	c.JSON(http.StatusOK, gin.H{"success": true, "leagues": leagues})
 }
 
