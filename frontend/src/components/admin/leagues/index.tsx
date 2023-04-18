@@ -21,10 +21,12 @@ type LeagueRender = {
   active: boolean;
 };
 
-const TIN_TUC_BONG_DA: League = {
-  league_name: 'Tin tức bóng đá',
-  active: true,
-};
+// const TIN_TUC_BONG_DA: League = {
+//   league_name: 'Tin tức bóng đá',
+//   active: true,
+// };
+
+const TIN_TUC_BONG_DA = 'Tin tức bóng đá';
 
 export default function AdminLeagues() {
   const [leagues, setLeagues] = useState<Leagues>();
@@ -67,7 +69,7 @@ export default function AdminLeagues() {
   const removeDefaultLeague = (leagues: Leagues | undefined) => {
     if (leagues) {
       leagues.leagues.every((league, index) => {
-        if (league.league_name === TIN_TUC_BONG_DA.league_name) {
+        if (league.league_name === TIN_TUC_BONG_DA) {
           leagues.leagues.splice(index, 1);
           return false;
         }
@@ -76,10 +78,12 @@ export default function AdminLeagues() {
     return leagues;
   };
 
-  const createTableData = (leagues: Leagues | undefined) => {
+  const useCreateTableData = (leagues: Leagues | undefined) => {
     const leagueAfter = removeDefaultLeague(leagues);
     return React.useMemo(() => {
-      if (!leagueAfter) return [];
+      if (!leagueAfter) {
+        return [];
+      }
       return leagueAfter.leagues.map((league, index) => ({
         index: index + 1,
         leagueName: league.league_name,
@@ -88,7 +92,7 @@ export default function AdminLeagues() {
     }, [leagueAfter]);
   };
 
-  const data = createTableData(leagues);
+  const data = useCreateTableData(leagues);
 
   const {
     getTableProps,
@@ -102,7 +106,7 @@ export default function AdminLeagues() {
     nextPage,
     canPreviousPage,
     canNextPage,
-    setGlobalFilter
+    setGlobalFilter,
   } = useTable(
     {
       columns,
@@ -142,8 +146,7 @@ export default function AdminLeagues() {
         <div className="adminLeagues__overview">
           <div className="adminLeagues__overview--item">
             <p>
-              Tổng số giải đấu:{' '}
-              <span>{leagues.leagues.length }</span>
+              Tổng số giải đấu: <span>{leagues.leagues.length}</span>
             </p>
           </div>
           <div className="adminLeagues__overview--item">
@@ -154,9 +157,7 @@ export default function AdminLeagues() {
           <div className="adminLeagues__overview--item">
             <p>
               Số giải đấu không hiển thị:{' '}
-              <span>
-                {leagues.leagues.length - activeLeague}
-              </span>
+              <span>{leagues.leagues.length - activeLeague}</span>
             </p>
           </div>
         </div>
@@ -170,18 +171,24 @@ export default function AdminLeagues() {
               <Form.Control
                 placeholder="Search league"
                 type="text"
-                value={globalFilter || ""}
-                onChange={e => setGlobalFilter(e.target.value)}
+                value={globalFilter || ''}
+                onChange={(e) => setGlobalFilter(e.target.value)}
               />
             </InputGroup>
           </div>
           <div className="adminLeagues__list--table">
             <Table bordered hover {...getTableProps()}>
               <thead>
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroups.map((headerGroup, index) => (
+                  <tr
+                    {...headerGroup.getHeaderGroupProps()}
+                    key={`league-admin-collum-${index}`}
+                  >
                     {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
+                      <th
+                        {...column.getHeaderProps()}
+                        key={`league-admin-collum-${column.render('header')}}`}
+                      >
                         {column.render('header')}
                       </th>
                     ))}
@@ -192,10 +199,16 @@ export default function AdminLeagues() {
                 {page.map((row) => {
                   prepareRow(row);
                   return (
-                    <tr {...row.getRowProps()}>
+                    <tr
+                      {...row.getRowProps()}
+                      key={`league-admin-row-${row.index}`}
+                    >
                       {row.cells.map((cell) => {
                         return (
-                          <td {...cell.getCellProps()}>
+                          <td
+                            {...cell.getCellProps()}
+                            key={`league-admin-row-item-${cell}`}
+                          >
                             {cell.render('Cell')}
                           </td>
                         );

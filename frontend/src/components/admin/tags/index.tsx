@@ -13,7 +13,7 @@ import DeleteBtn from './deleteBtn';
 
 const TIN_TUC_BONG_DA_TAG = 'tin tuc bong da';
 
-export type Tags = Array<string>
+export type Tags = Array<string>;
 
 type TagsRow = {
   index: number;
@@ -26,7 +26,7 @@ export default function AdminTags() {
   const [tags, setTags] = useState<Tags>();
   const [leagues, setLeagues] = useState<Leagues>();
   const [newTagName, setNewTagName] = useState<string>('');
-  const router = useRouter()
+  const router = useRouter();
 
   const columns: Column<TagsRow>[] = React.useMemo(
     () => [
@@ -46,7 +46,11 @@ export default function AdminTags() {
         Header: 'Action',
         accessor: 'isDisabled',
         Cell: ({ row }) => (
-          <DeleteBtn isDisabled={row.values.isDisabled} tagName={row.values.tagName} handleDeleteTag={handleDeleteTag}/>
+          <DeleteBtn
+            isDisabled={row.values.isDisabled}
+            tagName={row.values.tagName}
+            handleDeleteTag={handleDeleteTag}
+          />
         ),
       },
     ],
@@ -54,12 +58,12 @@ export default function AdminTags() {
   );
 
   const handleDeleteTag = () => {
-    requestListTags()
-  }
+    requestListTags();
+  };
 
   const handleAddTag = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const exist = tags!.indexOf(newTagName.trim()) 
+    const exist = tags!.indexOf(newTagName.trim());
     if (exist !== -1) {
       toast.info('Tag alreay exist', {
         position: 'top-right',
@@ -71,14 +75,14 @@ export default function AdminTags() {
         progress: undefined,
         theme: 'light',
       });
-      setNewTagName('')
+      setNewTagName('');
       // return
-    } 
-    if (newTagName.trim() !== '') {
-      requestAddTag(newTagName.trim())
     }
-    setNewTagName('')
-  }
+    if (newTagName.trim() !== '') {
+      requestAddTag(newTagName.trim());
+    }
+    setNewTagName('');
+  };
 
   const removeDefaultTag = (tags: Tags) => {
     if (tags) {
@@ -104,10 +108,12 @@ export default function AdminTags() {
     return false;
   };
 
-  const createTableData = (tagRows: Tags | undefined) => {
+  const useCreateTableData = (tagRows: Tags | undefined) => {
     const tagRowsAfter = removeDefaultTag(tagRows!);
     return React.useMemo(() => {
-      if (!tagRowsAfter) return [];
+      if (!tagRowsAfter) {
+        return [];
+      }
       return tagRowsAfter.map((tag, index) => ({
         index: index + 1,
         tagName: tag,
@@ -117,7 +123,7 @@ export default function AdminTags() {
     }, [tagRowsAfter]);
   };
 
-  const data = createTableData(tags);
+  const data = useCreateTableData(tags);
 
   const {
     getTableProps,
@@ -165,7 +171,6 @@ export default function AdminTags() {
         newTags.push(tag);
         setTags([...newTags]);
       }
-
     } catch (error) {
       toast.error('Error occurred while add tags', {
         position: 'top-right',
@@ -248,21 +253,21 @@ export default function AdminTags() {
             </div>
             <div className="col-2"></div>
             <div className="addBtn col-4">
-            <form onSubmit={handleAddTag}>
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  <FontAwesomeIcon icon={faPlus} fixedWidth />
-                </InputGroup.Text>
-                <Form.Control
-                  placeholder="Input tag name"
-                  type="text"
-                  value={newTagName} 
-                  onChange={(e) => setNewTagName(e.target.value)}
-                />
-                <Button type="submit" variant="success">
-                  Add new tag
-                </Button>
-              </InputGroup>
+              <form onSubmit={handleAddTag}>
+                <InputGroup className="mb-3">
+                  <InputGroup.Text>
+                    <FontAwesomeIcon icon={faPlus} fixedWidth />
+                  </InputGroup.Text>
+                  <Form.Control
+                    placeholder="Input tag name"
+                    type="text"
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                  />
+                  <Button type="submit" variant="success">
+                    Add new tag
+                  </Button>
+                </InputGroup>
               </form>
             </div>
           </div>
@@ -270,10 +275,10 @@ export default function AdminTags() {
           <div className="adminTags__list--table">
             <Table bordered hover {...getTableProps()}>
               <thead>
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
+                {headerGroups.map((headerGroup, index) => (
+                  <tr {...headerGroup.getHeaderGroupProps()} key={`tags-admin-tr-${index}`}>
+                    {headerGroup.headers.map((column, index) => (
+                      <th {...column.getHeaderProps()} key={`tags-admin-tr-item-${index}`}>
                         {column.render('Header')}
                       </th>
                     ))}
@@ -284,10 +289,10 @@ export default function AdminTags() {
                 {page.map((row) => {
                   prepareRow(row);
                   return (
-                    <tr {...row.getRowProps()}>
+                    <tr {...row.getRowProps()} key={`tags-admin-row-tr-${row.index}`}>
                       {row.cells.map((cell) => {
                         return (
-                          <td {...cell.getCellProps()}>
+                          <td {...cell.getCellProps()} key={`tags-admin-row-tr-item-${cell.value.tagName}`}>
                             {cell.render('Cell')}
                           </td>
                         );

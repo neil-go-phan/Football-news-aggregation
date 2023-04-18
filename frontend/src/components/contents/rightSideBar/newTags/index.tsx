@@ -16,7 +16,7 @@ const NewTags: FunctionComponent = () => {
         <div className="rightSideBar__tags--line mb-3"></div>
         <div className="rightSideBar__tags--list">
           {tagForDisplay!.map((tag) => {
-            if (tag !== "tin tuc bong da") {
+            if (tag !== 'tin tuc bong da') {
               return (<Tag key={`rightSideBar__tags_${tag}`} tagName={tag} />)
             }
           }
