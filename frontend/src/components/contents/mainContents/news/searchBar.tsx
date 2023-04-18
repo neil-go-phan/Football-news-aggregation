@@ -16,61 +16,19 @@ import { toast } from 'react-toastify';
 
 interface Props {
   // eslint-disable-next-line no-unused-vars
-  handleSearch: (searchResult: Array<ArticleType>) => void;
+  handleSearchArticle: (keywordSearch: string, from: number) => void
 }
+
+const DEFAULT_PAGE = 0
 
 const SearchBar: FunctionComponent<Props> = (props: Props) => {
   const [keyword, setkeyword] = useState<string>('');
   const { searchTags, setSearchTags } = useContext(SearchTagContext);
   const router = useRouter();
 
-  const getDefaultTag = (): string => {
-    const isContainNewsPath = router.asPath.search('/news/');
-    if (isContainNewsPath === -1) {
-      return '';
-    }
-    let defaultTag = router.asPath.slice(6);
-    defaultTag= defaultTag.substring(0, defaultTag.indexOf('?'));
-    return defaultTag.replace('-', ' ');
-  };
- 
-  const getTagParam = (): string => {
-    let tagParam: string = '';
-    if (searchTags.indexOf(getDefaultTag()) < 0) {
-      tagParam += `${getDefaultTag()},`
-    }
-    searchTags.forEach((tag) => (tagParam += `${tag},`));
-    tagParam = tagParam.slice(0, tagParam.length - 1);
-    return tagParam;
-  };
-
-  const requestArticle = async (searchKeyword: string) => {
-    try {
-      const { data } = await axiosClient.get('article/search-tag-keyword', {
-        params: { q: searchKeyword.trim(), tags: getTagParam() },
-      });
-      props.handleSearch(data.articles);
-    } catch (error) {
-      toast.error(
-        `Error occurred while searching keyword ${searchKeyword.trim()}`,
-        {
-          position: 'top-right',
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'light',
-        }
-      );
-    }
-  };
-
   // handle when user change route
   useEffect(() => {
     setkeyword('');
-    requestArticle('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath]);
 
@@ -78,10 +36,10 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
     event.preventDefault();
     if (keyword.trim() === '' && searchTags.length === 0) {
       setkeyword('');
-      requestArticle('');
+      props.handleSearchArticle('', DEFAULT_PAGE);
       return;
     }
-    requestArticle(keyword);
+    props.handleSearchArticle(keyword, DEFAULT_PAGE);
   };
 
   const handleDeleteTag = (tag: string) => {

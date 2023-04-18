@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"server/helper"
 	"server/services"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -27,26 +28,19 @@ func NewArticleHandler(handler services.ArticleServices) *ArticleHandler {
 func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 	keyword := c.Query("q")
 	tags := c.Query("tags")
+	fromString := c.Query("from")
+	fromInt , err := strconv.Atoi(fromString)
 	formatedTags := serverhelper.FortmatTagsFromRequest(tags)
 
+	if err != nil {
+		log.Printf("can not convert %s string to int err: %v\n",fromString, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Bad request"})
+	}
 	// request to elasticsearch
 	keyword = strings.TrimSpace(keyword)
-	articles, err := articleHandler.handler.APISearchArticlesTagsAndKeyword(keyword, formatedTags)
+	articles, err := articleHandler.handler.APISearchArticlesTagsAndKeyword(keyword, formatedTags, fromInt)
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, "articles", err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
-	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
-}
-
-func (articleHandler *ArticleHandler) GetAllFromElastic(c *gin.Context) {
-	search_type := c.Query("search_type")
-	scroll := c.Query("scroll")
-	size := c.Query("size")
-
-	articles, err := articleHandler.handler.APISearchAll(search_type, scroll, size)
-	if err != nil {
-		log.Printf("error occurred while services layer try to get all article from eslaticsearch err: %v\n", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
