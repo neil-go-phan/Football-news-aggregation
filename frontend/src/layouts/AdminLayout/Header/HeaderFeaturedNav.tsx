@@ -11,7 +11,7 @@ export default function HeaderFeaturedNav() {
         </Link>
       </Nav.Item>
       <Nav.Item>
-        <Link href="/" passHref legacyBehavior>
+        <Link href={'/news/tin+tuc+bong+da?league=Tin+tức+bóng+đá'} passHref legacyBehavior>
           <Nav.Link className="p-2">Client</Nav.Link>
         </Link>
       </Nav.Item>

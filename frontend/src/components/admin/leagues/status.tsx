@@ -25,7 +25,7 @@ const Status: React.FC<Props> = (props: Props) => {
       }
       toast.success('Change league status success', {
         position: 'top-right',
-        autoClose: 3000,
+        autoClose: 1000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -40,7 +40,7 @@ const Status: React.FC<Props> = (props: Props) => {
     } catch (error) {
       toast.error('Error occurred while request to change league status', {
         position: 'top-right',
-        autoClose: 3000,
+        autoClose: 1000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -61,7 +61,7 @@ const Status: React.FC<Props> = (props: Props) => {
       }
       toast.success('Request to crawl articles success', {
         position: 'top-right',
-        autoClose: 3000,
+        autoClose: 1000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -72,7 +72,7 @@ const Status: React.FC<Props> = (props: Props) => {
     } catch (error) {
       toast.error('Error occurred while request to crawl articles', {
         position: 'top-right',
-        autoClose: 3000,
+        autoClose: 1000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -88,7 +88,7 @@ const Status: React.FC<Props> = (props: Props) => {
       type='switch'
       onChange={onSwitchAction}
       checked={isChecked}
-      label={isChecked ? 'Active' : 'Disable'}
+      label={isChecked ? 'Active' : 'Inactive'}
     />
   );
 };

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,11 +10,14 @@ import (
 	"server/middlewares"
 	"server/routes"
 	"server/services"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gin-gonic/gin"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
@@ -50,10 +54,10 @@ func main() {
 	// createElaticsearchIndex(es)
 	// declare services
 	htmlClassesService := services.NewHtmlClassesService(classConfig)
-	tagsService := services.NewTagsService(tagsConfig, env.JsonPath)
-	leaguesService := services.NewleaguesService(leaguesconfig,tagsService, env.JsonPath)
+	tagsService := services.NewTagsService(tagsConfig, es, env.JsonPath)
+	leaguesService := services.NewleaguesService(leaguesconfig, tagsService, env.JsonPath)
 	articleService := services.NewArticleService(leaguesService, htmlClassesService, tagsService, conn, es)
-	schedulesService := services.NewSchedulesService(leaguesService,tagsService, conn, es)
+	schedulesService := services.NewSchedulesService(leaguesService, tagsService, conn, es)
 	matchDetailService := services.NewMatchDetailervice(conn, es, articleService)
 	adminService := services.NewAdminService(adminConfig, env.JsonPath)
 
@@ -75,7 +79,7 @@ func main() {
 	adminHandler := handler.NewAdminHandler(adminService)
 	adminRoute := routes.NewAdminRoutes(adminHandler)
 
-  // check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
+	// check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
 	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
 		log.Println("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
 		seedDataFirstRun(articleService, schedulesService, matchDetailService)
@@ -182,7 +186,7 @@ func connectToElasticsearch(env EnvConfig) (*elasticsearch.Client, error) {
 	return es, nil
 }
 
-func createElaticsearchIndex(es *elasticsearch.Client) int{
+func createElaticsearchIndex(es *elasticsearch.Client) int {
 	// check if index exist. if not exist, create new one, if exist, skip it
 	var amountOfNewIndex int = 0
 	for _, indexName := range ELASTIC_SEARCH_INDEXES {
@@ -193,7 +197,11 @@ func createElaticsearchIndex(es *elasticsearch.Client) int{
 
 		if !exists {
 			log.Printf("Index: %s is not exist, create a new one...\n", indexName)
-			err = createIndex(es, indexName)
+			if indexName != services.ARTICLES_INDEX_NAME {
+				err = createIndex(es, indexName)
+			} else {
+				err = createArticleIndex(es, indexName)
+			}
 			for err != nil {
 				log.Printf("Error createing index: %s, try again in 10 seconds\n", err)
 				time.Sleep(10 * time.Second)
@@ -236,6 +244,57 @@ func createIndex(es *elasticsearch.Client, indexName string) error {
 	return nil
 }
 
+func createArticleIndex(es *elasticsearch.Client, indexName string) error {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	requestBody := map[string]interface{}{
+		"settings": map[string]interface{}{
+			"analysis": map[string]interface{}{
+				"analyzer": map[string]interface{}{
+					"no_accent": map[string]interface{}{
+						"tokenizer": "standard",
+						"filter": []string{
+							"lowercase",
+							"asciifolding",
+						},
+					},
+				},
+			},
+		},
+		"mappings": map[string]interface{}{
+			"properties": map[string]interface{}{
+				"title": map[string]interface{}{
+					"type":     "text",
+					"analyzer": "no_accent",
+				},
+				"description": map[string]interface{}{
+					"type":     "text",
+					"analyzer": "no_accent",
+				},
+			},
+		},
+	}
+	body, err := json.Marshal(requestBody)
+	if err != nil {
+		return fmt.Errorf("error encoding article: %s", err)
+	}
+	req := esapi.IndicesCreateRequest{
+		Index: indexName,
+		Body:  strings.NewReader(string(body)),
+	}
+
+	res, err := req.Do(context.Background(), es)
+	if err != nil {
+		return fmt.Errorf("error creating the index: %s", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("error creating index %s: %s", indexName, res.Status())
+	}
+
+	return nil
+}
+
 func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchDetailService services.MatchDetailServices) {
 	// Get schedule from january to current month + 2
 	year, currentMonth, _ := time.Now().Date()
@@ -251,8 +310,10 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 				schedulesService.GetSchedules(date.Format("02-01-2006"))
 
 				matchUrls := schedulesService.GetMatchURLsOnDay()
+				fmt.Println("len before", len(matchUrls.Urls))
 				matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 				schedulesService.ClearMatchURLsOnDay()
+				fmt.Println("len after", len(matchUrls.Urls))
 			}
 			defer wg.Done()
 		}(t, month)

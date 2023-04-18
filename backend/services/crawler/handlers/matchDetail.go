@@ -2,16 +2,16 @@ package handlers
 
 import (
 	"crawler/entities"
+	"crawler/helper"
+	pb "crawler/proto"
 	"crawler/services"
 	"log"
 	"sync"
-	"crawler/helper"
-	pb "crawler/proto"
 
 	jsoniter "github.com/json-iterator/go"
 )
 
-var AMOUNT_REQUEST_PER_GOROUTINE = 1
+var AMOUNT_REQUEST_PER_GOROUTINE = 20
 
 func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerService_GetMatchDetailServer) error {
 	matchUrls := configs.GetUrl()

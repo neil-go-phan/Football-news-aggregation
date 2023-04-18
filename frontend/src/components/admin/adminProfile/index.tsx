@@ -12,12 +12,12 @@ import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 
-interface AdminProfileFormProperty {
+type AdminProfileFormProperty = {
   password: string;
   password_confirmation?: string;
 }
 
-interface Props {
+type Props = {
   handleIsProfileClose: () => void;
 }
 
@@ -64,6 +64,7 @@ const AdminProfile: React.FC<Props> = (props: Props) => {
         _REGEX.REGEX_USENAME_PASSWORD,
         'Password must not contain special character like @#$^...'
       ),
+      // eslint-disable-next-line camelcase
     password_confirmation: yup
       .string()
       .oneOf([yup.ref('password')], 'Passwords not match'),
@@ -79,7 +80,9 @@ const AdminProfile: React.FC<Props> = (props: Props) => {
   const onSubmit: SubmitHandler<AdminProfileFormProperty> = async (data) => {
     let { password, password_confirmation } = data;
     password = cryptoJS.SHA512(password).toString();
+    // eslint-disable-next-line camelcase
     if (password_confirmation) {
+      // eslint-disable-next-line camelcase
       password_confirmation = cryptoJS.SHA512(password_confirmation).toString();
     }
     try {
@@ -88,6 +91,7 @@ const AdminProfile: React.FC<Props> = (props: Props) => {
         {
           username: adminUsername,
           password,
+          // eslint-disable-next-line camelcase
           password_confirmation,
         }
       );

@@ -21,9 +21,11 @@ const Article: FunctionComponent<ArticleProps> = (props: ArticleProps) => {
         <div className="description">{article.description}</div>
       </a>
       <div className="tags d-flex mt-2">
-        {article.tags.map((tag) => (
-          <Tag key={`news_articles_${tag}`} tagName={tag} />
-        ))}
+        {article.tags.map((tag) => {
+          if (tag !== 'tin tuc bong da') {
+            return <Tag key={`news_articles_${tag}`} tagName={tag} />;
+          }
+        })}
       </div>
     </div>
   );

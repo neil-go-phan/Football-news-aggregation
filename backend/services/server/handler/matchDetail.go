@@ -43,7 +43,7 @@ func (matchDetailHandler *MatchDetailHandler) APIGetMatchDetail(c *gin.Context) 
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Date invalid"})
 	}
 	// request to elasticsearch
-	matchDetail, err := matchDetailHandler.handler.APIGetMatchDetail(date, club1Name, club2Name)
+	matchDetail, err := matchDetailHandler.handler.GetMatchDetail(date, club1Name, club2Name)
 	if err != nil {
 		log.Printf("error occurred while services layer request to elastic search to get match detail: %s\n", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})

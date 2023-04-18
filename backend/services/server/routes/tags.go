@@ -21,5 +21,7 @@ func (tagsRoutes *TagsRoutes)Setup(r *gin.Engine) {
 	routes := r.Group("tags")
 	{
 		routes.GET("list", tagsRoutes.tagsHandler.ListTags)
+		routes.GET("delete", tagsRoutes.tagsHandler.DeleteTag)
+		routes.GET("add", tagsRoutes.tagsHandler.AddTag)
 	}
 }

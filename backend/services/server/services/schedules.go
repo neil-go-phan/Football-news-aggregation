@@ -63,9 +63,12 @@ func (s *schedulesService) GetSchedules(date string) {
 		wg.Add(1)
 		go func(schedule entities.ScheduleElastic) {
 			defer wg.Done()
+
+			matchUrls := getMatchUrlOnDay(schedule)
+			s.matchURLsOnDay.Urls = append(s.matchURLsOnDay.Urls, matchUrls...)
+			
 			// auto store new league
 			isNewLeague := s.isNewLeague(schedule.LeagueName)
-
 			if isNewLeague {
 				log.Println("detect a new league: ", schedule.LeagueName)
 				s.leaguesService.AddLeague(schedule.LeagueName)
@@ -79,8 +82,6 @@ func (s *schedulesService) GetSchedules(date string) {
 					isActive := s.isLeagueActive(schedule.LeagueName)
 					if isActive {
 						s.checkAndAddTag(schedule.LeagueName)
-						matchUrls := getMatchUrlOnDay(schedule)
-						s.matchURLsOnDay.Urls = append(s.matchURLsOnDay.Urls, matchUrls...)
 					}
 				}
 
@@ -92,7 +93,7 @@ func (s *schedulesService) GetSchedules(date string) {
 	wg.Wait()
 }
 
-func (s *schedulesService) APIGetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error) {
+func (s *schedulesService) GetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	var scheduleOnDay entities.ScheduleOnDay
 	var buffer bytes.Buffer
@@ -133,7 +134,7 @@ func (s *schedulesService) APIGetAllScheduleLeagueOnDay(date time.Time) (entitie
 	return scheduleOnDay, nil
 }
 
-func (s *schedulesService) APIGetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error) {
+func (s *schedulesService) GetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	var scheduleOnDay entities.ScheduleOnDay
 	var buffer bytes.Buffer
@@ -324,7 +325,10 @@ func (s *schedulesService) checkAndAddTag(newTag string) {
 		}
 	}
 	log.Printf("Detect %s is new tag, add...", newTag)
-	s.tagsService.AddTag(newTag)
+	err := s.tagsService.AddTag(newTag)
+	if err != nil {
+		log.Printf("error occrus %s \n",err)
+	}
 }
 
 func PbSchedulesToScheduleElastic(pbSchedule *pb.SchedulesReponse) []entities.ScheduleElastic {
