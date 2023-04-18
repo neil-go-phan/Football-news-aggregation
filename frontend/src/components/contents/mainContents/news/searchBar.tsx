@@ -6,13 +6,10 @@ import React, {
 } from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Form from 'react-bootstrap/Form';
-import axiosClient from '@/helpers/axiosClient';
 import { useRouter } from 'next/router';
-import { ArticleType } from './article';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass, faX } from '@fortawesome/free-solid-svg-icons';
 import SearchTagContext from '@/common/contexts/searchTag';
-import { toast } from 'react-toastify';
 
 interface Props {
   // eslint-disable-next-line no-unused-vars
@@ -26,7 +23,6 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
   const { searchTags, setSearchTags } = useContext(SearchTagContext);
   const router = useRouter();
 
-  // handle when user change route
   useEffect(() => {
     setkeyword('');
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -23,13 +23,13 @@ type TagsServices interface {
 }
 
 type ArticleServices interface {
-	APISearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, error)
+	SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, error)
 	GetArticles(keywords []string)
 }
 
 type SchedulesServices interface {
-	APIGetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error)
-	APIGetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error)
+	GetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error)
+	GetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error)
 	GetMatchURLsOnDay() entities.MatchURLsOnDay
 	ClearMatchURLsOnDay()
 	GetSchedules(date string)
@@ -37,7 +37,7 @@ type SchedulesServices interface {
 
 type MatchDetailServices interface {
 	GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay)
-	APIGetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error)
+	GetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error)
 }
 
 type AdminServices interface {

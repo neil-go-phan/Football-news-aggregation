@@ -91,7 +91,7 @@ func (s *matchDetailService) GetMatchDetailsOnDayFromCrawler(matchURLs entities.
 	// s.articleService.GetArticles(matchDetailGoogleKeyword)
 }
 
-func (s *matchDetailService) APIGetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error) {
+func (s *matchDetailService) GetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error) {
 	var matchDetail entities.MatchDetail
 
 	json := jsoniter.ConfigCompatibleWithStandardLibrary

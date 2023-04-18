@@ -93,7 +93,7 @@ func (s *schedulesService) GetSchedules(date string) {
 	wg.Wait()
 }
 
-func (s *schedulesService) APIGetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error) {
+func (s *schedulesService) GetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	var scheduleOnDay entities.ScheduleOnDay
 	var buffer bytes.Buffer
@@ -134,7 +134,7 @@ func (s *schedulesService) APIGetAllScheduleLeagueOnDay(date time.Time) (entitie
 	return scheduleOnDay, nil
 }
 
-func (s *schedulesService) APIGetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error) {
+func (s *schedulesService) GetScheduleLeagueOnDay(date time.Time, league string) (entities.ScheduleOnDay, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	var scheduleOnDay entities.ScheduleOnDay
 	var buffer bytes.Buffer

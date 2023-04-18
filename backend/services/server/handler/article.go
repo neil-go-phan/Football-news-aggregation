@@ -38,7 +38,7 @@ func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 	}
 	// request to elasticsearch
 	keyword = strings.TrimSpace(keyword)
-	articles, err := articleHandler.handler.APISearchArticlesTagsAndKeyword(keyword, formatedTags, fromInt)
+	articles, err := articleHandler.handler.SearchArticlesTagsAndKeyword(keyword, formatedTags, fromInt)
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, "articles", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})

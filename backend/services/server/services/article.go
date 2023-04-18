@@ -45,7 +45,7 @@ func NewArticleService(leagues *leaguesService, htmlClass *htmlClassesService, t
 	return articleService
 }
 
-func (s *articleService) APISearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article,  error) {
+func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article,  error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
