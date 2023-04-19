@@ -28,6 +28,7 @@ type ArticleServices interface {
 	GetFirstPageOfLeagueRelatedArticle(leagueName string) ([]entities.Article, error)
 	RefreshCache()
 	GetArticles(keywords []string)
+	GetArticleCount() (total float64, today float64, err error) 
 }
 
 type SchedulesServices interface {

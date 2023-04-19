@@ -84,3 +84,16 @@
     }
   }
 }
+
+.adminArticles {
+  &__title {
+    text-align: center;
+    font-size: 1.5rem;
+  }
+  &__overview {
+    p {
+      font-size: 1rem;
+    }
+  }
+}
+

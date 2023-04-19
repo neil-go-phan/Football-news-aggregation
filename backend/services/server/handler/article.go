@@ -12,8 +12,6 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-// user search article, server query elastic search
-
 type ArticleHandler struct {
 	handler services.ArticleServices
 }
@@ -36,8 +34,7 @@ func (articleHandler *ArticleHandler) APISearchTagsAndKeyword(c *gin.Context) {
 		log.Printf("can not convert %s string to int err: %v\n",fromString, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Bad request"})
 	}
-	
-	// request to elasticsearch
+
 	keyword = strings.TrimSpace(keyword)
 	articles, err := articleHandler.handler.SearchArticlesTagsAndKeyword(keyword, formatedTags, fromInt)
 	if err != nil {
@@ -46,8 +43,6 @@ func (articleHandler *ArticleHandler) APISearchTagsAndKeyword(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }
-
-
 
 func (articleHandler *ArticleHandler) APICrawlArticleLeague(c *gin.Context) {
 	leagueName := c.Query("league")
@@ -80,7 +75,6 @@ func (articleHandler *ArticleHandler) APIGetFirstPageOfLeagueRelatedArticle(c *g
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }
 
-
 func (articleHandler *ArticleHandler) SignalToCrawlerAfter10Min(cronjob *cron.Cron) {
 	_, err := cronjob.AddFunc("@every 0h10m", func() { articleHandler.handler.GetArticles(make([]string, 0)) })
 	if err != nil {
@@ -93,4 +87,13 @@ func (articleHandler *ArticleHandler) RefreshCacheAfter5Min(cronjob *cron.Cron) 
 	if err != nil {
 		log.Println("error occurred while seting up RefreshCacheAfter5Min cronjob: ", err)
 	}
+}
+
+func (articleHandler *ArticleHandler) APIGetArticleCount(c *gin.Context) {
+	total, today, err := articleHandler.handler.GetArticleCount()
+	if err != nil {
+		log.Printf("error occrus when get article count %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Get article count success", "total": total, "today": today})
 }

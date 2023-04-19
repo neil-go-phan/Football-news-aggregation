@@ -44,12 +44,6 @@ export default function SidebarNav() {
       <SidebarNavItem icon={faNewspaper} href={_ROUTES.ADMIN_ARTICLES}>
         Articles
       </SidebarNavItem>
-      <SidebarNavItem icon={faCalendarDays} href={_ROUTES.ADMIN_SCHEDULES}>
-        Schedules
-      </SidebarNavItem>
-      <SidebarNavItem icon={faFutbol} href={_ROUTES.ADMIN_MATCHS}>
-        Matchs
-      </SidebarNavItem>
       <SidebarNavItem icon={faTrophy} href={_ROUTES.ADMIN_LEAGUES}>
         Leagues
       </SidebarNavItem>

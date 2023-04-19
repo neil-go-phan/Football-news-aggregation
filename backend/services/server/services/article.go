@@ -77,7 +77,7 @@ func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTa
 	if err != nil {
 		return articles, fmt.Errorf("decode respose from elastic search failed")
 	}
-	
+
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 
 		newArticle := hit.(map[string]interface{})["_source"].(map[string]interface{})
@@ -85,12 +85,11 @@ func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTa
 		// usecase: when admin add a new tag. then some article will tagged with that new tag.
 		// then admin delete that tag. this removeNotExistTag function will detect and filter all deleted tag from return articles
 		filterDeletedTag(&article, s.tagsService.Tags.Tags)
-		
+
 		articles = append(articles, article)
 
 	}
 
-	
 	return articles, nil
 }
 
@@ -260,13 +259,13 @@ func (s *articleService) GetFirstPageOfLeagueRelatedArticle(leagueName string) (
 			log.Printf("error occrus when unmarshal cache articles to entity articles: %s", err)
 		}
 		return articles, nil
-	}	
-	log.Println("MISS CACHE: ",key )
+	}
+	log.Println("MISS CACHE: ", key)
 	// Cache miss, fetch article from elastic
 	formatedTags := serverhelper.FortmatTagsFromRequest(leagueName)
 	articles, err := s.SearchArticlesTagsAndKeyword("", formatedTags, 0)
 	if err != nil {
-			return nil, err
+		return nil, err
 	}
 
 	s.RefreshCache()
@@ -277,7 +276,7 @@ func (s *articleService) GetFirstPageOfLeagueRelatedArticle(leagueName string) (
 func (s *articleService) RefreshCache() {
 	log.Printf("refresh cache...")
 	var wg sync.WaitGroup
-	for _, league := range s.leaguesService.GetLeaguesNameActive(){
+	for _, league := range s.leaguesService.GetLeaguesNameActive() {
 		wg.Add(1)
 		go func(league string) {
 			defer wg.Done()
@@ -293,6 +292,104 @@ func (s *articleService) RefreshCache() {
 	}
 	wg.Wait()
 	log.Printf("refresh cache end.")
+}
+
+func (s *articleService) GetArticleCount() (total float64, today float64, err error) {
+	today, err = s.GetCrawledArticleToday()
+	if err != nil {
+		return total, today, err
+	}
+	total, err = s.GetTotalCrawledArticle()
+	if err != nil {
+		return total, today, err
+	}
+	return total, today, nil
+}
+
+func (s *articleService) GetCrawledArticleToday() (float64, error) {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	var buffer bytes.Buffer
+
+	query := queryGetAmountCrawledArtilceToday()
+
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return 0, err
+	}
+
+	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
+	if err != nil {
+		return 0, err
+	}
+	
+	var result map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return 0, err
+	}
+
+	value:= result["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"]
+	today := value.(float64)
+	return today, nil
+}
+
+func queryGetAmountCrawledArtilceToday() map[string]interface{} {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"range": map[string]interface{}{
+				"created_at": map[string]interface{}{
+					"gte": "now-1d/d",
+					"lte": "now/d",
+				},
+			},
+		},
+		"size": 0,
+	}
+	return query
+}
+
+func (s *articleService) GetTotalCrawledArticle() (float64, error) {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	var buffer bytes.Buffer
+
+	query := queryGetTotalCrawledArtilce()
+
+	err := json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return 0, err
+	}
+
+	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
+	if err != nil {
+		return 0, err
+	}
+	
+	var result map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return 0, err
+	}
+
+	value:= result["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"]
+	total := value.(float64)
+	return total, nil
+}
+
+func queryGetTotalCrawledArtilce() map[string]interface{} {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"range": map[string]interface{}{
+				"created_at": map[string]interface{}{
+					"gte": "now-30d/d",
+					"lte": "now/d",
+				},
+			},
+		},
+		"size": 0,
+	}
+	return query
 }
 
 // add tag // implement search_after query, // implement worker pool

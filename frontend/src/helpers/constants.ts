@@ -6,8 +6,6 @@ export const _ROUTES = {
   ADMIN_TAGS: '/admin/tags',
   ADMIN_LEAGUES: '/admin/leagues',
   ADMIN_ARTICLES: '/admin/articles',
-  ADMIN_SCHEDULES: '/admin/schedules',
-  ADMIN_MATCHS: '/admin/matchs',
 }
 
 export const _REGEX = {
