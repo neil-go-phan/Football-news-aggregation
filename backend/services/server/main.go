@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
+	"os"
 	"server/entities"
 	"server/handler"
 	"server/middlewares"
@@ -19,10 +20,23 @@ import (
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/robfig/cron/v3"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	easy "github.com/t-tomalak/logrus-easy-formatter"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
+func init() {
+	// setup log
+	log.SetLevel(log.InfoLevel)
+	format := &easy.Formatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		LogFormat:       "[%lvl%]: %time% - %msg%\n",
+	}
+	log.SetFormatter(format)
+
+}
 
 var ELASTIC_SEARCH_INDEXES = []string{services.ARTICLES_INDEX_NAME, services.SCHEDULE_INDEX_NAME, services.MATCH_DETAIL_INDEX_NAME}
 
@@ -43,12 +57,21 @@ func main() {
 	if err != nil {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
+
+	// write log file
+	logFile, err := os.OpenFile("serverlog.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println("Failed to create logfile" + "serverlog.log")
+		panic(err)
+	}
+	defer logFile.Close()
+	log.SetOutput(io.MultiWriter(logFile, os.Stdout))
 	conn := connectToCrawler(env)
 
 	// elastic search
 	es, err := connectToElasticsearch(env)
 	if err != nil {
-		log.Println("error occurred while connecting to elasticsearch node: ", err)
+		log.Errorln("error occurred while connecting to elasticsearch node: ", err)
 	}
 	amountOfNewIndex := createElaticsearchIndex(es)
 	// createElaticsearchIndex(es)
@@ -81,12 +104,12 @@ func main() {
 
 	// check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
 	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
-		log.Println("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
+		log.Infoln("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
 		seedDataFirstRun(articleService, schedulesService, matchDetailService)
 	}
 	// articleService.GetArticles(make([]string, 0))
 	createArticleCache(articleService)
-	
+
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
@@ -99,7 +122,7 @@ func main() {
 	}()
 
 	// app routes
-	log.Println("Setup routes")
+	log.Infoln("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
 
@@ -164,6 +187,7 @@ func loadEnv(path string) (env EnvConfig, err error) {
 	err = viper.Unmarshal(&env)
 	return
 }
+
 
 func connectToCrawler(env EnvConfig) *grpc.ClientConn {
 	// dial server

@@ -5,7 +5,7 @@ import (
 	"crawler/helper"
 	pb "crawler/proto"
 	"crawler/services"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"sync"
 
 	jsoniter "github.com/json-iterator/go"

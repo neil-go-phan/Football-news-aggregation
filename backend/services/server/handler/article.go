@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"server/helper"
 	"server/services"

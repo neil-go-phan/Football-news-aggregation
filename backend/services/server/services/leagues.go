@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 	"io"
-	"log"
+		log "github.com/sirupsen/logrus"
 	"os"
 	"server/entities"
 

@@ -3,7 +3,7 @@ package handlers
 import (
 	"crawler/services"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 

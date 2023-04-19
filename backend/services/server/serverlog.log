@@ -1,0 +1,15 @@
+[INFO]: 2023-04-19 17:56:27 - Index: articles is already exist, skip it...
+
+[INFO]: 2023-04-19 17:56:27 - Index: schedules is already exist, skip it...
+
+[INFO]: 2023-04-19 17:56:27 - Index: match_detail is already exist, skip it...
+
+[INFO]: 2023-04-19 17:56:27 - refresh cache...
+[INFO]: 2023-04-19 17:56:27 - refresh cache key article_cache_v_league
+
+[INFO]: 2023-04-19 17:56:27 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-19 17:56:27 - refresh cache key article_cache_premier_league
+
+[INFO]: 2023-04-19 17:56:27 - refresh cache end.
+[INFO]: 2023-04-19 17:56:27 - Setup routes

@@ -3,8 +3,8 @@ package services
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"os"
 	"regexp"
 	"server/entities"
@@ -69,7 +69,7 @@ func (s *adminService) ChangePassword(admin *AdminWithConfirmPassword, usernameT
 		Username: admin.Username,
 		Password: admin.Password,
 	}
-	
+
 	err = s.WriteAdminJSON(entityAdmin)
 	if err != nil {
 		log.Printf("error occrus when trying to change admin password: %s\n", err)
@@ -77,15 +77,15 @@ func (s *adminService) ChangePassword(admin *AdminWithConfirmPassword, usernameT
 	}
 
 	newAdmin, err := ReadAdminJSON(s.path)
-if err != nil {
-	log.Printf("error occrus when trying to change admin password: %s\n", err)
-	err := s.WriteAdminJSON(&s.admin)
 	if err != nil {
-		log.Printf("error occurs: %s", err)
+		log.Printf("error occrus when trying to change admin password: %s\n", err)
+		err := s.WriteAdminJSON(&s.admin)
+		if err != nil {
+			log.Printf("error occurs: %s", err)
+			return fmt.Errorf("internal server error")
+		}
 		return fmt.Errorf("internal server error")
 	}
-	return fmt.Errorf("internal server error")
-}
 
 	s.admin = newAdmin
 

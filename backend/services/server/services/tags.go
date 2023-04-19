@@ -3,13 +3,13 @@ package services
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"server/entities"
 	serverhelper "server/helper"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	jsoniter "github.com/json-iterator/go"
+	log "github.com/sirupsen/logrus"
 )
 
 type tagsService struct {

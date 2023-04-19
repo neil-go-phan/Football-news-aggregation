@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
+		log "github.com/sirupsen/logrus"
 	"server/entities"
 	serverhelper "server/helper"
 	"strings"

@@ -2,8 +2,8 @@ package services
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"os"
 	"server/entities"
 
@@ -14,14 +14,14 @@ type htmlClassesService struct {
 	HtmlClasses entities.HtmlClasses
 }
 
-func NewHtmlClassesService(htmlClassesInput entities.HtmlClasses) *htmlClassesService{
+func NewHtmlClassesService(htmlClassesInput entities.HtmlClasses) *htmlClassesService {
 	htmlClasses := &htmlClassesService{
 		HtmlClasses: htmlClassesInput,
 	}
 	return htmlClasses
 }
 
-func ReadHtmlClassJSON(jsonPath string) (entities.HtmlClasses, error){
+func ReadHtmlClassJSON(jsonPath string) (entities.HtmlClasses, error) {
 	var classConfig entities.HtmlClasses
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 

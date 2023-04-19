@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
+		log "github.com/sirupsen/logrus"
 	"server/entities"
 	serverhelper "server/helper"
 	pb "server/proto"

@@ -4,7 +4,7 @@ import (
 	"crawler/helper"
 	"crawler/entities"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
