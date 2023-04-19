@@ -34,7 +34,7 @@ func (s *tagsService) AddTag(newTags string) error {
 		return fmt.Errorf("tag %s already exist", newTagFormated)
 	}
 	s.Tags.Tags = append(s.Tags.Tags, newTagFormated)
-
+	// frontend will send a request to update all tag
 	err = s.WriteTagsJSON()
 	if err != nil {
 		log.Printf("error occurs: %s", err)
@@ -51,7 +51,7 @@ func (s *tagsService) DeleteTag(tag string) error {
 		return err
 	}
 	s.Tags.Tags = removeTag(s.Tags.Tags, index)
-
+	// no need to delete tag from article in elastic search, we just filter that deleted tag when query article
 	err = s.WriteTagsJSON()
 	if err != nil {
 		log.Printf("error occurs: %s", err)

@@ -8,18 +8,19 @@ function RelatedNews() {
   const [expanded, setExpanded] = useState(false);
   const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const router = useRouter()
-  const requestArticle = async () => {
+
+  const requestFirstPageArticle = async () => {
     try {
-      const { data } = await axiosClient.get('article/search-tag-keyword', {
-        params: { q: '', tags: router.query.league},
+      const { data } = await axiosClient.get('article/get-first-page', {
+        params: { tags: router.query.league },
       });
-      setArticles(data.articles)
+      setArticles(data.articles);
     } catch (error) {
       toast.error(
         'Error occurred while get article',
         {
           position: 'top-right',
-          autoClose: 3000,
+          autoClose: 1000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -32,7 +33,7 @@ function RelatedNews() {
   };
 
   useEffect(() => {
-    requestArticle()
+    requestFirstPageArticle()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   

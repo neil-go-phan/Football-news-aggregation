@@ -85,13 +85,14 @@ func main() {
 		seedDataFirstRun(articleService, schedulesService, matchDetailService)
 	}
 	// articleService.GetArticles(make([]string, 0))
-
+	createArticleCache(articleService)
 
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
 
-		// articleHandler.SignalToCrawlerAfter10Min(cronjob)
+		articleHandler.SignalToCrawlerAfter10Min(cronjob)
+		articleHandler.RefreshCacheAfter5Min(cronjob)
 		schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
 
 		cronjob.Run()
@@ -324,4 +325,8 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 
 	// Get articles
 	articleService.GetArticles(make([]string, 0))
+}
+
+func createArticleCache(articleService services.ArticleServices) {
+	articleService.RefreshCache()
 }

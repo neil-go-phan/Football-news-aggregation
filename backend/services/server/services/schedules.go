@@ -313,6 +313,7 @@ func (s *schedulesService) isLeagueActive(leaegueName string) bool {
 	}
 	return false
 }
+
 func (s *schedulesService) checkAndAddTag(newTag string) {
 	// detect new tag
 	tagFormated := serverhelper.FormatVietnamese(newTag)

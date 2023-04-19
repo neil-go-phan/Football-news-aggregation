@@ -17,6 +17,7 @@ import (
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/patrickmn/go-cache"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
@@ -26,6 +27,10 @@ var PREV_ARTICLES = make(map[string]bool)
 var ARTICLES_INDEX_NAME = "articles"
 var DEFAULT_TAG = "tin tuc bong da"
 var PIT_LIVE = "1m"
+var ARTICLE_CACHE_KEY_PREFIX = "article_cache"
+var CACHE_EXPIRATION_TIME = 5 * time.Minute
+var CACHE_CLEAR_UP_TIME = 5 * time.Minute
+var ARTICLE_CACHE = cache.New(CACHE_EXPIRATION_TIME, CACHE_CLEAR_UP_TIME)
 
 type work = []entities.Article
 type result = []byte
@@ -72,13 +77,49 @@ func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTa
 	if err != nil {
 		return articles, fmt.Errorf("decode respose from elastic search failed")
 	}
-
+	
 	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
 
-		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
-		articles = append(articles, newEntitiesArticleFromMap(article))
+		newArticle := hit.(map[string]interface{})["_source"].(map[string]interface{})
+		article := newEntitiesArticleFromMap(newArticle)
+		// usecase: when admin add a new tag. then some article will tagged with that new tag.
+		// then admin delete that tag. this removeNotExistTag function will detect and filter all deleted tag from return articles
+		filterDeletedTag(&article, s.tagsService.Tags.Tags)
+		
+		articles = append(articles, article)
+
 	}
+
+	
 	return articles, nil
+}
+
+func filterDeletedTag(article *entities.Article, tags []string) {
+	var wg sync.WaitGroup
+	for _, tag := range tags {
+		wg.Add(1)
+		go func(tag string) {
+			articleTag := make([]string, 0)
+			for _, tag := range tags {
+				isExist, index := checkTagExist(article, tag)
+				if isExist {
+					articleTag = append(articleTag, article.Tags[index])
+				}
+			}
+			article.Tags = articleTag
+			wg.Done()
+		}(tag)
+	}
+	wg.Wait()
+}
+
+func checkTagExist(article *entities.Article, tag string) (bool, int) {
+	for index, articleTag := range article.Tags {
+		if articleTag == tag {
+			return true, index
+		}
+	}
+	return false, -1
 }
 
 func querySearchArticle(keyword string, formatedTags []string, from int) map[string]interface{} {
@@ -200,10 +241,61 @@ func querySearchArticlesBothTagAndKeyword(keyword string, filterTagQuery []map[s
 	return query
 }
 
-// refresh cache after expire
+func (s *articleService) GetFirstPageOfLeagueRelatedArticle(leagueName string) ([]entities.Article, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-// implement search_after query, // implement worker pool
+	articles := []entities.Article{}
 
+	key := fmt.Sprintf("%s_%s", ARTICLE_CACHE_KEY_PREFIX, serverhelper.FormatCacheKey(leagueName))
+	articleInterface, found := ARTICLE_CACHE.Get(key)
+	if found {
+		log.Println("FOUND CACHE: ", key)
+		articleByte, err := json.Marshal(articleInterface)
+		if err != nil {
+			log.Printf("error occrus when marshal cache articles: %s", err)
+		}
+
+		err = json.Unmarshal(articleByte, &articles)
+		if err != nil {
+			log.Printf("error occrus when unmarshal cache articles to entity articles: %s", err)
+		}
+		return articles, nil
+	}	
+	log.Println("MISS CACHE: ",key )
+	// Cache miss, fetch article from elastic
+	formatedTags := serverhelper.FortmatTagsFromRequest(leagueName)
+	articles, err := s.SearchArticlesTagsAndKeyword("", formatedTags, 0)
+	if err != nil {
+			return nil, err
+	}
+
+	s.RefreshCache()
+
+	return articles, nil
+}
+
+func (s *articleService) RefreshCache() {
+	log.Printf("refresh cache...")
+	var wg sync.WaitGroup
+	for _, league := range s.leaguesService.GetLeaguesNameActive(){
+		wg.Add(1)
+		go func(league string) {
+			defer wg.Done()
+			tagFromLeague := serverhelper.FormatVietnamese(league)
+			firstPageArticleLeague, err := s.SearchArticlesTagsAndKeyword("", []string{tagFromLeague}, 0)
+			if err != nil {
+				log.Printf("can not request to elastic to reset tag")
+			}
+			key := fmt.Sprintf("%s_%s", ARTICLE_CACHE_KEY_PREFIX, serverhelper.FormatCacheKey(league))
+			ARTICLE_CACHE.Set(key, firstPageArticleLeague, cache.DefaultExpiration)
+			log.Printf("refresh cache key %s\n", key)
+		}(league)
+	}
+	wg.Wait()
+	log.Printf("refresh cache end.")
+}
+
+// add tag // implement search_after query, // implement worker pool
 func (s *articleService) AddTagForAllArticle(tag string) error {
 	tagFormated := serverhelper.FormatVietnamese(tag)
 	pitID, err := requestOpenPointInTime(s.es)
@@ -214,11 +306,11 @@ func (s *articleService) AddTagForAllArticle(tag string) error {
 	if err != nil {
 		return err
 	}
-	bulkRequestBody, err := createBulkRequestBodyUpdateTag(firstPageArticles, tagFormated)
+	bulkRequestBody, err := createBulkRequestBodyAddTag(firstPageArticles, tagFormated)
 	if err != nil {
 		log.Printf("error when worker create bulk request body %s\n", err)
 	}
-	requestUpdateTagArticle(bulkRequestBody, s.es)
+	requestAddTagArticle(bulkRequestBody, s.es)
 
 	if len(searchAfterQuery) == 0 {
 		return nil
@@ -233,20 +325,22 @@ func (s *articleService) AddTagForAllArticle(tag string) error {
 	// 5 worker
 	for i := 0; i < 5; i++ {
 		wg1.Add(1)
-		go workerUpdateBulkRequest(jobs, results, tagFormated, &wg1, i)
+		go workerAddTagBulkRequest(jobs, results, tagFormated, &wg1, i)
 	}
 
 	go producerRequestArticle(jobs, s, tagFormated, newPitID, searchAfterQuery)
 
 	wg2.Add(1)
-	go analyzedResult(results,s.es, &wg2)
+	go analyzedResult(results, s.es, &wg2)
 
-	wg1.Wait() 
+	wg1.Wait()
 
 	close(results)
 
 	wg2.Wait()
 	log.Printf("add tag success")
+
+	s.RefreshCache()
 	return nil
 }
 
@@ -274,11 +368,11 @@ func producerRequestArticle(jobs chan<- *work, s *articleService, tag string, fi
 }
 
 // worker take job, do something and send result to result chan
-func workerUpdateBulkRequest(jobs <-chan *work, results chan<- *result, newTag string, wg *sync.WaitGroup, id int) {
+func workerAddTagBulkRequest(jobs <-chan *work, results chan<- *result, newTag string, wg *sync.WaitGroup, id int) {
 	defer wg.Done()
 	for job := range jobs {
 		log.Printf("worker #%d received: %v article\n", id, len(*job))
-		bulkRequestBody, err := createBulkRequestBodyUpdateTag(*job, newTag)
+		bulkRequestBody, err := createBulkRequestBodyAddTag(*job, newTag)
 		if err != nil {
 			log.Printf("error when worker create bulk request body %s\n", err)
 		}
@@ -294,11 +388,11 @@ func analyzedResult(results <-chan *result, es *elasticsearch.Client, wg2 *sync.
 	for body := range results {
 		bulkRequestBody = append(bulkRequestBody, *body...)
 	}
-	requestUpdateTagArticle(bulkRequestBody, es)
+	requestAddTagArticle(bulkRequestBody, es)
 	log.Printf("analyzer send request \n")
 }
 
-func createBulkRequestBodyUpdateTag(articles []entities.Article, newTag string) ([]byte, error) {
+func createBulkRequestBodyAddTag(articles []entities.Article, newTag string) ([]byte, error) {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	bulkRequestBody := []byte{}
 	for _, article := range articles {
@@ -337,7 +431,7 @@ func createBulkRequestBodyUpdateTag(articles []entities.Article, newTag string) 
 	return bulkRequestBody, nil
 }
 
-func requestUpdateTagArticle(bulkRequestBody []byte, es *elasticsearch.Client) {
+func requestAddTagArticle(bulkRequestBody []byte, es *elasticsearch.Client) {
 	req := esapi.BulkRequest{
 		Body:    bytes.NewReader(bulkRequestBody),
 		Refresh: "true",

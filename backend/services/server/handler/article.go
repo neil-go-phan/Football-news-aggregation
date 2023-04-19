@@ -25,7 +25,7 @@ func NewArticleHandler(handler services.ArticleServices) *ArticleHandler {
 	return userHandler
 }
 
-func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
+func (articleHandler *ArticleHandler) APISearchTagsAndKeyword(c *gin.Context) {
 	keyword := c.Query("q")
 	tags := c.Query("tags")
 	fromString := c.Query("from")
@@ -36,6 +36,7 @@ func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 		log.Printf("can not convert %s string to int err: %v\n",fromString, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Bad request"})
 	}
+	
 	// request to elasticsearch
 	keyword = strings.TrimSpace(keyword)
 	articles, err := articleHandler.handler.SearchArticlesTagsAndKeyword(keyword, formatedTags, fromInt)
@@ -48,7 +49,7 @@ func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 
 
 
-func (articleHandler *ArticleHandler) CrawlArticleLeague(c *gin.Context) {
+func (articleHandler *ArticleHandler) APICrawlArticleLeague(c *gin.Context) {
 	leagueName := c.Query("league")
 
 	league := []string{leagueName}
@@ -58,7 +59,7 @@ func (articleHandler *ArticleHandler) CrawlArticleLeague(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Signal crawl artilce success"})
 }
 
-func (articleHandler *ArticleHandler) AddUpdateNewTag(c *gin.Context) {
+func (articleHandler *ArticleHandler) APIAddUpdateNewTag(c *gin.Context) {
 	tag := c.Query("tag")
 
 	err := articleHandler.handler.AddTagForAllArticle(tag)
@@ -68,9 +69,28 @@ func (articleHandler *ArticleHandler) AddUpdateNewTag(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Update tag successfull"})
 }
 
+func (articleHandler *ArticleHandler) APIGetFirstPageOfLeagueRelatedArticle(c *gin.Context) {
+	league := c.Query("league")
+
+	articles, err := articleHandler.handler.GetFirstPageOfLeagueRelatedArticle(league)
+	if err != nil {
+		log.Printf("error occurred while services layer searching for keyword with index: %s, err: %v\n", "articles", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
+}
+
+
 func (articleHandler *ArticleHandler) SignalToCrawlerAfter10Min(cronjob *cron.Cron) {
 	_, err := cronjob.AddFunc("@every 0h10m", func() { articleHandler.handler.GetArticles(make([]string, 0)) })
 	if err != nil {
-		log.Println("error occurred while seting up getArticle cronjob: ", err)
+		log.Println("error occurred while seting up SignalToCrawlerAfter10Min cronjob: ", err)
+	}
+}
+
+func (articleHandler *ArticleHandler) RefreshCacheAfter5Min(cronjob *cron.Cron) {
+	_, err := cronjob.AddFunc("@every 0h5m", func() { articleHandler.handler.RefreshCache() })
+	if err != nil {
+		log.Println("error occurred while seting up RefreshCacheAfter5Min cronjob: ", err)
 	}
 }

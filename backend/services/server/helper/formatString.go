@@ -30,18 +30,16 @@ func FormatVietnamese(stringInput string) string {
 	stringInput = reg_y.ReplaceAllLiteralString(stringInput, "y")
 	stringInput = reg_d.ReplaceAllLiteralString(stringInput, "d")
 
-
-
 	stringInput = strings.ToLower(stringInput)
 	return stringInput
 }
 
 func FormatElasticSearchIndexName(indexName string) string {
 	formatedPhase1 := FormatVietnamese(indexName)
-		// regexp remove charaters in ()
-		var RegexpPara = `\(.*\)`
-		reg_para := regexp.MustCompile(RegexpPara)
-		formatedPhase1 = reg_para.ReplaceAllLiteralString(formatedPhase1, "")
+	// regexp remove charaters in ()
+	var RegexpPara = `\(.*\)`
+	reg_para := regexp.MustCompile(RegexpPara)
+	formatedPhase1 = reg_para.ReplaceAllLiteralString(formatedPhase1, "")
 	return strings.Replace(formatedPhase1, " ", "", -1)
 }
 
@@ -53,4 +51,13 @@ func FortmatTagsFromRequest(tags string) []string {
 func FormatDateToVietnamesDateSting(date time.Time) string {
 	year, month, day := date.Date()
 	return fmt.Sprintf("%v/%v/%v", day, int(month), year)
+}
+
+func FormatCacheKey(tags string) string {
+	pharse1 := FormatVietnamese(tags)
+	pharse2 := strings.Replace(pharse1, "+", "_", -1)
+	pharse3 := strings.Replace(pharse2, "-", "_", -1)
+	pharse4 := strings.TrimSpace(pharse3)
+	pharse5 := strings.Replace(pharse4, " ", "_", -1)
+	return pharse5
 }

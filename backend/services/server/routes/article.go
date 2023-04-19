@@ -20,8 +20,9 @@ func NewArticleRoutes(articleHandler *handler.ArticleHandler) *ArticleRoutes{
 func (articleRoutes *ArticleRoutes)Setup(r *gin.Engine) {
 	routes := r.Group("article")
 	{
-		routes.GET("search-tag-keyword",  articleRoutes.articleHandler.SearchTagsAndKeyword)
-		routes.GET("signal-crawler",  articleRoutes.articleHandler.CrawlArticleLeague)
-		routes.GET("update-tag",  articleRoutes.articleHandler.AddUpdateNewTag)
+		routes.GET("search-tag-keyword",  articleRoutes.articleHandler.APISearchTagsAndKeyword)
+		routes.GET("signal-crawler",  articleRoutes.articleHandler.APICrawlArticleLeague)
+		routes.GET("update-tag",  articleRoutes.articleHandler.APIAddUpdateNewTag)
+		routes.GET("get-first-page",  articleRoutes.articleHandler.APIGetFirstPageOfLeagueRelatedArticle)
 	}
 }
