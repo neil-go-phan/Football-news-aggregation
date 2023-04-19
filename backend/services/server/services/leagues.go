@@ -44,11 +44,6 @@ func (s *leaguesService) ListLeagues() entities.Leagues {
 	return s.leagues
 }
 
-// func removeLeague(slice []entities.League, index int) []entities.League {
-// 	slice[index] = slice[len(slice)-1]
-// 	return slice[:len(slice)-1]
-// }
-
 func (s *leaguesService) ChangeStatus(leagueName string) (bool, error){
 	for index, league := range s.leagues.Leagues {
 		if league.LeagueName == leagueName {

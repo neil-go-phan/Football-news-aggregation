@@ -21,10 +21,10 @@ export default function News() {
   const router = useRouter();
   const { height } = useWindowDimensions();
 
-  const handleSearchArticle = (keywordSearch: string, defaultFrom: number) => {
+  const handleSearchArticle = (keywordSearch: string) => {
     setkeyword(keywordSearch);
-    setFrom(defaultFrom + 10);
-    requestFirstPageArticle(keywordSearch, defaultFrom);
+    setFrom(DEFAULT_PAGE + 10);
+    requestFirstPageArticle(keywordSearch, DEFAULT_PAGE);
   };
 
   const handleRequestMoreArticle = () => {

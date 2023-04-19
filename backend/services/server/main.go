@@ -86,6 +86,7 @@ func main() {
 	}
 	// articleService.GetArticles(make([]string, 0))
 
+
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()

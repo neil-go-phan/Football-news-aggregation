@@ -9,6 +9,7 @@ import (
 	"server/entities"
 	serverhelper "server/helper"
 	"strings"
+	"sync"
 	"time"
 
 	pb "server/proto"
@@ -25,6 +26,9 @@ var PREV_ARTICLES = make(map[string]bool)
 var ARTICLES_INDEX_NAME = "articles"
 var DEFAULT_TAG = "tin tuc bong da"
 var PIT_LIVE = "1m"
+
+type work = []entities.Article
+type result = []byte
 
 type articleService struct {
 	conn               *grpc.ClientConn
@@ -45,7 +49,7 @@ func NewArticleService(leagues *leaguesService, htmlClass *htmlClassesService, t
 	return articleService
 }
 
-func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article,  error) {
+func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
@@ -196,7 +200,323 @@ func querySearchArticlesBothTagAndKeyword(keyword string, filterTagQuery []map[s
 	return query
 }
 
-// GetArticles request crawler to scrapt data and sync new data with redis and elastic search
+// refresh cache after expire
+
+// implement search_after query, // implement worker pool
+
+func (s *articleService) AddTagForAllArticle(tag string) error {
+	tagFormated := serverhelper.FormatVietnamese(tag)
+	pitID, err := requestOpenPointInTime(s.es)
+	if err != nil {
+		return err
+	}
+	firstPageArticles, newPitID, searchAfterQuery, err := s.requestFirstPageOfArticleSearchWithTagAsKeyword(tagFormated, pitID)
+	if err != nil {
+		return err
+	}
+	bulkRequestBody, err := createBulkRequestBodyUpdateTag(firstPageArticles, tagFormated)
+	if err != nil {
+		log.Printf("error when worker create bulk request body %s\n", err)
+	}
+	requestUpdateTagArticle(bulkRequestBody, s.es)
+
+	if len(searchAfterQuery) == 0 {
+		return nil
+	}
+
+	var wg1 sync.WaitGroup
+	var wg2 sync.WaitGroup
+
+	// worker pool
+	jobs := make(chan *work, 5)
+	results := make(chan *result, 5)
+	// 5 worker
+	for i := 0; i < 5; i++ {
+		wg1.Add(1)
+		go workerUpdateBulkRequest(jobs, results, tagFormated, &wg1, i)
+	}
+
+	go producerRequestArticle(jobs, s, tagFormated, newPitID, searchAfterQuery)
+
+	wg2.Add(1)
+	go analyzedResult(results,s.es, &wg2)
+
+	wg1.Wait() 
+
+	close(results)
+
+	wg2.Wait()
+	log.Printf("add tag success")
+	return nil
+}
+
+// producer sending job continuously to job chan until no more job
+func producerRequestArticle(jobs chan<- *work, s *articleService, tag string, firstPitID string, firstSearchAfterQuery []interface{}) {
+	pitID := firstPitID
+	searchAfterQuery := firstSearchAfterQuery
+
+	for {
+		articles, newPitID, newSearchAfterQuery, err := s.requestNextPageOfArticleWithTagAsKeyword(tag, pitID, searchAfterQuery)
+		if err != nil {
+			break
+		}
+
+		pitID = newPitID
+		searchAfterQuery = newSearchAfterQuery
+
+		jobs <- &articles
+
+		if len(searchAfterQuery) == 0 {
+			break
+		}
+	}
+	close(jobs)
+}
+
+// worker take job, do something and send result to result chan
+func workerUpdateBulkRequest(jobs <-chan *work, results chan<- *result, newTag string, wg *sync.WaitGroup, id int) {
+	defer wg.Done()
+	for job := range jobs {
+		log.Printf("worker #%d received: %v article\n", id, len(*job))
+		bulkRequestBody, err := createBulkRequestBodyUpdateTag(*job, newTag)
+		if err != nil {
+			log.Printf("error when worker create bulk request body %s\n", err)
+		}
+		result := bulkRequestBody
+		results <- &result
+	}
+}
+
+// analyzer collect result done by worker
+func analyzedResult(results <-chan *result, es *elasticsearch.Client, wg2 *sync.WaitGroup) {
+	defer wg2.Done()
+	bulkRequestBody := []byte{}
+	for body := range results {
+		bulkRequestBody = append(bulkRequestBody, *body...)
+	}
+	requestUpdateTagArticle(bulkRequestBody, es)
+	log.Printf("analyzer send request \n")
+}
+
+func createBulkRequestBodyUpdateTag(articles []entities.Article, newTag string) ([]byte, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	bulkRequestBody := []byte{}
+	for _, article := range articles {
+		ok := checkTagWhenAddTag(article, newTag)
+		if ok {
+			newTagsField := article.Tags
+			newTagsField = append(newTagsField, newTag)
+
+			updateBody := map[string]interface{}{
+				"doc": map[string]interface{}{
+					"tags": newTagsField,
+				},
+			}
+
+			updateHeader := map[string]interface{}{
+				"update": map[string]interface{}{
+					"_index": ARTICLES_INDEX_NAME,
+					"_id":    strings.ToLower(article.Title),
+				},
+			}
+
+			updateBytes, err := json.Marshal(updateBody)
+			if err != nil {
+				return bulkRequestBody, err
+			}
+			updateHeaderBytes, err := json.Marshal(updateHeader)
+			if err != nil {
+				return bulkRequestBody, err
+			}
+			bulkRequestBody = append(bulkRequestBody, updateHeaderBytes...)
+			bulkRequestBody = append(bulkRequestBody, []byte("\n")...)
+			bulkRequestBody = append(bulkRequestBody, updateBytes...)
+			bulkRequestBody = append(bulkRequestBody, []byte("\n")...)
+		}
+	}
+	return bulkRequestBody, nil
+}
+
+func requestUpdateTagArticle(bulkRequestBody []byte, es *elasticsearch.Client) {
+	req := esapi.BulkRequest{
+		Body:    bytes.NewReader(bulkRequestBody),
+		Refresh: "true",
+	}
+	res, err := req.Do(context.Background(), es)
+	if err != nil {
+		log.Printf("can not send a bulk update request to elastic search %s\n", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		log.Printf("Error response: %s\n", res.String())
+	} else {
+		log.Printf("Bulk update successful\n")
+	}
+}
+
+func checkTagWhenAddTag(article entities.Article, newTag string) bool {
+	// check if tag already exist on article
+	for _, tag := range article.Tags {
+		if tag == newTag {
+			return false
+		}
+	}
+	if strings.Contains(serverhelper.FormatVietnamese(article.Description), newTag) || strings.Contains(serverhelper.FormatVietnamese(article.Title), newTag) {
+		return true
+	}
+	return false
+}
+
+func requestOpenPointInTime(es *elasticsearch.Client) (string, error) {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	var pointInTime string
+
+	resp, err := es.OpenPointInTime([]string{ARTICLES_INDEX_NAME}, PIT_LIVE)
+	if err != nil {
+		return pointInTime, fmt.Errorf("request to elastic search fail")
+	}
+
+	var result map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return pointInTime, fmt.Errorf("decode respose from elastic search failed")
+	}
+
+	pointInTime = result["id"].(string)
+
+	return pointInTime, nil
+}
+
+func (s *articleService) requestFirstPageOfArticleSearchWithTagAsKeyword(tag string, pitID string) (articles []entities.Article, newPitID string, searchAfter []interface{}, err error) {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	var buffer bytes.Buffer
+
+	query := querySearchFirstPageArticlesWithTagAsKeyword(tag, pitID)
+
+	err = json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return articles, pitID, searchAfter, fmt.Errorf("encode query failed")
+	}
+
+	resp, err := s.es.Search(s.es.Search.WithBody(&buffer))
+	if err != nil {
+		return articles, pitID, searchAfter, fmt.Errorf("request to elastic search fail")
+	}
+
+	var result map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return articles, pitID, searchAfter, fmt.Errorf("decode respose from elastic search failed")
+	}
+
+	for index, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
+		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
+		articles = append(articles, newEntitiesArticleFromMap(article))
+		// get last result article sort field
+		// elastic search will sent 10 hits by default. if we can not find the 10th article, that mean there is no more result
+		if index == 9 {
+			searchAfter = hit.(map[string]interface{})["sort"].([]interface{})
+		}
+	}
+
+	newPitID = result["pit_id"].(string)
+	return articles, newPitID, searchAfter, nil
+}
+
+func (s *articleService) requestNextPageOfArticleWithTagAsKeyword(tag string, pitID string, searchAfterQuery []interface{}) (articles []entities.Article, newPitID string, searchAfter []interface{}, err error) {
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	var buffer bytes.Buffer
+
+	query := queryGetNextPageOfArticleWithTagAsKeyword(tag, pitID, searchAfterQuery)
+
+	err = json.NewEncoder(&buffer).Encode(query)
+	if err != nil {
+		return articles, pitID, searchAfter, fmt.Errorf("encode query failed")
+	}
+
+	resp, err := s.es.Search(s.es.Search.WithBody(&buffer))
+	if err != nil {
+		return articles, pitID, searchAfter, fmt.Errorf("request to elastic search fail")
+	}
+
+	var result map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		return articles, pitID, searchAfter, fmt.Errorf("decode respose from elastic search failed")
+	}
+
+	for index, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
+		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
+		articles = append(articles, newEntitiesArticleFromMap(article))
+		// get last result article sort field
+		// elastic search will sent 10 hits by default. if we can not find the 10th article, that mean there is no more result
+		if index == 9 {
+			searchAfter = hit.(map[string]interface{})["sort"].([]interface{})
+		}
+	}
+
+	newPitID = result["pit_id"].(string)
+	return articles, newPitID, searchAfter, nil
+}
+
+func querySearchFirstPageArticlesWithTagAsKeyword(tag string, pitID string) map[string]interface{} {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": map[string]interface{}{
+					"multi_match": map[string]interface{}{
+						"query":    tag,
+						"fields":   []string{"title", "description"},
+						"analyzer": "no_accent",
+					},
+				},
+			},
+		},
+		"pit": map[string]interface{}{
+			"id":         pitID,
+			"keep_alive": PIT_LIVE,
+		},
+		"sort": map[string]interface{}{
+			"created_at": map[string]interface{}{
+				"order": "desc",
+			},
+		},
+	}
+	return query
+}
+
+func queryGetNextPageOfArticleWithTagAsKeyword(tag string, pitID string, searchAfter []interface{}) map[string]interface{} {
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": map[string]interface{}{
+					"multi_match": map[string]interface{}{
+						"query":    tag,
+						"fields":   []string{"title", "description"},
+						"analyzer": "no_accent",
+					},
+				},
+			},
+		},
+		"pit": map[string]interface{}{
+			"id":         pitID,
+			"keep_alive": PIT_LIVE,
+		},
+		"search_after": searchAfter,
+		"sort": map[string]interface{}{
+			"created_at": map[string]interface{}{
+				"order": "desc",
+			},
+		},
+	}
+	return query
+}
+
+// GetArticles request crawler to scrapt data and sync elastic search
 func (s *articleService) GetArticles(keywords []string) {
 	client := pb.NewCrawlerServiceClient(s.conn)
 
@@ -262,7 +582,6 @@ func (s *articleService) GetArticles(keywords []string) {
 // Solution: Server lưu kết quả cào ở lần trước đó, sau đó lấy kết quả mới so sánh với cũ, nếu có bài báo nào mới thì sẽ check lại với elasticsearch. Elasticsearch chưa có thì thêm vào
 
 func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, league string, tags []string) {
-
 	// Condition: similar title
 	for _, article := range respArticles {
 
@@ -331,7 +650,7 @@ func newEntitiesArticleFromMap(respArticle map[string]interface{}) entities.Arti
 }
 
 func newEntitiesArticleFromPb(respArticle *pb.Article, tags []string, league string) entities.Article {
-	articleTags := checkTags(respArticle, tags, league)
+	articleTags := taggedWhenCrawl(respArticle, tags, league)
 
 	article := entities.Article{
 		Title:       respArticle.Title,
@@ -375,7 +694,7 @@ func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Cli
 	}
 }
 
-func checkTags(article *pb.Article, tags []string, keyword string) []string {
+func taggedWhenCrawl(article *pb.Article, tags []string, keyword string) []string {
 	articleTags := make(map[string]bool)
 	articleTags[serverhelper.FormatVietnamese(keyword)] = true
 

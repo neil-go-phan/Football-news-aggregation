@@ -22,5 +22,6 @@ func (articleRoutes *ArticleRoutes)Setup(r *gin.Engine) {
 	{
 		routes.GET("search-tag-keyword",  articleRoutes.articleHandler.SearchTagsAndKeyword)
 		routes.GET("signal-crawler",  articleRoutes.articleHandler.CrawlArticleLeague)
+		routes.GET("update-tag",  articleRoutes.articleHandler.AddUpdateNewTag)
 	}
 }

@@ -46,6 +46,8 @@ func (articleHandler *ArticleHandler) SearchTagsAndKeyword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }
 
+
+
 func (articleHandler *ArticleHandler) CrawlArticleLeague(c *gin.Context) {
 	leagueName := c.Query("league")
 
@@ -54,6 +56,16 @@ func (articleHandler *ArticleHandler) CrawlArticleLeague(c *gin.Context) {
 	articleHandler.handler.GetArticles(league)
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Signal crawl artilce success"})
+}
+
+func (articleHandler *ArticleHandler) AddUpdateNewTag(c *gin.Context) {
+	tag := c.Query("tag")
+
+	err := articleHandler.handler.AddTagForAllArticle(tag)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Update tag failed"})
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Update tag successfull"})
 }
 
 func (articleHandler *ArticleHandler) SignalToCrawlerAfter10Min(cronjob *cron.Cron) {

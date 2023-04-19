@@ -24,6 +24,7 @@ type TagsServices interface {
 
 type ArticleServices interface {
 	SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, error)
+	AddTagForAllArticle(tag string) error
 	GetArticles(keywords []string)
 }
 

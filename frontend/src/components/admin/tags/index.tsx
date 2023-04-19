@@ -171,6 +171,7 @@ export default function AdminTags() {
         newTags.push(tag);
         setTags([...newTags]);
       }
+      requestTaggedArticle(tag)
     } catch (error) {
       toast.error('Error occurred while add tags', {
         position: 'top-right',
@@ -190,6 +191,37 @@ export default function AdminTags() {
       setTags(data.tags.tags);
     } catch (error) {
       toast.error('Error occurred while get tags', {
+        position: 'top-right',
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
+    }
+  };
+  const requestTaggedArticle = async (tag: string) => {
+    try {
+      const { data } = await axiosProtectedAPI.get('article/update-tag', {
+        params: { tag: tag },
+      });
+      if (!data.success) {
+        throw 'tagged fail';
+      }
+      toast.success('Tagged article success', {
+        position: 'top-right',
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
+    } catch (error) {
+      toast.error('Error occurred while tagged article', {
         position: 'top-right',
         autoClose: 1000,
         hideProgressBar: false,
