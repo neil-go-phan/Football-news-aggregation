@@ -13,7 +13,10 @@ require (
 	google.golang.org/protobuf v1.30.0
 )
 
-require github.com/sirupsen/logrus v1.9.0 // indirect
+require (
+	github.com/sirupsen/logrus v1.9.0
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
+)
 
 require (
 	github.com/bytedance/sonic v1.8.0 // indirect

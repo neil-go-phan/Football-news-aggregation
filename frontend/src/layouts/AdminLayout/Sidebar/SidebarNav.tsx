@@ -1,7 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCalendarDays,
-  faFutbol,
   faNewspaper,
   IconDefinition,
 } from '@fortawesome/free-regular-svg-icons';

@@ -1,97 +1,23 @@
-package services
+package articlerepo
 
 import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
-		log "github.com/sirupsen/logrus"
 	"server/entities"
 	serverhelper "server/helper"
 	"strings"
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	pb "server/proto"
 
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/patrickmn/go-cache"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/status"
 )
-
-var PREV_ARTICLES = make(map[string]bool)
-var ARTICLES_INDEX_NAME = "articles"
-var DEFAULT_TAG = "tin tuc bong da"
-var PIT_LIVE = "1m"
-var ARTICLE_CACHE_KEY_PREFIX = "article_cache"
-var CACHE_EXPIRATION_TIME = 5 * time.Minute
-var CACHE_CLEAR_UP_TIME = 5 * time.Minute
-var ARTICLE_CACHE = cache.New(CACHE_EXPIRATION_TIME, CACHE_CLEAR_UP_TIME)
-
-type work = []entities.Article
-type result = []byte
-
-type articleService struct {
-	conn               *grpc.ClientConn
-	es                 *elasticsearch.Client
-	htmlClassesService *htmlClassesService
-	leaguesService     *leaguesService
-	tagsService        *tagsService
-}
-
-func NewArticleService(leagues *leaguesService, htmlClass *htmlClassesService, tags *tagsService, conn *grpc.ClientConn, es *elasticsearch.Client) *articleService {
-	articleService := &articleService{
-		conn:               conn,
-		es:                 es,
-		htmlClassesService: htmlClass,
-		leaguesService:     leagues,
-		tagsService:        tags,
-	}
-	return articleService
-}
-
-func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	articles := make([]entities.Article, 0)
-	var buffer bytes.Buffer
-
-	query := querySearchArticle(keyword, formatedTags, from)
-
-	err := json.NewEncoder(&buffer).Encode(query)
-	if err != nil {
-		return articles, fmt.Errorf("encode query failed")
-	}
-
-	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
-	if err != nil {
-		return articles, fmt.Errorf("request to elastic search fail")
-	}
-
-	var result map[string]interface{}
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return articles, fmt.Errorf("decode respose from elastic search failed")
-	}
-
-	for _, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
-
-		newArticle := hit.(map[string]interface{})["_source"].(map[string]interface{})
-		article := newEntitiesArticleFromMap(newArticle)
-		// usecase: when admin add a new tag. then some article will tagged with that new tag.
-		// then admin delete that tag. this removeNotExistTag function will detect and filter all deleted tag from return articles
-		filterDeletedTag(&article, s.tagsService.Tags.Tags)
-
-		articles = append(articles, article)
-
-	}
-
-	return articles, nil
-}
 
 func filterDeletedTag(article *entities.Article, tags []string) {
 	var wg sync.WaitGroup
@@ -240,100 +166,6 @@ func querySearchArticlesBothTagAndKeyword(keyword string, filterTagQuery []map[s
 	return query
 }
 
-func (s *articleService) GetFirstPageOfLeagueRelatedArticle(leagueName string) ([]entities.Article, error) {
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-
-	articles := []entities.Article{}
-
-	key := fmt.Sprintf("%s_%s", ARTICLE_CACHE_KEY_PREFIX, serverhelper.FormatCacheKey(leagueName))
-	articleInterface, found := ARTICLE_CACHE.Get(key)
-	if found {
-		log.Println("FOUND CACHE: ", key)
-		articleByte, err := json.Marshal(articleInterface)
-		if err != nil {
-			log.Printf("error occrus when marshal cache articles: %s", err)
-		}
-
-		err = json.Unmarshal(articleByte, &articles)
-		if err != nil {
-			log.Printf("error occrus when unmarshal cache articles to entity articles: %s", err)
-		}
-		return articles, nil
-	}
-	log.Println("MISS CACHE: ", key)
-	// Cache miss, fetch article from elastic
-	formatedTags := serverhelper.FortmatTagsFromRequest(leagueName)
-	articles, err := s.SearchArticlesTagsAndKeyword("", formatedTags, 0)
-	if err != nil {
-		return nil, err
-	}
-
-	s.RefreshCache()
-
-	return articles, nil
-}
-
-func (s *articleService) RefreshCache() {
-	log.Printf("refresh cache...")
-	var wg sync.WaitGroup
-	for _, league := range s.leaguesService.GetLeaguesNameActive() {
-		wg.Add(1)
-		go func(league string) {
-			defer wg.Done()
-			tagFromLeague := serverhelper.FormatVietnamese(league)
-			firstPageArticleLeague, err := s.SearchArticlesTagsAndKeyword("", []string{tagFromLeague}, 0)
-			if err != nil {
-				log.Printf("can not request to elastic to reset tag")
-			}
-			key := fmt.Sprintf("%s_%s", ARTICLE_CACHE_KEY_PREFIX, serverhelper.FormatCacheKey(league))
-			ARTICLE_CACHE.Set(key, firstPageArticleLeague, cache.DefaultExpiration)
-			log.Printf("refresh cache key %s\n", key)
-		}(league)
-	}
-	wg.Wait()
-	log.Printf("refresh cache end.")
-}
-
-func (s *articleService) GetArticleCount() (total float64, today float64, err error) {
-	today, err = s.GetCrawledArticleToday()
-	if err != nil {
-		return total, today, err
-	}
-	total, err = s.GetTotalCrawledArticle()
-	if err != nil {
-		return total, today, err
-	}
-	return total, today, nil
-}
-
-func (s *articleService) GetCrawledArticleToday() (float64, error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	var buffer bytes.Buffer
-
-	query := queryGetAmountCrawledArtilceToday()
-
-	err := json.NewEncoder(&buffer).Encode(query)
-	if err != nil {
-		return 0, err
-	}
-
-	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
-	if err != nil {
-		return 0, err
-	}
-	
-	var result map[string]interface{}
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return 0, err
-	}
-
-	value:= result["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"]
-	today := value.(float64)
-	return today, nil
-}
-
 func queryGetAmountCrawledArtilceToday() map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
@@ -347,34 +179,6 @@ func queryGetAmountCrawledArtilceToday() map[string]interface{} {
 		"size": 0,
 	}
 	return query
-}
-
-func (s *articleService) GetTotalCrawledArticle() (float64, error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	var buffer bytes.Buffer
-
-	query := queryGetTotalCrawledArtilce()
-
-	err := json.NewEncoder(&buffer).Encode(query)
-	if err != nil {
-		return 0, err
-	}
-
-	resp, err := s.es.Search(s.es.Search.WithIndex(ARTICLES_INDEX_NAME), s.es.Search.WithBody(&buffer))
-	if err != nil {
-		return 0, err
-	}
-	
-	var result map[string]interface{}
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return 0, err
-	}
-
-	value:= result["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"]
-	total := value.(float64)
-	return total, nil
 }
 
 func queryGetTotalCrawledArtilce() map[string]interface{} {
@@ -392,57 +196,9 @@ func queryGetTotalCrawledArtilce() map[string]interface{} {
 	return query
 }
 
-// add tag // implement search_after query, // implement worker pool
-func (s *articleService) AddTagForAllArticle(tag string) error {
-	tagFormated := serverhelper.FormatVietnamese(tag)
-	pitID, err := requestOpenPointInTime(s.es)
-	if err != nil {
-		return err
-	}
-	firstPageArticles, newPitID, searchAfterQuery, err := s.requestFirstPageOfArticleSearchWithTagAsKeyword(tagFormated, pitID)
-	if err != nil {
-		return err
-	}
-	bulkRequestBody, err := createBulkRequestBodyAddTag(firstPageArticles, tagFormated)
-	if err != nil {
-		log.Printf("error when worker create bulk request body %s\n", err)
-	}
-	requestAddTagArticle(bulkRequestBody, s.es)
-
-	if len(searchAfterQuery) == 0 {
-		return nil
-	}
-
-	var wg1 sync.WaitGroup
-	var wg2 sync.WaitGroup
-
-	// worker pool
-	jobs := make(chan *work, 5)
-	results := make(chan *result, 5)
-	// 5 worker
-	for i := 0; i < 5; i++ {
-		wg1.Add(1)
-		go workerAddTagBulkRequest(jobs, results, tagFormated, &wg1, i)
-	}
-
-	go producerRequestArticle(jobs, s, tagFormated, newPitID, searchAfterQuery)
-
-	wg2.Add(1)
-	go analyzedResult(results, s.es, &wg2)
-
-	wg1.Wait()
-
-	close(results)
-
-	wg2.Wait()
-	log.Printf("add tag success")
-
-	s.RefreshCache()
-	return nil
-}
 
 // producer sending job continuously to job chan until no more job
-func producerRequestArticle(jobs chan<- *work, s *articleService, tag string, firstPitID string, firstSearchAfterQuery []interface{}) {
+func producerRequestArticle(jobs chan<- *work, s *articleRepo, tag string, firstPitID string, firstSearchAfterQuery []interface{}) {
 	pitID := firstPitID
 	searchAfterQuery := firstSearchAfterQuery
 
@@ -580,79 +336,6 @@ func requestOpenPointInTime(es *elasticsearch.Client) (string, error) {
 	return pointInTime, nil
 }
 
-func (s *articleService) requestFirstPageOfArticleSearchWithTagAsKeyword(tag string, pitID string) (articles []entities.Article, newPitID string, searchAfter []interface{}, err error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	var buffer bytes.Buffer
-
-	query := querySearchFirstPageArticlesWithTagAsKeyword(tag, pitID)
-
-	err = json.NewEncoder(&buffer).Encode(query)
-	if err != nil {
-		return articles, pitID, searchAfter, fmt.Errorf("encode query failed")
-	}
-
-	resp, err := s.es.Search(s.es.Search.WithBody(&buffer))
-	if err != nil {
-		return articles, pitID, searchAfter, fmt.Errorf("request to elastic search fail")
-	}
-
-	var result map[string]interface{}
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return articles, pitID, searchAfter, fmt.Errorf("decode respose from elastic search failed")
-	}
-
-	for index, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
-		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
-		articles = append(articles, newEntitiesArticleFromMap(article))
-		// get last result article sort field
-		// elastic search will sent 10 hits by default. if we can not find the 10th article, that mean there is no more result
-		if index == 9 {
-			searchAfter = hit.(map[string]interface{})["sort"].([]interface{})
-		}
-	}
-
-	newPitID = result["pit_id"].(string)
-	return articles, newPitID, searchAfter, nil
-}
-
-func (s *articleService) requestNextPageOfArticleWithTagAsKeyword(tag string, pitID string, searchAfterQuery []interface{}) (articles []entities.Article, newPitID string, searchAfter []interface{}, err error) {
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
-	var buffer bytes.Buffer
-
-	query := queryGetNextPageOfArticleWithTagAsKeyword(tag, pitID, searchAfterQuery)
-
-	err = json.NewEncoder(&buffer).Encode(query)
-	if err != nil {
-		return articles, pitID, searchAfter, fmt.Errorf("encode query failed")
-	}
-
-	resp, err := s.es.Search(s.es.Search.WithBody(&buffer))
-	if err != nil {
-		return articles, pitID, searchAfter, fmt.Errorf("request to elastic search fail")
-	}
-
-	var result map[string]interface{}
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		return articles, pitID, searchAfter, fmt.Errorf("decode respose from elastic search failed")
-	}
-
-	for index, hit := range result["hits"].(map[string]interface{})["hits"].([]interface{}) {
-		article := hit.(map[string]interface{})["_source"].(map[string]interface{})
-		articles = append(articles, newEntitiesArticleFromMap(article))
-		// get last result article sort field
-		// elastic search will sent 10 hits by default. if we can not find the 10th article, that mean there is no more result
-		if index == 9 {
-			searchAfter = hit.(map[string]interface{})["sort"].([]interface{})
-		}
-	}
-
-	newPitID = result["pit_id"].(string)
-	return articles, newPitID, searchAfter, nil
-}
 
 func querySearchFirstPageArticlesWithTagAsKeyword(tag string, pitID string) map[string]interface{} {
 	query := map[string]interface{}{
@@ -707,67 +390,6 @@ func queryGetNextPageOfArticleWithTagAsKeyword(tag string, pitID string, searchA
 	return query
 }
 
-// GetArticles request crawler to scrapt data and sync elastic search
-func (s *articleService) GetArticles(keywords []string) {
-	client := pb.NewCrawlerServiceClient(s.conn)
-
-	in := &pb.AllConfigsArticles{
-		HtmlClasses: &pb.HTMLClasses{
-			ArticleClass:            s.htmlClassesService.HtmlClasses.ArticleClass,
-			ArticleTitleClass:       s.htmlClassesService.HtmlClasses.ArticleTitleClass,
-			ArticleDescriptionClass: s.htmlClassesService.HtmlClasses.ArticleDescriptionClass,
-			ArticleLinkClass:        s.htmlClassesService.HtmlClasses.ArticleLinkClass,
-		},
-		Leagues: s.leaguesService.GetLeaguesNameActive(),
-	}
-
-	if len(keywords) != 0 {
-		in.Leagues = keywords
-	}
-
-	// send gRPC request to crawler
-	stream, err := client.GetArticles(context.Background(), in)
-	if err != nil {
-		log.Printf("error occurred while openning stream error %v \n", err)
-		return
-	}
-
-	done := make(chan bool)
-	var mapSearchResult = make(map[string]bool)
-	log.Printf("Start get stream of article...\n")
-	// recieve stream of article from crawler
-	go func() {
-		for {
-			resp, err := stream.Recv()
-			if err == io.EOF {
-				done <- true //means stream is finished
-				return
-			}
-			if err != nil {
-				log.Printf("cannot receive %v\n", err)
-				status, _ := status.FromError(err)
-				if status.Code().String() == "Unavailable" {
-					done <- true //means stream is finished
-					return
-				}
-			}
-
-			league := resp.GetLeague()
-
-			respArticles := resp.GetArticles()
-			tags := s.tagsService.Tags.Tags
-
-			checkSimilarArticles(respArticles, s.es, league, tags)
-
-			saveToMapSearchResult(respArticles, mapSearchResult)
-
-		}
-	}()
-
-	<-done
-	PREV_ARTICLES = mapSearchResult
-	log.Printf("finished.")
-}
 
 // Nếu gửi từng bài bào lên elastic check thì mỗi lần tìm sẽ gửi vài ngàn request
 // Solution: Server lưu kết quả cào ở lần trước đó, sau đó lấy kết quả mới so sánh với cũ, nếu có bài báo nào mới thì sẽ check lại với elasticsearch. Elasticsearch chưa có thì thêm vào
@@ -913,3 +535,4 @@ func taggedWhenCrawl(article *pb.Article, tags []string, keyword string) []strin
 
 	return articleTagsSlice
 }
+

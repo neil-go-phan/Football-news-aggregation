@@ -203,11 +203,11 @@ export default function AdminLeagues() {
                       {...row.getRowProps()}
                       key={`league-admin-row-${row.index}`}
                     >
-                      {row.cells.map((cell) => {
+                      {row.cells.map((cell, index) => {
                         return (
                           <td
                             {...cell.getCellProps()}
-                            key={`league-admin-row-item-${cell}`}
+                            key={`league-admin-row-item-${index}`}
                           >
                             {cell.render('Cell')}
                           </td>
