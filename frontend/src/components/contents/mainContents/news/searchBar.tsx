@@ -13,10 +13,8 @@ import SearchTagContext from '@/common/contexts/searchTag';
 
 interface Props {
   // eslint-disable-next-line no-unused-vars
-  handleSearchArticle: (keywordSearch: string, from: number) => void
+  handleSearchArticle: (keywordSearch: string) => void
 }
-
-const DEFAULT_PAGE = 0
 
 const SearchBar: FunctionComponent<Props> = (props: Props) => {
   const [keyword, setkeyword] = useState<string>('');
@@ -32,10 +30,10 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
     event.preventDefault();
     if (keyword.trim() === '' && searchTags.length === 0) {
       setkeyword('');
-      props.handleSearchArticle('', DEFAULT_PAGE);
+      props.handleSearchArticle('');
       return;
     }
-    props.handleSearchArticle(keyword, DEFAULT_PAGE);
+    props.handleSearchArticle(keyword);
   };
 
   const handleDeleteTag = (tag: string) => {

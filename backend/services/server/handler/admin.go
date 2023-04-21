@@ -1,9 +1,11 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 	"server/services"
+	adminservices "server/services/admin"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +42,7 @@ func (adminHandler *AdminHandler) Get(c *gin.Context) {
 }
 
 func (adminHandler *AdminHandler) Login(c *gin.Context) {
-	var inputAdmin services.Admin
+	var inputAdmin adminservices.Admin
 	err := c.BindJSON(&inputAdmin)
 	if err != nil {
 		log.Printf("error occrus: %s", err)
@@ -63,7 +65,7 @@ func (adminHandler *AdminHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	var inputAdmin services.AdminWithConfirmPassword
+	var inputAdmin adminservices.AdminWithConfirmPassword
 	err := c.BindJSON(&inputAdmin)
 	if err != nil {
 		log.Printf("error occrus: %s", err)

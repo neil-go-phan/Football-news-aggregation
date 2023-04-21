@@ -4,10 +4,25 @@ import {
   Badge, Dropdown, Nav, NavLink,
 } from 'react-bootstrap'
 import Link from 'next/link'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { fetchEventSource } from '@microsoft/fetch-event-source'
 
 export default function HeaderNotificationNav() {
+  // const [data, setData] = useState<nerver>([]);
+  var sse = new EventSource(`${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}notification/get`)
+  sse.onmessage = console.log 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     await fetchEventSource(`${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}notification/get`, {
+  //       onmessage(ev) {
+  //           console.log(ev.data);
+  //       }
+  //   });
+  //   };
+  //   fetchData();
+  // }, []);
+  // console.log(data)
   return (
     <Nav>
       <Nav.Item>

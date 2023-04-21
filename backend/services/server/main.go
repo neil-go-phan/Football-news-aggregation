@@ -3,13 +3,32 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
+	"os"
 	"server/entities"
 	"server/handler"
+	serverhelper "server/helper"
 	"server/middlewares"
+
+	adminrepo "server/repository/admin"
+	articlerepo "server/repository/articles"
+	htmlclassesrepo "server/repository/htmlClasses"
+	leaguesrepo "server/repository/leagues"
+	matchdetailrepo "server/repository/matchDetail"
+	notificationrepo "server/repository/notification"
+	schedulesrepo "server/repository/schedules"
+	tagsrepo "server/repository/tags"
 	"server/routes"
 	"server/services"
+	adminservices "server/services/admin"
+	articlesservices "server/services/articles"
+	leaguesservices "server/services/leagues"
+	matchdetailservices "server/services/matchDetail"
+	notificationservices "server/services/notification"
+	schedulesservices "server/services/schedules"
+	tagsservices "server/services/tags"
+
 	"strings"
 	"sync"
 	"time"
@@ -19,12 +38,25 @@ import (
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/robfig/cron/v3"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	easy "github.com/t-tomalak/logrus-easy-formatter"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var ELASTIC_SEARCH_INDEXES = []string{services.ARTICLES_INDEX_NAME, services.SCHEDULE_INDEX_NAME, services.MATCH_DETAIL_INDEX_NAME}
+func init() {
+	// setup log
+	log.SetLevel(log.InfoLevel)
+	format := &easy.Formatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		LogFormat:       "[%lvl%]: %time% - %msg%\n",
+	}
+	log.SetFormatter(format)
+
+}
+
+var ELASTIC_SEARCH_INDEXES = []string{articlerepo.ARTICLES_INDEX_NAME, schedulesrepo.SCHEDULE_INDEX_NAME, matchdetailrepo.MATCH_DETAIL_INDEX_NAME}
 
 type EnvConfig struct {
 	ElasticsearchAddress string `mapstructure:"ELASTICSEARCH_ADDRESS"`
@@ -43,23 +75,49 @@ func main() {
 	if err != nil {
 		log.Fatalln("Fail to read config from JSON: ", err)
 	}
+
+	// write log file
+	logFile, err := os.OpenFile("serverlog.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println("Failed to create logfile" + "serverlog.log")
+		panic(err)
+	}
+	defer logFile.Close()
+	log.SetOutput(io.MultiWriter(logFile, os.Stdout))
 	conn := connectToCrawler(env)
 
 	// elastic search
 	es, err := connectToElasticsearch(env)
 	if err != nil {
-		log.Println("error occurred while connecting to elasticsearch node: ", err)
+		log.Errorln("error occurred while connecting to elasticsearch node: ", err)
 	}
 	amountOfNewIndex := createElaticsearchIndex(es)
 	// createElaticsearchIndex(es)
 	// declare services
-	htmlClassesService := services.NewHtmlClassesService(classConfig)
-	tagsService := services.NewTagsService(tagsConfig, es, env.JsonPath)
-	leaguesService := services.NewleaguesService(leaguesconfig, tagsService, env.JsonPath)
-	articleService := services.NewArticleService(leaguesService, htmlClassesService, tagsService, conn, es)
-	schedulesService := services.NewSchedulesService(leaguesService, tagsService, conn, es)
-	matchDetailService := services.NewMatchDetailervice(conn, es, articleService)
-	adminService := services.NewAdminService(adminConfig, env.JsonPath)
+	htmlclassesRepo := htmlclassesrepo.NewHtmlClassesRepo(classConfig)
+
+	notificationChan := make(chan entities.Notification)
+
+	notificationRepo := notificationrepo.NewNotificationRepo(notificationChan)
+	notificationService :=notificationservices.NewNotificationService(notificationRepo)
+
+	tagRepo := tagsrepo.NewTagsRepo(tagsConfig, env.JsonPath)
+	tagsService := tagsservices.NewTagsService(tagRepo)
+
+	leaguesRepo := leaguesrepo.NewLeaguesRepo(leaguesconfig, env.JsonPath)
+	leaguesService := leaguesservices.NewleaguesService(leaguesRepo, tagRepo)
+
+	articleRepo := articlerepo.NewArticleRepo(leaguesRepo, htmlclassesRepo, tagRepo, notificationRepo, conn, es)
+	articleService := articlesservices.NewArticleService(articleRepo)
+
+	schedulesRepo := schedulesrepo.NewSchedulesRepo(leaguesRepo, tagRepo, notificationRepo, conn, es)
+	schedulesService := schedulesservices.NewSchedulesService(schedulesRepo)
+
+	matchDetailRepo := matchdetailrepo.NewMatchDetailRepo(conn, es)
+	matchDetailService := matchdetailservices.NewMatchDetailervice(matchDetailRepo)
+
+	adminRepo := adminrepo.NewAdminRepo(adminConfig, env.JsonPath)
+	adminService := adminservices.NewAdminService(adminRepo)
 
 	tagsHandler := handler.NewTagsHandler(tagsService)
 	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
@@ -79,34 +137,41 @@ func main() {
 	adminHandler := handler.NewAdminHandler(adminService)
 	adminRoute := routes.NewAdminRoutes(adminHandler)
 
+	notificationHandler := handler.NewNotificationHandler(notificationService)
+	notificationRoute := routes.NewNotificationRoutes(notificationHandler)
+
 	// check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
 	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
-		log.Println("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
+		log.Infoln("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
 		seedDataFirstRun(articleService, schedulesService, matchDetailService)
 	}
 	// articleService.GetArticles(make([]string, 0))
+	createArticleCache(articleService)
 
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
 
-		// articleHandler.SignalToCrawlerAfter10Min(cronjob)
+		articleHandler.SignalToCrawlerAfter10Min(cronjob)
+		articleHandler.RefreshCacheAfter5Min(cronjob)
 		schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
 
 		cronjob.Run()
 	}()
 
 	// app routes
-	log.Println("Setup routes")
+	log.Infoln("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
 
+	go notificationRoute.Setup(r)
 	tagsRoutes.Setup(r)
 	leaguesRoutes.Setup(r)
 	articleRoute.Setup(r)
 	schedulesRoute.Setup(r)
 	matchDetailRoute.Setup(r)
 	adminRoute.Setup(r)
+
 
 	err = r.Run(":8080")
 	if err != nil {
@@ -120,25 +185,25 @@ func readConfigFromJSON(JsonPath string) (entities.HtmlClasses, entities.Leagues
 	var tagsConfig entities.Tags
 	var adminConfig entities.Admin
 
-	classConfig, err := services.ReadHtmlClassJSON(JsonPath)
+	classConfig, err := serverhelper.ReadHtmlClassJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read htmlClassesConfig.json: ", err)
 		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
 	}
 
-	leaguesConfig, err = services.ReadleaguesJSON(JsonPath)
+	leaguesConfig, err = serverhelper.ReadleaguesJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read leaguesConfig.json: ", err)
 		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
 	}
 
-	tagsConfig, err = services.ReadTagsJSON(JsonPath)
+	tagsConfig, err = serverhelper.ReadTagsJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read tagsConfig.json: ", err)
 		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
 	}
 
-	adminConfig, err = services.ReadAdminJSON(JsonPath)
+	adminConfig, err = serverhelper.ReadAdminJSON(JsonPath)
 	if err != nil {
 		log.Println("Fail to read adminConfig.json: ", err)
 		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
@@ -197,7 +262,7 @@ func createElaticsearchIndex(es *elasticsearch.Client) int {
 
 		if !exists {
 			log.Printf("Index: %s is not exist, create a new one...\n", indexName)
-			if indexName != services.ARTICLES_INDEX_NAME {
+			if indexName != articlerepo.ARTICLES_INDEX_NAME {
 				err = createIndex(es, indexName)
 			} else {
 				err = createArticleIndex(es, indexName)
@@ -310,10 +375,8 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 				schedulesService.GetSchedules(date.Format("02-01-2006"))
 
 				matchUrls := schedulesService.GetMatchURLsOnDay()
-				fmt.Println("len before", len(matchUrls.Urls))
 				matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 				schedulesService.ClearMatchURLsOnDay()
-				fmt.Println("len after", len(matchUrls.Urls))
 			}
 			defer wg.Done()
 		}(t, month)
@@ -323,4 +386,8 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 
 	// Get articles
 	articleService.GetArticles(make([]string, 0))
+}
+
+func createArticleCache(articleService services.ArticleServices) {
+	articleService.RefreshCache()
 }

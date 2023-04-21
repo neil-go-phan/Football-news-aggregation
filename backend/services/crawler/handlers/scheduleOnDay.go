@@ -4,7 +4,7 @@ import (
 	"context"
 	"crawler/services"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"time"
 	"crawler/helper"
 	"crawler/entities"

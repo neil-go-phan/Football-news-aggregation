@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net"
 
 	pb "crawler/proto"

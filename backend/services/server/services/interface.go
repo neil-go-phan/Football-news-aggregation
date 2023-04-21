@@ -3,13 +3,13 @@ package services
 import (
 	"server/entities"
 	"time"
+	"server/services/admin"
 )
 
 type HtmlClassesServices interface {
 }
 
 type LeaguesServices interface {
-	GetLeaguesName() []string
 	GetLeaguesNameActive() []string
 	ListLeagues() entities.Leagues
 	ChangeStatus(leagueName string) (bool, error)
@@ -24,7 +24,11 @@ type TagsServices interface {
 
 type ArticleServices interface {
 	SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, error)
+	AddTagForAllArticle(tag string) error
+	GetFirstPageOfLeagueRelatedArticle(leagueName string) ([]entities.Article, error)
+	RefreshCache()
 	GetArticles(keywords []string)
+	GetArticleCount() (total float64, today float64, err error) 
 }
 
 type SchedulesServices interface {
@@ -43,17 +47,10 @@ type MatchDetailServices interface {
 type AdminServices interface {
 	GetAdminUsername(username string) (string, error)
 	CheckAdminUsernameToken(username string) error
-	ChangePassword(admin *AdminWithConfirmPassword, usernameToken string) error
-	Login(admin *Admin) (string, error)
+	ChangePassword(admin *adminservices.AdminWithConfirmPassword, usernameToken string) error
+	Login(admin *adminservices.Admin) (string, error)
 }
 
-type Admin struct {
-	Username string `json:"username" validate:"required,min=8,max=16"`
-	Password string `json:"password" validate:"required"`
-}
-
-type AdminWithConfirmPassword struct {
-	Username             string `json:"username" validate:"required,min=8,max=16"`
-	Password             string `json:"password" validate:"required"`
-	PasswordConfirmation string `json:"password_confirmation" validate:"required"`
+type NotificationServices interface {
+	Send(title string, notiType string, message string)
 }

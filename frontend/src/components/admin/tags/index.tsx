@@ -63,7 +63,8 @@ export default function AdminTags() {
 
   const handleAddTag = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const exist = tags!.indexOf(newTagName.trim());
+    const tagFormated = toLowerCaseNonAccentVietnamese(newTagName)
+    const exist = tags!.indexOf(tagFormated);
     if (exist !== -1) {
       toast.info('Tag alreay exist', {
         position: 'top-right',
@@ -78,8 +79,8 @@ export default function AdminTags() {
       setNewTagName('');
       // return
     }
-    if (newTagName.trim() !== '') {
-      requestAddTag(newTagName.trim());
+    if (tagFormated !== '') {
+      requestAddTag(tagFormated);
     }
     setNewTagName('');
   };
@@ -171,6 +172,7 @@ export default function AdminTags() {
         newTags.push(tag);
         setTags([...newTags]);
       }
+      requestTaggedArticle(tag)
     } catch (error) {
       toast.error('Error occurred while add tags', {
         position: 'top-right',
@@ -190,6 +192,37 @@ export default function AdminTags() {
       setTags(data.tags.tags);
     } catch (error) {
       toast.error('Error occurred while get tags', {
+        position: 'top-right',
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
+    }
+  };
+  const requestTaggedArticle = async (tag: string) => {
+    try {
+      const { data } = await axiosProtectedAPI.get('article/update-tag', {
+        params: { tag: tag },
+      });
+      if (!data.success) {
+        throw 'tagged fail';
+      }
+      toast.success('Tagged article success', {
+        position: 'top-right',
+        autoClose: 1000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
+    } catch (error) {
+      toast.error('Error occurred while tagged article', {
         position: 'top-right',
         autoClose: 1000,
         hideProgressBar: false,
@@ -290,9 +323,9 @@ export default function AdminTags() {
                   prepareRow(row);
                   return (
                     <tr {...row.getRowProps()} key={`tags-admin-row-tr-${row.index}`}>
-                      {row.cells.map((cell) => {
+                      {row.cells.map((cell, index) => {
                         return (
-                          <td {...cell.getCellProps()} key={`tags-admin-row-tr-item-${cell.value.tagName}`}>
+                          <td {...cell.getCellProps()} key={`tags-admin-row-tr-item-${index}`}>
                             {cell.render('Cell')}
                           </td>
                         );

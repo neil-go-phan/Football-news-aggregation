@@ -4,7 +4,7 @@ import (
 	"crawler/entities"
 
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 

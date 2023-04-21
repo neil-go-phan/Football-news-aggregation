@@ -21,14 +21,18 @@ export default function News() {
   const router = useRouter();
   const { height } = useWindowDimensions();
 
-  const handleSearchArticle = (keywordSearch: string, defaultFrom: number) => {
+  const handleSearchArticle = (keywordSearch: string) => {
     setkeyword(keywordSearch);
-    setFrom(defaultFrom + 10);
-    requestFirstPageArticle(keywordSearch, defaultFrom);
+    setFrom(DEFAULT_PAGE + 10);
+    if (keywordSearch === '' && searchTags.length === 0) {
+      requestFirstPageArticle();
+      return 
+    }
+    requestSearchArticle(keywordSearch, DEFAULT_PAGE)
   };
 
   const handleRequestMoreArticle = () => {
-    requestArticle(keyword, from);
+    requestMoreArticle(keyword, from);
     setFrom(from + 10);
   };
 
@@ -52,7 +56,7 @@ export default function News() {
     return tagParam;
   };
 
-  const requestArticle = async (searchKeyword: string, from: number) => {
+  const requestMoreArticle = async (searchKeyword: string, from: number) => {
     try {
       const { data } = await axiosClient.get('article/search-tag-keyword', {
         params: { q: searchKeyword.trim(), tags: getTagParam(), from: from },
@@ -79,10 +83,7 @@ export default function News() {
     }
   };
 
-  const requestFirstPageArticle = async (
-    searchKeyword: string,
-    from: number
-  ) => {
+  const requestSearchArticle = async (searchKeyword: string, from: number) => {
     try {
       const { data } = await axiosClient.get('article/search-tag-keyword', {
         params: { q: searchKeyword.trim(), tags: getTagParam(), from: from },
@@ -105,6 +106,29 @@ export default function News() {
     }
   };
 
+  const requestFirstPageArticle = async () => {
+    try {
+      const { data } = await axiosClient.get('article/get-first-page', {
+        params: { league: getDefaultTag() },
+      });
+      setArticles(data.articles);
+    } catch (error) {
+      toast.error(
+        'Error occurred while get article',
+        {
+          position: 'top-right',
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'light',
+        }
+      );
+    }
+  };
+
   const resetState = () => {
     setkeyword('');
     setHasMore(true)
@@ -113,7 +137,7 @@ export default function News() {
 
   // handle when user change route
   useEffect(() => {
-    requestFirstPageArticle('', DEFAULT_PAGE);
+    requestFirstPageArticle();
     resetState()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath]);
