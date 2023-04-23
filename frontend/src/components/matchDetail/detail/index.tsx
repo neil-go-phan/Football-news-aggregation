@@ -8,6 +8,7 @@ import MatchOverviewComponent from './overview';
 import MatchStatsComponent from './statistics';
 import MatchEventsComponent from './events';
 import { Club } from '@/components/contents/mainContents/schedule';
+import { ERROR_POPUP_USER_TIME } from '@/helpers/constants';
 
 export type MatchDetail = {
   match_detail_title: MatchDetailTitle;
@@ -60,6 +61,7 @@ export type MatchLineup = {
 export type MatchLineUpDetail = {
   club_name: string;
   formation: string;
+  shirt_color: string;
   pitch_row: Array<PitchRows>;
 };
 
@@ -88,7 +90,7 @@ function Detail() {
       } catch (error) {
         toast.error('Error occurred while get match detail', {
           position: 'top-right',
-          autoClose: 3000,
+          autoClose: ERROR_POPUP_USER_TIME,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -102,47 +104,48 @@ function Detail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath]);
   if (matchDetail) {
+    console.log(matchDetail)
     return (
       <div className="matchDetail__content px-5">
         <MatchTitle matchTitle={matchDetail.match_detail_title} date={date} />
 
         <div className="matchDetail__content--navbar d-flex">
           <div className="nav--item col-3">
-            {matchDetail.match_overview.club_1_overview ||
+            {
             matchDetail.match_overview.club_2_overview ? (
               <a href="#overview" className="item">
-                Tổng quan
+                Overview
               </a>
             ) : (
-              <span className="item hidden">Tổng quan</span>
+              <span className="item hidden">Overview</span>
             )}
           </div>
           <div className="nav--item col-3">
             {matchDetail.match_statistics.statistics ? (
               <a href="#statistics" className="item">
-                Thống kê
+                Statistics
               </a>
             ) : (
-              <span className="item hidden">Thống kê</span>
+              <span className="item hidden">Statistics</span>
             )}
           </div>
           <div className="nav--item col-3">
             {matchDetail.match_lineup.lineup_club_1.pitch_row &&
             matchDetail.match_lineup.lineup_club_2.pitch_row ? (
               <a href="#lineup" className="item">
-                Đội hình
+                Lineup
               </a>
             ) : (
-              <span className="item hidden">Đội hình</span>
+              <span className="item hidden">Lineup</span>
             )}
           </div>
           <div className="nav--item col-3">
             {matchDetail.match_progress.events ? (
               <a href="#process" className="item">
-                Diễn biến
+                Match process
               </a>
             ) : (
-              <span className="item hidden">Diễn biến</span>
+              <span className="item hidden">Match process</span>
             )}
           </div>
         </div>

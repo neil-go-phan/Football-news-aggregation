@@ -8,6 +8,7 @@ import (
 )
 
 func FormatVietnamese(stringInput string) string {
+	stringInput = strings.ToLower(stringInput)
 	var Regexp_A = `à|á|ạ|ã|ả|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ`
 	var Regexp_E = `è|ẻ|ẽ|é|ẹ|ê|ề|ể|ễ|ế|ệ`
 	var Regexp_I = `ì|ỉ|ĩ|í|ị`
@@ -30,7 +31,7 @@ func FormatVietnamese(stringInput string) string {
 	stringInput = reg_y.ReplaceAllLiteralString(stringInput, "y")
 	stringInput = reg_d.ReplaceAllLiteralString(stringInput, "d")
 
-	stringInput = strings.ToLower(stringInput)
+	
 	return stringInput
 }
 
@@ -44,8 +45,15 @@ func FormatElasticSearchIndexName(indexName string) string {
 }
 
 func FortmatTagsFromRequest(tags string) []string {
-	tagsSlice := strings.Split(tags, ",")
-	return tagsSlice
+	trim := strings.TrimSpace(tags)
+	tagsSlice := strings.Split(trim, ",")
+	tagsFormated := make([]string, 0)
+	for _, tag := range tagsSlice {
+		if strings.TrimSpace(tag) != "" {
+			tagsFormated = append(tagsFormated, tag)
+		}
+	}
+	return tagsFormated
 }
 
 func FormatDateToVietnamesDateSting(date time.Time) string {

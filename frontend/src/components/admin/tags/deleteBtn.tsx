@@ -1,4 +1,5 @@
 import axiosProtectedAPI from '@/helpers/axiosProtectedAPI';
+import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
 import React from 'react';
 import { Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
@@ -20,7 +21,7 @@ const DeleteBtn: React.FC<Props> = (props: Props) => {
       }
       toast.success('Delete tag success', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -32,7 +33,7 @@ const DeleteBtn: React.FC<Props> = (props: Props) => {
     } catch (error) {
       toast.error('Error occurred while delete tags', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,

@@ -18,7 +18,7 @@ function MatchDetailLayout({ children }: PropsWithChildren) {
           <Container fluid className="header-navbar d-flex align-items-center">
             <Navbar.Brand className="text-light">
               <Link className="linkToHome" href={'/news/tin+tuc+bong+da?league=Tin+tức+bóng+đá'} >
-                Tin tức bóng đá
+                Footbal news
               </Link>
             </Navbar.Brand>
           </Container>

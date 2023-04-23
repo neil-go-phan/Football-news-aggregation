@@ -1,11 +1,12 @@
 import axiosProtectedAPI from '@/helpers/axiosProtectedAPI';
+import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 function ArticleAdmin() {
   const [today, setToday] = useState<number>();
   const [total, setTotal] = useState<number>();
-  
+
   const requestArticleCount = async () => {
     try {
       const { data } = await axiosProtectedAPI.get('article/count', {});
@@ -14,7 +15,7 @@ function ArticleAdmin() {
     } catch (error) {
       toast.error('Error occurred while request to count article', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -35,12 +36,13 @@ function ArticleAdmin() {
       <div className="adminArticles__overview">
         <div className="adminArticles__overview--item">
           <p>
-            Tổng số article: <span>{total}</span>
+            Total article: <span>{total}</span>
           </p>
         </div>
         <div className="adminArticles__overview--item">
           <p>
-            Số article cào được trong hôm nay: <span>{today}</span>
+            Number of articles scratched in the previous 24 hours:{' '}
+            <span>{today}</span>
           </p>
         </div>
       </div>

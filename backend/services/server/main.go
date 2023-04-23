@@ -92,7 +92,6 @@ func main() {
 		log.Errorln("error occurred while connecting to elasticsearch node: ", err)
 	}
 	amountOfNewIndex := createElaticsearchIndex(es)
-	// createElaticsearchIndex(es)
 	// declare services
 	htmlclassesRepo := htmlclassesrepo.NewHtmlClassesRepo(classConfig)
 
@@ -145,9 +144,8 @@ func main() {
 		log.Infoln("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
 		seedDataFirstRun(articleService, schedulesService, matchDetailService)
 	}
-	// articleService.GetArticles(make([]string, 0))
 	createArticleCache(articleService)
-
+	
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
@@ -164,7 +162,10 @@ func main() {
 	r := gin.Default()
 	r.Use(middlewares.Cors())
 
+
+	// TODO: Fix realtime push notification 
 	go notificationRoute.Setup(r)
+	
 	tagsRoutes.Setup(r)
 	leaguesRoutes.Setup(r)
 	articleRoute.Setup(r)
@@ -375,8 +376,10 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 				schedulesService.GetSchedules(date.Format("02-01-2006"))
 
 				matchUrls := schedulesService.GetMatchURLsOnDay()
+				fmt.Println("len before: ", len(matchUrls.Urls))
 				matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 				schedulesService.ClearMatchURLsOnDay()
+				fmt.Println("len after: ", len(schedulesService.GetMatchURLsOnDay().Urls))
 			}
 			defer wg.Done()
 		}(t, month)

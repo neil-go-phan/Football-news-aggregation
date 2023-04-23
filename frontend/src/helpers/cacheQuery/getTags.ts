@@ -1,6 +1,7 @@
 import { useQuery } from 'react-query';
 import axiosClient from '../axiosClient';
 import { toast } from 'react-toastify';
+import { ERROR_POPUP_ADMIN_TIME } from '../constants';
 // 5 min
 const TAGS_STALE_TIME = 5 * (60 * 1000)
 // 10 min
@@ -15,7 +16,7 @@ const callAPIGetTags = async ():Promise<Tags> => {
   } catch (error) {
     toast.error('Error occurred while geting tags', {
       position: 'top-right',
-      autoClose: 3000,
+      autoClose: ERROR_POPUP_ADMIN_TIME,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,

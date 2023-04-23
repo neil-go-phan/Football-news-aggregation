@@ -1,17 +1,16 @@
+import AdminComponent from '@/components/admin';
 import ArticleAdmin from '@/components/admin/articles';
 import ProgressBar from '@/components/processBar';
+import { _ROUTES } from '@/helpers/constants';
 import AdminLayout from '@/layouts/AdminLayout';
-import { NextPage } from 'next';
 import React from 'react';
 
-const AdminArticlesPage: NextPage = () => {
+export default function Admin(){
   return (
     <AdminLayout>
       <ProgressBar />
-      <ArticleAdmin/>
+      <AdminComponent />
     </AdminLayout>
   );
 }
-
-export default AdminArticlesPage;
 

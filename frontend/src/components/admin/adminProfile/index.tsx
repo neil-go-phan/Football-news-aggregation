@@ -1,7 +1,7 @@
 import axiosProtectedAPI from '@/helpers/axiosProtectedAPI';
 import React, { useEffect, useState } from 'react';
 import cryptoJS from 'crypto-js';
-import { _REGEX } from '@/helpers/constants';
+import { ERROR_POPUP_ADMIN_TIME, _REGEX } from '@/helpers/constants';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -38,7 +38,7 @@ const AdminProfile: React.FC<Props> = (props: Props) => {
       } catch (error) {
         toast.error('Error occurred while get admin username', {
           position: 'top-right',
-          autoClose: 3000,
+          autoClose: ERROR_POPUP_ADMIN_TIME,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -52,8 +52,6 @@ const AdminProfile: React.FC<Props> = (props: Props) => {
   
   }, [])
   
-
-
   const schema = yup.object().shape({
     password: yup
       .string()

@@ -104,6 +104,8 @@ func CrawlMatchDetail(matchUrl string, xPath entities.XPathMatchDetail) (entitie
 		wg.Done()
 	}(&wg)
 
+
+
 	// log crawl error
 	done := make(chan bool)
 	go func (done chan bool)  {
@@ -118,7 +120,6 @@ func CrawlMatchDetail(matchUrl string, xPath entities.XPathMatchDetail) (entitie
 	wg.Wait()
 	close(crawlErr)
 	<- done
-
 	return matchDetail, nil
 }
 
@@ -340,6 +341,16 @@ func findMatchLineUp(doc *html.Node, matchDetail *entities.MatchDetail, xPath en
 		log.Printf("cant find club 1 formation %s\n", err)
 	}
 
+	club1ShirtColorNode, err := htmlquery.Query(lineUpNode, xPath.MatchLineup.Club1.ShirtColor)
+
+	if err == nil && club1ShirtColorNode != nil{
+		styleAttr := htmlquery.SelectAttr(club1ShirtColorNode, "style")
+		_, shirtColor1, _ := strings.Cut(styleAttr, "fill:")
+		matchDetail.MatchLineup.LineupClub1.ShirtColor = shirtColor1
+	} else {
+		log.Printf("cant find club 1 shirt color %s\n", err)
+	}
+
 	club2NameNode, err := htmlquery.Query(lineUpNode, xPath.MatchLineup.Club2.ClubName)
 
 	if err == nil && club2NameNode != nil{
@@ -354,6 +365,16 @@ func findMatchLineUp(doc *html.Node, matchDetail *entities.MatchDetail, xPath en
 		matchDetail.MatchLineup.LineupClub2.Formation = htmlquery.InnerText(club2FormationNode)
 	} else {
 		log.Printf("cant find club 2 formation %s\n", err)
+	}
+
+	club2ShirtColorNode, err := htmlquery.Query(lineUpNode, xPath.MatchLineup.Club2.ShirtColor)
+
+	if err == nil && club2ShirtColorNode != nil{
+		styleAttr := htmlquery.SelectAttr(club2ShirtColorNode, "style")
+		_, shirtColor2, _ := strings.Cut(styleAttr, "fill:")
+		matchDetail.MatchLineup.LineupClub2.ShirtColor = shirtColor2
+	} else {
+		log.Printf("cant find club 2 shirt color %s\n", err)
 	}
 
 	//club1 pitch row
@@ -429,7 +450,7 @@ func findMatchLineUp(doc *html.Node, matchDetail *entities.MatchDetail, xPath en
 			pitchRow.PitchRowsDetail = append(pitchRow.PitchRowsDetail, pitchRowDetail)
 		}
 
-		matchDetail.MatchLineup.LineupClub2.PitchRows = append(matchDetail.MatchLineup.LineupClub1.PitchRows, pitchRow)
+		matchDetail.MatchLineup.LineupClub2.PitchRows = append(matchDetail.MatchLineup.LineupClub2.PitchRows, pitchRow)
 	}
 	return nil
 }

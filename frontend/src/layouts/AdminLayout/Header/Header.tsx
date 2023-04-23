@@ -36,7 +36,7 @@ export default function Header(props: HeaderProps) {
           <HeaderFeaturedNav />
         </div>
         <div className="header-nav ms-auto">
-          <HeaderNotificationNav />
+          {/* <HeaderNotificationNav /> */}
         </div>
         <div className="header-nav ms-2">
           <HeaderProfileNav />

@@ -60,7 +60,7 @@ const SearchBar: FunctionComponent<Props> = (props: Props) => {
           ))}
         </div>
         <input
-          placeholder="Tìm kiếm"
+          placeholder="Search..."
           value={keyword}
           onChange={(event) => setkeyword(event.target.value)}
         />

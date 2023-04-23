@@ -102,7 +102,7 @@ func (repo *schedulesRepo) GetSchedules(date *pb.Date) {
 	}
 	wg.Wait()
 
-	repo.notification.Send(NOTI_COMPLETE_CRAWL_TITLE, NOTI_COMPLETE_CRAWL_TYPE, fmt.Sprintf("Crawler scrape schedule on %s success", date.GetDate()))
+	// repo.notification.Send(NOTI_COMPLETE_CRAWL_TITLE, NOTI_COMPLETE_CRAWL_TYPE, fmt.Sprintf("Crawler scrape schedule on %s success", date.GetDate()))
 }
 
 func (repo *schedulesRepo) GetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error) {

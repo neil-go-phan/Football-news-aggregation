@@ -1,4 +1,5 @@
 import axiosProtectedAPI from '@/helpers/axiosProtectedAPI';
+import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
 import React, { useState } from 'react';
 import { Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
@@ -6,6 +7,7 @@ import { toast } from 'react-toastify';
 type Props = {
   active: boolean;
   leagueName: string;
+  handleSwitch:  () => void
 };
 
 const Status: React.FC<Props> = (props: Props) => {
@@ -25,7 +27,7 @@ const Status: React.FC<Props> = (props: Props) => {
       }
       toast.success('Change league status success', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -37,10 +39,11 @@ const Status: React.FC<Props> = (props: Props) => {
       if (data.status_active) {
         requestArticleCrawler();
       }
+      props.handleSwitch()
     } catch (error) {
       toast.error('Error occurred while request to change league status', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -61,7 +64,7 @@ const Status: React.FC<Props> = (props: Props) => {
       }
       toast.success('Request to crawl articles success', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -72,7 +75,7 @@ const Status: React.FC<Props> = (props: Props) => {
     } catch (error) {
       toast.error('Error occurred while request to crawl articles', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,

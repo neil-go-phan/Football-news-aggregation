@@ -76,7 +76,7 @@ func (articleHandler *ArticleHandler) APIGetFirstPageOfLeagueRelatedArticle(c *g
 }
 
 func (articleHandler *ArticleHandler) SignalToCrawlerAfter10Min(cronjob *cron.Cron) {
-	_, err := cronjob.AddFunc("@every 0h2m", func() { articleHandler.handler.GetArticles(make([]string, 0)) })
+	_, err := cronjob.AddFunc("@every 0h10m", func() { articleHandler.handler.GetArticles(make([]string, 0)) })
 	if err != nil {
 		log.Println("error occurred while seting up SignalToCrawlerAfter10Min cronjob: ", err)
 	}

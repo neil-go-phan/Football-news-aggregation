@@ -10,6 +10,7 @@ const NewTags: FunctionComponent = () => {
 
   if (!isLoading) {
     const tagForDisplay: Tags = expanded ? data : data!.slice(0, 10);
+
     return (
       <div className="rightSideBar__tags">
         <p className="rightSideBar__tags--title">Tags</p>
@@ -17,16 +18,19 @@ const NewTags: FunctionComponent = () => {
         <div className="rightSideBar__tags--list">
           {tagForDisplay!.map((tag) => {
             if (tag !== 'tin tuc bong da') {
-              return (<Tag key={`rightSideBar__tags_${tag}`} tagName={tag} />)
+              return <Tag key={`rightSideBar__tags_${tag}`} tagName={tag} />;
             }
-          }
+          })}
+          {data!.length > 10 ? (
+            <p
+              className="rightSideBar__tags--showmore"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? 'Show less' : 'Show more...'}
+            </p>
+          ) : (
+            <></>
           )}
-          <p
-            className="rightSideBar__tags--showmore"
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? 'Show less' : 'Show more...'}
-          </p>
         </div>
       </div>
     );

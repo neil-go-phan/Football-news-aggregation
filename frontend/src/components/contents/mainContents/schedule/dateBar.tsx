@@ -10,15 +10,16 @@ import { toast } from 'react-toastify';
 import DatePicker from 'react-datepicker';
 import { formatVietnameseDate, formatISO8601Date } from '@/helpers/format';
 import { Schedules } from '.';
+import { ERROR_POPUP_USER_TIME } from '@/helpers/constants';
 
 const WEEKDAYS = [
-  'Chủ nhật',
-  'Thứ 2',
-  'Thứ 3',
-  'Thứ 4',
-  'Thứ 5',
-  'Thứ 6',
-  'Thứ 7',
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
 ];
 
 type CustomInputProps = {
@@ -36,7 +37,7 @@ const BtnCustomInput = forwardRef<
   { onClick: React.MouseEventHandler<HTMLButtonElement> }
 >(({ onClick }, ref) => (
   <button className="btnTriggerDate" onClick={onClick} ref={ref}>
-    Chọn ngày
+    Choose date
   </button>
 ));
 // eslint-disable-next-line react/display-name
@@ -82,7 +83,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
         `Error occurred while get schedule on ${formatVietnameseDate(date)}`,
         {
           position: 'top-right',
-          autoClose: 3000,
+          autoClose: ERROR_POPUP_USER_TIME,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -109,7 +110,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
         `Error occurred while get schedule on ${formatVietnameseDate(date)}`,
         {
           position: 'top-right',
-          autoClose: 3000,
+          autoClose: ERROR_POPUP_USER_TIME,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,

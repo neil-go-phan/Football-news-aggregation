@@ -57,10 +57,10 @@ const MatchStatsComponent: FunctionComponent<Props> = ({
       </div>
     );
   };
-  if (matchStatistics && matchTitle) {
+  if (matchStatistics && matchTitle && matchStatistics.statistics) {
     return (
       <div id="statistics" className="matchDetail__content--statistics">
-        <div className="title">Số liệu thống kê</div>
+        <div className="title">Statistics</div>
         <div className="statHead d-flex">
           <div className="club col-6">
             <div className="club1">
@@ -100,7 +100,7 @@ const MatchStatsComponent: FunctionComponent<Props> = ({
     );
   }
   return (
-    <div className="matchDetail__content--statistics" id="statistics"></div>
+    <div className="" id="statistics"></div>
   );
 };
 

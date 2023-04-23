@@ -92,10 +92,10 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
         </div>
       );
     }
-    return <div className="schedule__content">Chưa có thông tin</div>;
+    return <div className="schedule__content">No matches for the day</div>;
   }
 
-  return <div className="schedule__content">Chưa có thông tin</div>;
+  return <div className="schedule__content">No matches for the day</div>;
 };
 
 export default ScheduleContent;
