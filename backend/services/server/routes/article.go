@@ -26,5 +26,6 @@ func (articleRoutes *ArticleRoutes) Setup(r *gin.Engine) {
 		routes.GET("update-tag", middlewares.CheckToken(), articleRoutes.articleHandler.APIAddUpdateNewTag)
 		routes.GET("get-first-page", articleRoutes.articleHandler.APIGetFirstPageOfLeagueRelatedArticle)
 		routes.GET("count", middlewares.CheckToken(), articleRoutes.articleHandler.APIGetArticleCount)
+		routes.POST("delete", middlewares.CheckToken(), articleRoutes.articleHandler.APIDeleteArticle)
 	}
 }

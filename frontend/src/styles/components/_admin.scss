@@ -95,5 +95,30 @@
       font-size: 1rem;
     }
   }
+  &__list {
+    padding: 20px 0;
+    .btnPaging {
+      button {
+        margin: 0 20px;
+      }
+      p {
+        display: inline-block;
+      }
+      span {
+        margin-left: 2px;
+        font-weight: bold;
+      }
+    }
+    &--title {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    &--table {
+      th {
+        text-align: center;
+      }
+    }
+  }
 }
 

@@ -23,12 +23,13 @@ type TagsServices interface {
 }
 
 type ArticleServices interface {
-	SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, error)
+	SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, float64, error)
 	AddTagForAllArticle(tag string) error
 	GetFirstPageOfLeagueRelatedArticle(leagueName string) ([]entities.Article, error)
 	RefreshCache()
 	GetArticles(keywords []string)
 	GetArticleCount() (total float64, today float64, err error) 
+	DeleteArticle(title string) error
 }
 
 type SchedulesServices interface {

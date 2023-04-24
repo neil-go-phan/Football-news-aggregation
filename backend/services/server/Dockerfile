@@ -12,7 +12,7 @@ FROM alpine:3.16
 
 WORKDIR /app
 COPY configs/*.json /app/configs/
-COPY app.env .
+COPY .env .
 COPY --from=builder /app/main .
 COPY wait-for.sh .
 

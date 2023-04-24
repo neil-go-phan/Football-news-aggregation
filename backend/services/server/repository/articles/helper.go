@@ -224,10 +224,10 @@ func producerRequestArticle(jobs chan<- *work, s *articleRepo, tag string, first
 func workerAddTagBulkRequest(jobs <-chan *work, results chan<- *result, newTag string, wg *sync.WaitGroup, id int) {
 	defer wg.Done()
 	for job := range jobs {
-		log.Printf("worker #%d received: %v article\n", id, len(*job))
+		log.Printf("worker #%d received: %v article", id, len(*job))
 		bulkRequestBody, err := createBulkRequestBodyAddTag(*job, newTag)
 		if err != nil {
-			log.Errorf("error when worker create bulk request body %s\n", err)
+			log.Errorf("error when worker create bulk request body %s", err)
 		}
 		result := bulkRequestBody
 		results <- &result
@@ -242,7 +242,7 @@ func analyzedResult(results <-chan *result, es *elasticsearch.Client, wg2 *sync.
 		bulkRequestBody = append(bulkRequestBody, *body...)
 	}
 	requestAddTagArticle(bulkRequestBody, es)
-	log.Printf("analyzer send request \n")
+	log.Printf("analyzer send request ")
 }
 
 func createBulkRequestBodyAddTag(articles []entities.Article, newTag string) ([]byte, error) {
@@ -291,14 +291,14 @@ func requestAddTagArticle(bulkRequestBody []byte, es *elasticsearch.Client) {
 	}
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
-		log.Errorf("can not send a bulk update request to elastic search %s\n", err)
+		log.Errorf("can not send a bulk update request to elastic search %s", err)
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		log.Errorf("Error response: %s\n", res.String())
+		log.Errorf("Error response: %s", res.String())
 	} else {
-		log.Printf("Bulk update successful\n")
+		log.Printf("Bulk update successful")
 	}
 }
 
@@ -424,7 +424,7 @@ func checkArtilceWithElasticSearch(article *pb.Article, es *elasticsearch.Client
 
 	resp, err := req.Do(context.Background(), es)
 	if err != nil {
-		log.Errorf("Error checking if document exists: %s\n", err)
+		log.Errorf("Error checking if document exists: %s", err)
 		return false
 	}
 
@@ -484,7 +484,7 @@ func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Cli
 
 	body, err := json.Marshal(doc)
 	if err != nil {
-		log.Errorf("Error encoding article: %s\n", err)
+		log.Errorf("Error encoding article: %s", err)
 	}
 
 	req := esapi.IndexRequest{
@@ -496,14 +496,14 @@ func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Cli
 
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
-		log.Errorf("Error getting response: %s\n", err)
+		log.Errorf("Error getting response: %s", err)
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		log.Errorf("[%s] Error indexing document\n", res.Status())
+		log.Errorf("[%s] Error indexing document", res.Status())
 	} else {
-		log.Printf("[%s] Indexed document with index: %s \n", res.Status(), ARTICLES_INDEX_NAME)
+		log.Printf("[%s] Indexed document with index: %s", res.Status(), ARTICLES_INDEX_NAME)
 	}
 }
 

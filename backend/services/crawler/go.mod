@@ -4,15 +4,22 @@ go 1.20
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
+	github.com/evalphobia/logrus_sentry v0.8.2
+	github.com/getsentry/sentry-go v0.20.0
 	github.com/json-iterator/go v1.1.12
+	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
+	github.com/t-tomalak/logrus-easy-formatter v0.0.0-20190827215021-c074f06c5816
 	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.30.0
 )
 
 require (
 	github.com/antchfx/xpath v1.2.3 // indirect
+	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
+	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 )
 
 require (
