@@ -1,1 +1,2 @@
-app.env
+# local env files
+.env

@@ -16,7 +16,7 @@ import (
 	htmlclassesrepo "server/repository/htmlClasses"
 	leaguesrepo "server/repository/leagues"
 	matchdetailrepo "server/repository/matchDetail"
-	notificationrepo "server/repository/notification"
+	// notificationrepo "server/repository/notification"
 	schedulesrepo "server/repository/schedules"
 	tagsrepo "server/repository/tags"
 	"server/routes"
@@ -25,14 +25,15 @@ import (
 	articlesservices "server/services/articles"
 	leaguesservices "server/services/leagues"
 	matchdetailservices "server/services/matchDetail"
-	notificationservices "server/services/notification"
+	// notificationservices "server/services/notification"
 	schedulesservices "server/services/schedules"
 	tagsservices "server/services/tags"
 
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/getsentry/sentry-go"
+	"github.com/evalphobia/logrus_sentry"
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gin-gonic/gin"
@@ -54,6 +55,14 @@ func init() {
 	}
 	log.SetFormatter(format)
 
+  hook, err := logrus_sentry.NewSentryHook("https://4cad04fffc3348dc8d14d1f592f1d014@o4505040225501184.ingest.sentry.io/4505066672947200", []log.Level{
+    log.PanicLevel,
+    log.FatalLevel,
+    log.ErrorLevel,
+  })
+	if err == nil {
+    log.AddHook(hook)
+  }
 }
 
 var ELASTIC_SEARCH_INDEXES = []string{articlerepo.ARTICLES_INDEX_NAME, schedulesrepo.SCHEDULE_INDEX_NAME, matchdetailrepo.MATCH_DETAIL_INDEX_NAME}
@@ -67,6 +76,7 @@ type EnvConfig struct {
 
 func main() {
 	env, err := loadEnv(".")
+	
 	if err != nil {
 		log.Fatalln("cannot load env")
 	}
@@ -84,6 +94,10 @@ func main() {
 	}
 	defer logFile.Close()
 	log.SetOutput(io.MultiWriter(logFile, os.Stdout))
+
+	configSentry()
+	defer sentry.Flush(2 * time.Second)
+	sentry.CaptureMessage("Connect to server success")
 	conn := connectToCrawler(env)
 
 	// elastic search
@@ -95,10 +109,10 @@ func main() {
 	// declare services
 	htmlclassesRepo := htmlclassesrepo.NewHtmlClassesRepo(classConfig)
 
-	notificationChan := make(chan entities.Notification)
+	// notificationChan := make(chan entities.Notification)
 
-	notificationRepo := notificationrepo.NewNotificationRepo(notificationChan)
-	notificationService :=notificationservices.NewNotificationService(notificationRepo)
+	// notificationRepo := notificationrepo.NewNotificationRepo(notificationChan)
+	// notificationService := notificationservices.NewNotificationService(notificationRepo)
 
 	tagRepo := tagsrepo.NewTagsRepo(tagsConfig, env.JsonPath)
 	tagsService := tagsservices.NewTagsService(tagRepo)
@@ -106,14 +120,14 @@ func main() {
 	leaguesRepo := leaguesrepo.NewLeaguesRepo(leaguesconfig, env.JsonPath)
 	leaguesService := leaguesservices.NewleaguesService(leaguesRepo, tagRepo)
 
-	articleRepo := articlerepo.NewArticleRepo(leaguesRepo, htmlclassesRepo, tagRepo, notificationRepo, conn, es)
+	articleRepo := articlerepo.NewArticleRepo(leaguesRepo, htmlclassesRepo, tagRepo, conn, es)
 	articleService := articlesservices.NewArticleService(articleRepo)
-
-	schedulesRepo := schedulesrepo.NewSchedulesRepo(leaguesRepo, tagRepo, notificationRepo, conn, es)
-	schedulesService := schedulesservices.NewSchedulesService(schedulesRepo)
 
 	matchDetailRepo := matchdetailrepo.NewMatchDetailRepo(conn, es)
 	matchDetailService := matchdetailservices.NewMatchDetailervice(matchDetailRepo)
+
+	schedulesRepo := schedulesrepo.NewSchedulesRepo(leaguesRepo, tagRepo, conn, es)
+	schedulesService := schedulesservices.NewSchedulesService(schedulesRepo, matchDetailRepo)
 
 	adminRepo := adminrepo.NewAdminRepo(adminConfig, env.JsonPath)
 	adminService := adminservices.NewAdminService(adminRepo)
@@ -136,8 +150,8 @@ func main() {
 	adminHandler := handler.NewAdminHandler(adminService)
 	adminRoute := routes.NewAdminRoutes(adminHandler)
 
-	notificationHandler := handler.NewNotificationHandler(notificationService)
-	notificationRoute := routes.NewNotificationRoutes(notificationHandler)
+	// notificationHandler := handler.NewNotificationHandler(notificationService)
+	// notificationRoute := routes.NewNotificationRoutes(notificationHandler)
 
 	// check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
 	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
@@ -145,7 +159,7 @@ func main() {
 		seedDataFirstRun(articleService, schedulesService, matchDetailService)
 	}
 	createArticleCache(articleService)
-	
+
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
@@ -162,17 +176,15 @@ func main() {
 	r := gin.Default()
 	r.Use(middlewares.Cors())
 
+	// TODO: Fix realtime push notification
+	// go notificationRoute.Setup(r)
 
-	// TODO: Fix realtime push notification 
-	go notificationRoute.Setup(r)
-	
 	tagsRoutes.Setup(r)
 	leaguesRoutes.Setup(r)
 	articleRoute.Setup(r)
 	schedulesRoute.Setup(r)
 	matchDetailRoute.Setup(r)
 	adminRoute.Setup(r)
-
 
 	err = r.Run(":8080")
 	if err != nil {
@@ -215,8 +227,7 @@ func readConfigFromJSON(JsonPath string) (entities.HtmlClasses, entities.Leagues
 
 func loadEnv(path string) (env EnvConfig, err error) {
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+	viper.SetConfigFile(".env")
 
 	viper.AutomaticEnv()
 
@@ -362,35 +373,41 @@ func createArticleIndex(es *elasticsearch.Client, indexName string) error {
 }
 
 func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchDetailService services.MatchDetailServices) {
-	// Get schedule from january to current month + 2
-	year, currentMonth, _ := time.Now().Date()
-	var wg sync.WaitGroup
+	// crawl data on previous 7 days and the following 7 days
+	// var wg sync.WaitGroup
+	now := time.Now()
+	var DAYOFWEEK = 7
+	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
+		// wg.Add(1)
+		date := now.AddDate(0, 0, i)
+		// go func(date time.Time, wg *sync.WaitGroup) {
+			// defer wg.Done()
+			schedulesService.GetSchedules(date.Format("02-01-2006"))
 
-	for month := 4; month <= int(currentMonth); month++ {
-		// loop each day in current month
-		wg.Add(1)
-		t := time.Date(year, time.Month(month), 0, 0, 0, 0, 0, time.UTC)
-		go func(t time.Time, month int) {
-			for day := 1; day <= t.Day(); day++ {
-				date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-				schedulesService.GetSchedules(date.Format("02-01-2006"))
-
-				matchUrls := schedulesService.GetMatchURLsOnDay()
-				fmt.Println("len before: ", len(matchUrls.Urls))
-				matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
-				schedulesService.ClearMatchURLsOnDay()
-				fmt.Println("len after: ", len(schedulesService.GetMatchURLsOnDay().Urls))
-			}
-			defer wg.Done()
-		}(t, month)
-
+			matchUrls := schedulesService.GetMatchURLsOnDay()
+			matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
+			schedulesService.ClearMatchURLsOnDay()
+		// }(date, &wg)
 	}
-	wg.Wait()
+	// wg.Wait()
 
 	// Get articles
 	articleService.GetArticles(make([]string, 0))
+	log.Printf("Add seed data success\n")
 }
 
 func createArticleCache(articleService services.ArticleServices) {
 	articleService.RefreshCache()
+}
+
+func configSentry() {
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn: "https://4cad04fffc3348dc8d14d1f592f1d014@o4505040225501184.ingest.sentry.io/4505066672947200",
+		TracesSampleRate: 1.0,
+	})
+	if err != nil {
+		log.Fatalf("sentry.Init: %s", err)
+	}
+
+	sentry.CaptureMessage("It works!")
 }

@@ -22,7 +22,7 @@
   - docker
   - golang version >1.20
   - nodejs version >18.15
-- 
+- Add file .env following file .env.example (or just delete the .example part in file name)
 - Frontend: 
   - Open terminal
   - CD to frontend folder
