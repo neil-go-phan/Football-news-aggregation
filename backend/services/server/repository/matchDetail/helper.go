@@ -89,6 +89,6 @@ func upsertMatchDetailElastic(matchDetail entities.MatchDetail, es *elasticsearc
 	if res.IsError() {
 		log.Errorf("[%s] Error indexing document\n", res.Status())
 	} else {
-		log.Errorf("[%s] Upsert document with index: %s \n", res.Status(), MATCH_DETAIL_INDEX_NAME)
+		log.Printf("[%s] Upsert document with index: %s \n", res.Status(), MATCH_DETAIL_INDEX_NAME)
 	}
 }

@@ -1,4 +1,6 @@
-import useGetLeaguesName, { LeaguesNames } from '@/helpers/cacheQuery/getLeaguesNames';
+import useGetLeaguesName, {
+  LeaguesNames,
+} from '@/helpers/cacheQuery/getLeaguesNames';
 import { _ROUTES } from '@/helpers/constants';
 import { formatRoute } from '@/helpers/format';
 import Link from 'next/link';
@@ -16,7 +18,9 @@ export default function SidebarNav() {
   if (!isLoading) {
     if (data) {
       let route = router.asPath.substring(0, router.asPath.indexOf('?'));
-      const leaguesForDisplay: LeaguesNames = expanded ? data : data!.slice(0, 10);
+      const leaguesForDisplay: LeaguesNames = expanded
+        ? data
+        : data!.slice(0, 10);
       return (
         <ul className="list-unstyled">
           {leaguesForDisplay!.map((league) => (
@@ -31,21 +35,27 @@ export default function SidebarNav() {
               <Link
                 href={{
                   pathname: `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`,
-                  query: {league: league},
+                  query: { league: league },
                 }}
                 className="text-decoration-none text-dark link"
               >
-                {league}
+                {league === "Tin tức bóng đá" ? "Football news": league}
               </Link>
             </Nav.Item>
           ))}
-          <p className="sidebar--showmore" onClick={() => setExpanded(!expanded)}>
-            {expanded ? 'Show less' : 'Show more...'}
-          </p>
+          {data.length > 10 ? (
+            <p
+              className="sidebar--showmore"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? 'Show less' : 'Show more...'}
+            </p>
+          ) : (
+            <></>
+          )}
         </ul>
       );
     }
- 
   }
   return (
     <ul className="list-unstyled">

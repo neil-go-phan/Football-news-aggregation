@@ -6,6 +6,7 @@ import Status from './status';
 import { Column, useGlobalFilter, usePagination, useTable } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
 export type Leagues = {
   leagues: Array<League>;
 };
@@ -45,26 +46,31 @@ export default function AdminLeagues() {
   const columns: Column<LeagueRender>[] = React.useMemo(
     () => [
       {
-        header: 'STT',
+        header: 'Index',
         accessor: 'index',
       },
       {
-        header: 'Tên giải đấu',
+        header: 'League name',
         accessor: 'leagueName',
       },
       {
-        header: 'Trạng thái',
+        header: 'Status',
         accessor: 'active',
         Cell: ({ row }) => (
           <Status
             active={row.values.active}
             leagueName={row.values.leagueName}
+            handleSwitch={handleSwitch}
           />
         ),
       },
     ],
     []
   );
+
+  const handleSwitch = () => {
+    requestListLeagues()
+  }
 
   const removeDefaultLeague = (leagues: Leagues | undefined) => {
     if (leagues) {
@@ -116,26 +122,25 @@ export default function AdminLeagues() {
     useGlobalFilter,
     usePagination
   );
+  const requestListLeagues = async () => {
+    try {
+      const { data } = await axiosProtectedAPI.get('leagues/list-all', {});
 
+      setLeagues(data.leagues);
+    } catch (error) {
+      toast.error('Error occurred while get leagues', {
+        position: 'top-right',
+        autoClose: ERROR_POPUP_ADMIN_TIME,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
+    }
+  };
   useEffect(() => {
-    const requestListLeagues = async () => {
-      try {
-        const { data } = await axiosProtectedAPI.get('leagues/list-all', {});
-
-        setLeagues(data.leagues);
-      } catch (error) {
-        toast.error('Error occurred while get leagues', {
-          position: 'top-right',
-          autoClose: 1000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: 'light',
-        });
-      }
-    };
     requestListLeagues();
   }, []);
 
@@ -146,23 +151,23 @@ export default function AdminLeagues() {
         <div className="adminLeagues__overview">
           <div className="adminLeagues__overview--item">
             <p>
-              Tổng số giải đấu: <span>{leagues.leagues.length}</span>
+              Total Leagues: <span>{leagues.leagues.length}</span>
             </p>
           </div>
           <div className="adminLeagues__overview--item">
             <p>
-              Số giải đấu hiển thị: <span>{activeLeague}</span>
+              Leagues number displayed: <span>{activeLeague}</span>
             </p>
           </div>
           <div className="adminLeagues__overview--item">
             <p>
-              Số giải đấu không hiển thị:{' '}
+              Leagues numbers not showing:{' '}
               <span>{leagues.leagues.length - activeLeague}</span>
             </p>
           </div>
         </div>
         <div className="adminLeagues__list">
-          <h2 className="adminLeagues__list--title">Danh sách giải đấu</h2>
+          <h2 className="adminLeagues__list--title">Leagues list</h2>
           <div className="adminLeagues__list--search">
             <InputGroup className="mb-3">
               <InputGroup.Text>
@@ -251,29 +256,29 @@ export default function AdminLeagues() {
       <div className="adminLeagues__overview">
         <div className="adminLeagues__overview--item">
           <p>
-            Tổng số giải đấu: <span></span>
+            Total leagues: <span></span>
           </p>
         </div>
         <div className="adminLeagues__overview--item">
           <p>
-            Số giải đấu hiển thị: <span></span>
+            Leagues number displayed: <span></span>
           </p>
         </div>
         <div className="adminLeagues__overview--item">
           <p>
-            Số giải đấu không hiển thị: <span></span>
+            Leagues numbers not showing: <span></span>
           </p>
         </div>
       </div>
       <div className="adminLeagues__list">
-        <h2 className="adminLeagues__list--title">Danh sách giải đấu</h2>
+        <h2 className="adminLeagues__list--title">Leagues list</h2>
         <div className="adminLeagues__list--table">
           <Table bordered hover>
             <thead>
               <tr>
-                <th>STT</th>
-                <th>Tên giải đấu</th>
-                <th>Trạng thái</th>
+                <th>Index</th>
+                <th>Leagues name</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody></tbody>

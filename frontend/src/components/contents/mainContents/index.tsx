@@ -10,12 +10,12 @@ export default function MainContents() {
       id="uncontrolled-tab-example"
       className="mb-3"
     >
-      <Tab eventKey="news" title="Tin tức">
+      <Tab eventKey="news" title="News">
         <News />
       </Tab>
       <Tab
         eventKey="schedule"
-        title="Lịch thi đấu"
+        title="Schedule"
       >
         <Schedule />
       </Tab>

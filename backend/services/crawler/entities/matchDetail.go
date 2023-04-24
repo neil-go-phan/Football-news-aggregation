@@ -51,6 +51,7 @@ type MatchLineup struct {
 type MatchLineUpDetail struct {
 	ClubName string`json:"club_name"`
 	Formation string`json:"formation"`
+	ShirtColor string `json:"shirt_color"`
 	PitchRows []PitchRows`json:"pitch_row"`
 }
 
@@ -109,6 +110,7 @@ type XPathMatchLineup struct {
 type XPathMatchLineUpDetail struct {
 	ClubName string`json:"club_name"`
 	Formation string`json:"formation"`
+	ShirtColor string `json:"shirt_color"`
 	PitchRows XPathPitchRow`json:"pitch_row"`
 }
 

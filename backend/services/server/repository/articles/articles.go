@@ -398,7 +398,7 @@ func (repo *articleRepo) GetArticles(keywords []string) {
 				log.Printf("cannot receive %v\n", err)
 				status, _ := status.FromError(err)
 				if status.Code().String() == "Unavailable" {
-					repo.notification.Send(NOTI_CRAWLER_SHUTDOWN_TITLE, NOTI_CRAWLER_SHUTDOWN_TYPE, NOTI_CRAWLER_SHUTDOWN_MESSAGE)
+					// repo.notification.Send(NOTI_CRAWLER_SHUTDOWN_TITLE, NOTI_CRAWLER_SHUTDOWN_TYPE, NOTI_CRAWLER_SHUTDOWN_MESSAGE)
 
 					done <- true //means stream is finished
 					return
@@ -420,8 +420,8 @@ func (repo *articleRepo) GetArticles(keywords []string) {
 	<-done
 	PREV_ARTICLES = mapSearchResult
 	log.Printf("finished.")
-	repo.notification.Send(NOTI_COMPLETE_CRAWL_TITLE, NOTI_COMPLETE_CRAWL_TYPE, NOTI_COMPLETE_CRAWL_MESSAGE)
-	if len(PREV_ARTICLES) == 0 {
-		repo.notification.Send(NOTI_GOOGLE_CAPTCHA_TITLE, NOTI_GOOGLE_CAPTCHA_TYPE, NOTI_GOOGLE_CAPTCHA_MESSAGE)
-	}
+	// repo.notification.Send(NOTI_COMPLETE_CRAWL_TITLE, NOTI_COMPLETE_CRAWL_TYPE, NOTI_COMPLETE_CRAWL_MESSAGE)
+	// if len(PREV_ARTICLES) == 0 {
+	// 	repo.notification.Send(NOTI_GOOGLE_CAPTCHA_TITLE, NOTI_GOOGLE_CAPTCHA_TYPE, NOTI_GOOGLE_CAPTCHA_MESSAGE)
+	// }
 }

@@ -1,5 +1,8 @@
 $enable-negative-margins: true;
-
+html *
+{
+   font-family: Arial !important;
+}
 @import "~bootstrap/scss/bootstrap";
 @import "~nprogress/nprogress.css";
 @import 'react-toastify/dist/ReactToastify.css';

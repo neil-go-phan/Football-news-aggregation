@@ -12,7 +12,7 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
   if (matchTitle) {
     return (
       <div className="matchDetail__content--title">
-        <h1>{`Trực tiếp kết quả ${matchTitle.club_1.name} vs ${matchTitle.club_2.name} ngày ${date}`}</h1>
+        <h1>{`Live match results on ${matchTitle.club_1.name} vs ${matchTitle.club_2.name} ngày ${date}`}</h1>
         <div className="result d-flex">
           <div className="col-4">
             <div className="club1">
@@ -49,7 +49,7 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
   }
   return (
     <div className="matchDetail__content--title">
-      <h1>{`Trực tiếp kết quả ngày ${date}`}</h1>
+      <h1>{`Live match results on ${date}`}</h1>
     </div>
   );
 };

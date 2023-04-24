@@ -12,3 +12,6 @@ export const _REGEX = {
   REGEX_USENAME_PASSWORD: /^[a-z0-9_]*$/,
   REGEX_FULLNAME: /^[a-zA-Z0-9_ ]*$/,
 }
+
+export const ERROR_POPUP_ADMIN_TIME = 1000;
+export const ERROR_POPUP_USER_TIME = 1;

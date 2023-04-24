@@ -1,4 +1,4 @@
-package repository
+package adminrepo
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 )
-
 
 type adminRepo struct {
 	admin entities.Admin
@@ -24,15 +23,15 @@ func NewAdminRepo(admin entities.Admin, path string) *adminRepo {
 	return adminRepo
 }
 
-func (repo *adminRepo)GetAdmin() (entities.Admin) {
+func (repo *adminRepo) GetAdmin() entities.Admin {
 	return repo.admin
 }
 
-func (repo *adminRepo)SetAdmin(newAdmin entities.Admin) () {
+func (repo *adminRepo) SetAdmin(newAdmin entities.Admin) {
 	repo.admin = newAdmin
 }
 
-func (repo *adminRepo)ReadAdminJSON() (entities.Admin, error) {
+func (repo *adminRepo) ReadAdminJSON() (entities.Admin, error) {
 	var adminConfig entities.Admin
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 

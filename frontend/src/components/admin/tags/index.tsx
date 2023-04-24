@@ -10,6 +10,7 @@ import { Leagues } from '../leagues';
 import { toLowerCaseNonAccentVietnamese } from '@/helpers/format';
 import { useRouter } from 'next/router';
 import DeleteBtn from './deleteBtn';
+import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
 
 const TIN_TUC_BONG_DA_TAG = 'tin tuc bong da';
 
@@ -18,7 +19,6 @@ export type Tags = Array<string>;
 type TagsRow = {
   index: number;
   tagName: string;
-  amountOfArticles: number;
   isDisabled: boolean;
 };
 
@@ -37,10 +37,6 @@ export default function AdminTags() {
       {
         Header: 'Tên tag',
         accessor: 'tagName',
-      },
-      {
-        Header: 'Số bài báo',
-        accessor: 'amountOfArticles',
       },
       {
         Header: 'Action',
@@ -68,7 +64,7 @@ export default function AdminTags() {
     if (exist !== -1) {
       toast.info('Tag alreay exist', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -118,7 +114,6 @@ export default function AdminTags() {
       return tagRowsAfter.map((tag, index) => ({
         index: index + 1,
         tagName: tag,
-        amountOfArticles: 10,
         isDisabled: checkIsTagLeague(tag),
       }));
     }, [tagRowsAfter]);
@@ -159,7 +154,7 @@ export default function AdminTags() {
       }
       toast.success('Add tag success', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -176,7 +171,7 @@ export default function AdminTags() {
     } catch (error) {
       toast.error('Error occurred while add tags', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -193,7 +188,7 @@ export default function AdminTags() {
     } catch (error) {
       toast.error('Error occurred while get tags', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -213,7 +208,7 @@ export default function AdminTags() {
       }
       toast.success('Tagged article success', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -224,7 +219,7 @@ export default function AdminTags() {
     } catch (error) {
       toast.error('Error occurred while tagged article', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -242,7 +237,7 @@ export default function AdminTags() {
     } catch (error) {
       toast.error('Error occurred while get leagues', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -368,12 +363,12 @@ export default function AdminTags() {
       <div className="adminTags__overview">
         <div className="adminTags__overview--item">
           <p>
-            Tổng số tags: <span></span>
+            Total tags: <span></span>
           </p>
         </div>
       </div>
       <div className="adminTags__list">
-        <h2 className="adminTags__list--title">Danh sách tags</h2>
+        <h2 className="adminTags__list--title">Tags list</h2>
         <div className="adminTags__list--search">
           <InputGroup className="mb-3">
             <InputGroup.Text>
@@ -392,8 +387,7 @@ export default function AdminTags() {
             <thead>
               <tr>
                 <th>STT</th>
-                <th>Tên tag</th>
-                <th>Số bài báo</th>
+                <th>Tag name</th>
                 <th>Action</th>
               </tr>
             </thead>

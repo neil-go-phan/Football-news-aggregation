@@ -36,10 +36,7 @@ const SidebarNavItem = (props: SidebarNavItemProps) => {
 export default function SidebarNav() {
   return (
     <ul className="list-unstyled">
-      <SidebarNavItem icon={faGauge} href={_ROUTES.ADMIN_PAGE}>
-        Dashboard
-      </SidebarNavItem>
-      <SidebarNavItem icon={faNewspaper} href={_ROUTES.ADMIN_ARTICLES}>
+      <SidebarNavItem icon={faNewspaper} href={_ROUTES.ADMIN_PAGE}>
         Articles
       </SidebarNavItem>
       <SidebarNavItem icon={faTrophy} href={_ROUTES.ADMIN_LEAGUES}>

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	log "github.com/sirupsen/logrus"
 	notificationservices "server/services/notification"
 
 	"github.com/gin-gonic/gin"
@@ -26,10 +27,11 @@ func (notificationHandler *NotificationHandler) Listen(c *gin.Context) {
 	defer close(notificationHandler.handler.Repo.Notification)
 
 	go func() {
-			for {
-					message := <-notificationHandler.handler.Repo.Notification
-					c.SSEvent("message", message)
-			}
+		for {
+			message := <-notificationHandler.handler.Repo.Notification
+			log.Printf("notification push to admin: %v", message)
+			c.SSEvent("message", message)
+		}
 	}()
 
 	// block the request until the connection is closed

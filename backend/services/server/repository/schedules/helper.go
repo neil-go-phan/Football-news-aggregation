@@ -71,7 +71,7 @@ func checkScheduleWithElasticSearch(schedule entities.ScheduleElastic, es *elast
 
 	resp, err := req.Do(context.Background(), es)
 	if err != nil {
-		log.Printf("Error checking if document exists: %s\n", err)
+		log.Errorf("Error checking if document exists: %s\n", err)
 		return false
 	}
 
@@ -92,7 +92,7 @@ func storeScheduleElasticsearch(schedule entities.ScheduleElastic, es *elasticse
 
 	body, err := json.Marshal(schedule)
 	if err != nil {
-		log.Printf("Error encoding schedule: %s\n", err)
+		log.Errorf("Error encoding schedule: %s\n", err)
 	}
 	req := esapi.IndexRequest{
 		Index:      SCHEDULE_INDEX_NAME,
@@ -103,7 +103,7 @@ func storeScheduleElasticsearch(schedule entities.ScheduleElastic, es *elasticse
 
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
-		log.Printf("Error getting response: %s\n", err)
+		log.Errorf("Error getting response: %s\n", err)
 	}
 	defer res.Body.Close()
 

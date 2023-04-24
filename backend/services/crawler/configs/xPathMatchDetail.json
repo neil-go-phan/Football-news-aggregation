@@ -39,6 +39,7 @@
     "club1" : {
       "club_name": "/div[1]//div[@class='club-logo-text']",
       "formation": "/div[1]//div[@class='f-right-text']",
+      "shirt_color":"/div[@class='team-body']/div[1]/div[@class='Pitch-Row']//svg[@class='team-ao']",
       "pitch_row": {
         "list": "/div[@class='team-body']/div[1]/div[@class='Pitch-Row']",
         "list_player": {
@@ -52,6 +53,7 @@
     "club2" : {
       "club_name": "/div[3]//div[@class='club-logo-text']",
       "formation": "/div[3]//div[@class='f-right-text']",
+      "shirt_color":"/div[@class='team-body']/div[2]/div[@class='Pitch-Row']//svg[@class='team-ao']",
       "pitch_row": {
         "list": "/div[@class='team-body']/div[2]/div[@class='Pitch-Row']",
         "list_player": {

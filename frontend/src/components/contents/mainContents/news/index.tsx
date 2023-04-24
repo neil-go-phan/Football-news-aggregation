@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import SearchTagContext from '@/common/contexts/searchTag';
 import useWindowDimensions from '@/helpers/useWindowResize';
 import { ThreeDots } from 'react-loader-spinner';
+import { ERROR_POPUP_USER_TIME } from '@/helpers/constants';
 
 const DEFAULT_PAGE = 0;
 
@@ -26,6 +27,7 @@ export default function News() {
     setFrom(DEFAULT_PAGE + 10);
     if (keywordSearch === '' && searchTags.length === 0) {
       requestFirstPageArticle();
+      resetState()
       return 
     }
     requestSearchArticle(keywordSearch, DEFAULT_PAGE)
@@ -71,7 +73,7 @@ export default function News() {
         `Error occurred while searching keyword ${searchKeyword.trim()}`,
         {
           position: 'top-right',
-          autoClose: 1000,
+          autoClose: ERROR_POPUP_USER_TIME,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -94,7 +96,7 @@ export default function News() {
         `Error occurred while searching keyword ${searchKeyword.trim()}`,
         {
           position: 'top-right',
-          autoClose: 1000,
+          autoClose: ERROR_POPUP_USER_TIME,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -117,7 +119,7 @@ export default function News() {
         'Error occurred while get article',
         {
           position: 'top-right',
-          autoClose: 1000,
+          autoClose: ERROR_POPUP_USER_TIME,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
