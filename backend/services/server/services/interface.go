@@ -37,6 +37,7 @@ type SchedulesServices interface {
 	GetMatchURLsOnDay() entities.MatchURLsOnDay
 	ClearMatchURLsOnDay()
 	GetSchedules(date string)
+	SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay)
 }
 
 type MatchDetailServices interface {

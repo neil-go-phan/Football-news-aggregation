@@ -1,10 +1,12 @@
 package handler
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"server/services"
+	"sync"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
@@ -24,7 +26,23 @@ func NewSchedulesHandler(handler services.SchedulesServices) *ScheduleHandler {
 }
 
 func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.Cron) {
-	_, err := cronjob.AddFunc("0 0 * * *", func() { schedulesHandler.handler.GetSchedules(time.Now().Format("02-01-2006")) })
+	_, err := cronjob.AddFunc("0 23 * * *", func() {
+		var wg sync.WaitGroup
+		now := time.Now()
+		var DAYOFWEEK = 7
+		for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
+			wg.Add(1)
+			date := now.AddDate(0, 0, i)
+			go func(date time.Time) {
+				defer wg.Done()
+				schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
+				matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+				schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
+				schedulesHandler.handler.ClearMatchURLsOnDay()
+			}(date)
+		}
+		wg.Wait()
+	})
 	if err != nil {
 		log.Println("error occurred while seting up getSchedules cronjob: ", err)
 	}
@@ -45,7 +63,6 @@ func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Con
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "schedules": schedules})
 }
-
 
 func (schedulesHandler *ScheduleHandler) APIGetScheduleLeagueOnDay(c *gin.Context) {
 	dateString := c.Query("date")

@@ -29,16 +29,16 @@ type schedulesRepo struct {
 	leagueRepo     repository.LeaguesRepository
 	tagsRepo       repository.TagRepository
 	matchURLsOnDay entities.MatchURLsOnDay
-	notification    repository.NotificationRepository
+	// notification    repository.NotificationRepository
 }
 
-func NewSchedulesRepo(leagueRepo repository.LeaguesRepository, tagsRepo repository.TagRepository,	notification    repository.NotificationRepository, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesRepo {
+func NewSchedulesRepo(leagueRepo repository.LeaguesRepository, tagsRepo repository.TagRepository, conn *grpc.ClientConn, es *elasticsearch.Client) *schedulesRepo {
 	schedulesRepo := &schedulesRepo{
 		conn:       conn,
 		es:         es,
 		leagueRepo: leagueRepo,
 		tagsRepo:   tagsRepo,
-		notification: notification,
+		// notification: notification,
 	}
 	return schedulesRepo
 }

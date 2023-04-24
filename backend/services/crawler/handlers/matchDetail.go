@@ -10,8 +10,8 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 )
-
-var AMOUNT_REQUEST_PER_GOROUTINE = 20
+// to slow down crawl match process
+var AMOUNT_REQUEST_PER_GOROUTINE = 1
 
 func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerService_GetMatchDetailServer) error {
 	matchUrls := configs.GetUrl()
