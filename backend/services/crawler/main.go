@@ -62,5 +62,4 @@ func configSentry() {
 		log.Fatalf("sentry.Init: %s", err)
 	}
 
-	sentry.CaptureMessage("It works!")
 }

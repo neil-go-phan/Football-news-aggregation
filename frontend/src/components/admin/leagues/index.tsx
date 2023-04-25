@@ -22,11 +22,6 @@ type LeagueRender = {
   active: boolean;
 };
 
-// const TIN_TUC_BONG_DA: League = {
-//   league_name: 'Tin tức bóng đá',
-//   active: true,
-// };
-
 const TIN_TUC_BONG_DA = 'Tin tức bóng đá';
 
 export default function AdminLeagues() {

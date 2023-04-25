@@ -45,12 +45,12 @@ func (repo *matchDetailRepo) GetMatchDetailsOnDayFromCrawler(matchURLs entities.
 	// send gRPC request to crawler
 	stream, err := client.GetMatchDetail(context.Background(), in)
 	if err != nil {
-		log.Errorf("error occurred while openning stream error %v \n", err)
+		log.Errorf("error occurred while openning stream error %v ", err)
 		return
 	}
 
 	done := make(chan bool)
-	log.Printf("Start get stream of match detail...\n")
+	log.Printf("Start get stream of match detail...")
 
 	go func(date time.Time) {
 		for {
@@ -63,7 +63,7 @@ func (repo *matchDetailRepo) GetMatchDetailsOnDayFromCrawler(matchURLs entities.
 				log.Errorf("cannot receive %v\n", err)
 				status, _ := status.FromError(err)
 				if status.Code().String() == "Unavailable" {
-					log.Errorf("gRPC server is down ! %v\n", err)
+					log.Errorf("gRPC server is down ! %v", err)
 					done <- true //means stream is finished
 					return
 				}

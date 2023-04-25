@@ -16,7 +16,7 @@ func NewArticleService(repo repository.ArticleRepository) *articleService {
 	return articleService
 }
 
-func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, error) {
+func (s *articleService) SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article,float64, error) {
 	return s.repo.SearchArticlesTagsAndKeyword(keyword, formatedTags, from)
 }
 
@@ -38,4 +38,8 @@ func (s *articleService) AddTagForAllArticle(tag string) error {
 
 func (s *articleService) GetArticles(keywords []string) {
  s.repo.GetArticles(keywords)
+}
+
+func (s *articleService) DeleteArticle(title string) error {
+	return s.repo.DeleteArticle(title)
 }

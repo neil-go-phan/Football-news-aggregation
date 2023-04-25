@@ -56,6 +56,7 @@ export default function HeaderProfileNav() {
               className="rounded-circle"
               src="/images/avatar.png"
               alt="user@email.com"
+              sizes='50'
             />
           </div>
         </Dropdown.Toggle>

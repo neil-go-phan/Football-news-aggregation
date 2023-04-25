@@ -13,11 +13,16 @@ export type ArticleType = {
 };
 
 const Article: FunctionComponent<ArticleProps> = (props: ArticleProps) => {
+  const getDomainName = (url: string): string => {
+    let domain = (new URL(url));
+    return domain.hostname.replace('www.','');
+  };
   const { article } = props;
   return (
     <div className="news__articles--article mb-3 py-2">
       <a className="" href={article.link} target="_blank">
         <div className="title">{article.title}</div>
+        <div className="source mt-1">{getDomainName(article.link)}</div>
         <div className="description">{article.description}</div>
       </a>
       <div className="tags d-flex mt-2">

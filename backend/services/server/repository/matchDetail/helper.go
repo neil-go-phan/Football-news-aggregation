@@ -33,12 +33,12 @@ func newEntitiesMatchDetailFromMap(respMatchDetail map[string]interface{}) entit
 
 	matchDetailByte, err := json.Marshal(respMatchDetail)
 	if err != nil {
-		log.Errorf("error occrus when marshal elastic response match detail: %s\n", err)
+		log.Errorf("error occrus when marshal elastic response match detail: %s", err)
 	}
 
 	err = json.Unmarshal(matchDetailByte, &matchDetail)
 	if err != nil {
-		log.Errorf("error occrus when unmarshal elastic response to entity match detail: %s\n", err)
+		log.Errorf("error occrus when unmarshal elastic response to entity match detail: %s", err)
 	}
 	return matchDetail
 }
@@ -71,7 +71,7 @@ func upsertMatchDetailElastic(matchDetail entities.MatchDetail, es *elasticsearc
 	}
 	err := json.NewEncoder(&buffer).Encode(query)
 	if err != nil {
-		log.Errorf("error occrus when encoding query: %s\n", err)
+		log.Errorf("error occrus when encoding query: %s", err)
 	}
 
 	req := esapi.UpdateRequest{
@@ -82,13 +82,13 @@ func upsertMatchDetailElastic(matchDetail entities.MatchDetail, es *elasticsearc
 
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
-		log.Errorf("Error getting response: %s\n", err)
+		log.Errorf("Error getting response: %s", err)
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		log.Errorf("[%s] Error indexing document\n", res.Status())
+		log.Errorf("[%s] Error indexing document", res.Status())
 	} else {
-		log.Printf("[%s] Upsert document with index: %s \n", res.Status(), MATCH_DETAIL_INDEX_NAME)
+		log.Printf("[%s] Upsert document with index: %s", res.Status(), MATCH_DETAIL_INDEX_NAME)
 	}
 }

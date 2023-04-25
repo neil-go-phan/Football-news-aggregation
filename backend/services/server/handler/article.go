@@ -16,6 +16,10 @@ type ArticleHandler struct {
 	handler services.ArticleServices
 }
 
+type InputDeleteArticle struct {
+	Title string `json:"title"`
+}
+
 func NewArticleHandler(handler services.ArticleServices) *ArticleHandler {
 	userHandler := &ArticleHandler{
 		handler: handler,
@@ -36,12 +40,12 @@ func (articleHandler *ArticleHandler) APISearchTagsAndKeyword(c *gin.Context) {
 	}
 
 	keyword = strings.TrimSpace(keyword)
-	articles, err := articleHandler.handler.SearchArticlesTagsAndKeyword(keyword, formatedTags, fromInt)
+	articles, total, err := articleHandler.handler.SearchArticlesTagsAndKeyword(keyword, formatedTags, fromInt)
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, "articles", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
+	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles, "total": total})
 }
 
 func (articleHandler *ArticleHandler) APICrawlArticleLeague(c *gin.Context) {
@@ -59,9 +63,22 @@ func (articleHandler *ArticleHandler) APIAddUpdateNewTag(c *gin.Context) {
 
 	err := articleHandler.handler.AddTagForAllArticle(tag)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Update tag failed"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Update tag failed"})
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Update tag successfull"})
+}
+
+func (articleHandler *ArticleHandler) APIDeleteArticle(c *gin.Context) {
+	var inputArticle InputDeleteArticle
+	err := c.BindJSON(&inputArticle)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+	}
+	err = articleHandler.handler.DeleteArticle(inputArticle.Title)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Delete article successfull"})
 }
 
 func (articleHandler *ArticleHandler) APIGetFirstPageOfLeagueRelatedArticle(c *gin.Context) {

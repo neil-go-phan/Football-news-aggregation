@@ -16,6 +16,7 @@ import (
 	htmlclassesrepo "server/repository/htmlClasses"
 	leaguesrepo "server/repository/leagues"
 	matchdetailrepo "server/repository/matchDetail"
+
 	// notificationrepo "server/repository/notification"
 	schedulesrepo "server/repository/schedules"
 	tagsrepo "server/repository/tags"
@@ -25,6 +26,7 @@ import (
 	articlesservices "server/services/articles"
 	leaguesservices "server/services/leagues"
 	matchdetailservices "server/services/matchDetail"
+
 	// notificationservices "server/services/notification"
 	schedulesservices "server/services/schedules"
 	tagsservices "server/services/tags"
@@ -32,10 +34,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/getsentry/sentry-go"
-	"github.com/evalphobia/logrus_sentry"
 	"github.com/elastic/go-elasticsearch/esapi"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/evalphobia/logrus_sentry"
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/robfig/cron/v3"
@@ -55,14 +57,14 @@ func init() {
 	}
 	log.SetFormatter(format)
 
-  hook, err := logrus_sentry.NewSentryHook("https://4cad04fffc3348dc8d14d1f592f1d014@o4505040225501184.ingest.sentry.io/4505066672947200", []log.Level{
-    log.PanicLevel,
-    log.FatalLevel,
-    log.ErrorLevel,
-  })
+	hook, err := logrus_sentry.NewSentryHook("https://4cad04fffc3348dc8d14d1f592f1d014@o4505040225501184.ingest.sentry.io/4505066672947200", []log.Level{
+		log.PanicLevel,
+		log.FatalLevel,
+		log.ErrorLevel,
+	})
 	if err == nil {
-    log.AddHook(hook)
-  }
+		log.AddHook(hook)
+	}
 }
 
 var ELASTIC_SEARCH_INDEXES = []string{articlerepo.ARTICLES_INDEX_NAME, schedulesrepo.SCHEDULE_INDEX_NAME, matchdetailrepo.MATCH_DETAIL_INDEX_NAME}
@@ -76,7 +78,7 @@ type EnvConfig struct {
 
 func main() {
 	env, err := loadEnv(".")
-	
+
 	if err != nil {
 		log.Fatalln("cannot load env")
 	}
@@ -269,18 +271,18 @@ func createElaticsearchIndex(es *elasticsearch.Client) int {
 	for _, indexName := range ELASTIC_SEARCH_INDEXES {
 		exists, err := checkIndexExists(es, indexName)
 		if err != nil {
-			log.Printf("Error checking if the index %s exists: %s\n", indexName, err)
+			log.Printf("Error checking if the index %s exists: %s", indexName, err)
 		}
 
 		if !exists {
-			log.Printf("Index: %s is not exist, create a new one...\n", indexName)
+			log.Printf("Index: %s is not exist, create a new one...", indexName)
 			if indexName != articlerepo.ARTICLES_INDEX_NAME {
 				err = createIndex(es, indexName)
 			} else {
 				err = createArticleIndex(es, indexName)
 			}
 			for err != nil {
-				log.Printf("Error createing index: %s, try again in 10 seconds\n", err)
+				log.Printf("Error createing index: %s, try again in 10 seconds", err)
 				time.Sleep(10 * time.Second)
 				err = createIndex(es, indexName)
 			}
@@ -288,7 +290,7 @@ func createElaticsearchIndex(es *elasticsearch.Client) int {
 			continue
 		}
 
-		log.Printf("Index: %s is already exist, skip it...\n", indexName)
+		log.Printf("Index: %s is already exist, skip it...", indexName)
 	}
 	return amountOfNewIndex
 }
@@ -374,22 +376,18 @@ func createArticleIndex(es *elasticsearch.Client, indexName string) error {
 
 func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchDetailService services.MatchDetailServices) {
 	// crawl data on previous 7 days and the following 7 days
-	// var wg sync.WaitGroup
 	now := time.Now()
 	var DAYOFWEEK = 7
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
-		// wg.Add(1)
 		date := now.AddDate(0, 0, i)
-		// go func(date time.Time, wg *sync.WaitGroup) {
-			// defer wg.Done()
-			schedulesService.GetSchedules(date.Format("02-01-2006"))
-
-			matchUrls := schedulesService.GetMatchURLsOnDay()
-			matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
-			schedulesService.ClearMatchURLsOnDay()
-		// }(date, &wg)
+		schedulesService.GetSchedules(date.Format("02-01-2006"))
+		matchUrls := schedulesService.GetMatchURLsOnDay()
+		log.Printf("len: %s = %v", matchUrls.Date, len(matchUrls.Urls))
+		matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
+		schedulesService.ClearMatchURLsOnDay()
+		matchUrls = schedulesService.GetMatchURLsOnDay()
+		log.Printf("len: %s = %v", matchUrls.Date, len(matchUrls.Urls))
 	}
-	// wg.Wait()
 
 	// Get articles
 	articleService.GetArticles(make([]string, 0))
@@ -402,12 +400,11 @@ func createArticleCache(articleService services.ArticleServices) {
 
 func configSentry() {
 	err := sentry.Init(sentry.ClientOptions{
-		Dsn: "https://4cad04fffc3348dc8d14d1f592f1d014@o4505040225501184.ingest.sentry.io/4505066672947200",
+		Dsn:              "https://4cad04fffc3348dc8d14d1f592f1d014@o4505040225501184.ingest.sentry.io/4505066672947200",
 		TracesSampleRate: 1.0,
 	})
 	if err != nil {
 		log.Fatalf("sentry.Init: %s", err)
 	}
 
-	sentry.CaptureMessage("It works!")
 }

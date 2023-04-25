@@ -10,8 +10,8 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 )
-// to slow down crawl match process
-var AMOUNT_REQUEST_PER_GOROUTINE = 1
+// to slow down crawl match process (TODO: research about how to control amount of go routine suitable for server power)
+var AMOUNT_REQUEST_PER_GOROUTINE = 20
 
 func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerService_GetMatchDetailServer) error {
 	matchUrls := configs.GetUrl()
@@ -31,7 +31,7 @@ func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerServ
 			for _, url := range matchUrl {
 				err := crawlMatchDetailAndStreamResult(stream, url, xPath)
 				if err != nil {
-					log.Printf("error occurred while request to url: %s, err: %v \n", matchUrl, err)
+					log.Printf("error occurred while request to url: %s, err: %v ", matchUrl, err)
 				}
 			}
 			defer wg.Done()
@@ -63,7 +63,7 @@ func crawlMatchDetailAndStreamResult(stream pb.CrawlerService_GetMatchDetailServ
 
 	matchDetailEntity, err := services.CrawlMatchDetail(matchUrl, xPath)
 	if err != nil {
-		log.Printf("error occurred during crawl match detail process: url: %v, err: %v \n", matchUrl, err)
+		log.Printf("error occurred during crawl match detail process: url: %v, err: %v ", matchUrl, err)
 	}
 
 	matchDetail := crawledMatchDetailToPbMatchDetail(matchDetailEntity, matchUrl)
