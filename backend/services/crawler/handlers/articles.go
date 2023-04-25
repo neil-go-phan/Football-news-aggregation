@@ -26,14 +26,8 @@ func (s *gRPCServer) GetArticles(configs *pb.AllConfigsArticles, stream pb.Crawl
 	var wg sync.WaitGroup
 	log.Println("Start scrapt article")
 
-	// proxyList, err := crawlerhelpers.RequestProxyList()
-	// if err != nil {
-	// 	log.Printf("error occurred while get proxy: %s\n", err)
-	// }
-
 	for _, league := range leagues {
 		wg.Add(1)
-		// sleep to prevent google captcha
 		time.Sleep(3 * time.Second)
 
 		go func(league string) {
@@ -56,8 +50,6 @@ func crawlArticlesAndStreamResult(stream pb.CrawlerService_GetArticlesServer, le
 
 
 	for index := 0; index < PAGES; index++ {
-		// sleep to prevent google captcha
-		// time.Sleep(3 * time.Second)
 		newses, err := services.CrawlArticles(newsUrl, index, htmlClasses)
 		if err != nil {
 			log.Printf("error occurred during crawl page process: %v, err: %v \n", index, err)
