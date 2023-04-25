@@ -44,8 +44,7 @@ function ArticleAdmin() {
       });
     }
   };
-
-  const requestDeleteArticle = async (title: string) => {
+  const requestDeleteArticle = async (title: string, index:number) => {
     try {
       const { data } = await axiosProtectedAPI.post('article/delete', {
         title: title,
@@ -63,8 +62,14 @@ function ArticleAdmin() {
           progress: undefined,
           theme: 'light',
         });
-        requestArticleCount();
-        requestArticle('', 0);
+        setArticles([])
+        setTimeout(() => {
+          //this is time to wait for elastic search delete document. 
+          //TODO: mirage database to mongodb
+          requestArticleCount();
+          requestArticle('', 0)
+        }, 1000);
+
       }
     } catch (error) {
       toast.error('Error occurred while delete article', {
@@ -125,9 +130,9 @@ function ArticleAdmin() {
     }
     requestArticle(keyword, 0);
   };
+
   const handleUpdateTable = (title: string, index:number) => {
-    requestDeleteArticle(title);
-    console.log("len: ", articles.length)
+    requestDeleteArticle(title, index);
   };
   return (
     <div className="adminArticles">

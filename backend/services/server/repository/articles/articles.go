@@ -74,29 +74,30 @@ func NewArticleRepo(leaguesRepo repository.LeaguesRepository, htmlClassesRepo re
 	return articleRepo
 }
 
-func (repo *articleRepo) SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article,float64, error) {
+func (repo *articleRepo) SearchArticlesTagsAndKeyword(keyword string, formatedTags []string, from int) ([]entities.Article, float64, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	articles := make([]entities.Article, 0)
 	var buffer bytes.Buffer
-	var total float64 
+	var total float64
 	query := querySearchArticle(keyword, formatedTags, from)
 
 	err := json.NewEncoder(&buffer).Encode(query)
 	if err != nil {
-		return articles,total,  fmt.Errorf("encode query failed")
+		return articles, total, fmt.Errorf("encode query failed")
 	}
 
 	resp, err := repo.es.Search(repo.es.Search.WithIndex(ARTICLES_INDEX_NAME), repo.es.Search.WithBody(&buffer))
 	if err != nil {
-		return articles,total, fmt.Errorf("request to elastic search fail")
+		return articles, total, fmt.Errorf("request to elastic search fail")
 	}
 
 	var result map[string]interface{}
 
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
-		return articles,total, fmt.Errorf("decode respose from elastic search failed")
+		return articles, total, fmt.Errorf("decode respose from elastic search failed")
 	}
+
 	value := result["hits"].(map[string]interface{})["total"].(map[string]interface{})["value"]
 	total = value.(float64)
 
@@ -112,7 +113,7 @@ func (repo *articleRepo) SearchArticlesTagsAndKeyword(keyword string, formatedTa
 
 	}
 
-	return articles,total, nil
+	return articles, total, nil
 }
 
 func (repo *articleRepo) GetFirstPageOfLeagueRelatedArticle(leagueName string) ([]entities.Article, error) {
@@ -138,7 +139,7 @@ func (repo *articleRepo) GetFirstPageOfLeagueRelatedArticle(leagueName string) (
 	log.Println("MISS CACHE: ", key)
 	// Cache miss, fetch article from elastic
 	formatedTags := serverhelper.FortmatTagsFromRequest(leagueName)
-	articles,_, err := repo.SearchArticlesTagsAndKeyword("", formatedTags, 0)
+	articles, _, err := repo.SearchArticlesTagsAndKeyword("", formatedTags, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +157,7 @@ func (repo *articleRepo) RefreshCache() {
 		go func(league string) {
 			defer wg.Done()
 			tagFromLeague := serverhelper.FormatVietnamese(league)
-			firstPageArticleLeague,_, err := repo.SearchArticlesTagsAndKeyword("", []string{tagFromLeague}, 0)
+			firstPageArticleLeague, _, err := repo.SearchArticlesTagsAndKeyword("", []string{tagFromLeague}, 0)
 			if err != nil {
 				log.Printf("can not request to elastic to reset tag")
 			}
@@ -435,7 +436,7 @@ func (repo *articleRepo) DeleteArticle(title string) error {
 		Index:      ARTICLES_INDEX_NAME,
 		DocumentID: strings.ToLower(title),
 	}
- 
+
 	res, err := req.Do(context.Background(), repo.es)
 	if err != nil {
 		log.Errorf("Error getting response for delete request: %s", err)

@@ -22,6 +22,7 @@ type Props = {
 };
 
 const ArticleTable: React.FC<Props> = (props: Props) => {
+  // const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const columns: Column<ArticlesRender>[] = React.useMemo(
     () => [
       {
@@ -61,6 +62,7 @@ const ArticleTable: React.FC<Props> = (props: Props) => {
     []
   );
 
+
   const getDomainName = (url: string): string => {
     let domain = new URL(url);
     return domain.hostname.replace('www.', '');
@@ -83,7 +85,6 @@ const ArticleTable: React.FC<Props> = (props: Props) => {
   };
 
   const data = useCreateTableData(props.articles);
-
   const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
     useTable({
       columns,
