@@ -103,6 +103,11 @@ func querySearchArticlesOnlySearchKeyword(keyword string, from int) map[string]i
 						"analyzer": "no_accent",
 					},
 				},
+				"must_not": map[string]interface{}{
+					"exists": map[string]interface{}{
+						"field": "deleted",
+					},
+				},
 			},
 		},
 		"from": from,
@@ -123,6 +128,11 @@ func querySearchArticlesOnlyTag(filterTagQuery []map[string]interface{}, from in
 				"filter": map[string]interface{}{
 					"bool": map[string]interface{}{
 						"must": filterTagQuery,
+					},
+				},
+				"must_not": map[string]interface{}{
+					"exists": map[string]interface{}{
+						"field": "deleted",
 					},
 				},
 			},
@@ -151,6 +161,11 @@ func querySearchArticlesBothTagAndKeyword(keyword string, filterTagQuery []map[s
 				"filter": map[string]interface{}{
 					"bool": map[string]interface{}{
 						"must": filterTagQuery,
+					},
+				},
+				"must_not": map[string]interface{}{
+					"exists": map[string]interface{}{
+						"field": "deleted",
 					},
 				},
 			},
@@ -410,7 +425,10 @@ func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, 
 			exist := checkArtilceWithElasticSearch(article, es)
 			if !exist {
 				entityArticle := newEntitiesArticleFromPb(article, tags, league)
-				storeArticleInElasticsearch(entityArticle, es)
+				if entityArticle.Title != "" && entityArticle.Link != "" && entityArticle.Description != "" {
+					storeArticleInElasticsearch(entityArticle, es)
+				}
+				
 			}
 		}
 	}

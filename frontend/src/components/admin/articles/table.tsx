@@ -6,6 +6,7 @@ import DeleteArticleBtn from './deleteBtn';
 import axiosClient from '@/helpers/axiosClient';
 import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
 import { toast } from 'react-toastify';
+import { ThreeDots } from 'react-loader-spinner';
 
 type ArticlesRender = {
   index: number;
@@ -22,6 +23,7 @@ type Props = {
 };
 
 const ArticleTable: React.FC<Props> = (props: Props) => {
+  // const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const columns: Column<ArticlesRender>[] = React.useMemo(
     () => [
       {
@@ -83,13 +85,25 @@ const ArticleTable: React.FC<Props> = (props: Props) => {
   };
 
   const data = useCreateTableData(props.articles);
-
   const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
     useTable({
       columns,
       data,
     });
-
+  if (props.articles.length === 0) {
+    return (
+      <div className="sidebar--loading">
+        <ThreeDots
+          height="50"
+          width="50"
+          radius="9"
+          color="#4fa94d"
+          ariaLabel="three-dots-loading"
+          visible={true}
+        />
+      </div>
+    );
+  }
   return (
     <>
       <div className="adminArticles__list--table">
