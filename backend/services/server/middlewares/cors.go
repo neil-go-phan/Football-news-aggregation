@@ -10,6 +10,7 @@ func Cors() gin.HandlerFunc {
 			"http://localhost:3000": true,
 			"http://localhost:8080": true,
 			"https://football-news-aggregation-j9rexyo0x-hung142-65.vercel.app": true,
+			"https://football-news-aggregation-9h8k5zhml-hung142-65.vercel.app":true,
 		}
 		if origin := c.Request.Header.Get("Origin"); allowList[origin] {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
