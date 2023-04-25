@@ -1,21 +1,20 @@
-import React from 'react'
+import React from 'react';
 import { Button } from 'react-bootstrap';
 type Props = {
-  title: string
-  index: number
-  handleUpdateTable:(title: string, index: number) => void
+  title: string;
+  // eslint-disable-next-line no-unused-vars
+  handleUpdateTable: (title: string) => void;
 };
 
 const DeleteArticleBtn: React.FC<Props> = (props: Props) => {
   return (
     <Button
       variant="danger"
-      value={props.index}
-      onClick={() => props.handleUpdateTable(props.title, props.index)}
+      onClick={() => props.handleUpdateTable(props.title)}
     >
       Delete
     </Button>
-  )
-}
+  );
+};
 
-export default DeleteArticleBtn
+export default DeleteArticleBtn;

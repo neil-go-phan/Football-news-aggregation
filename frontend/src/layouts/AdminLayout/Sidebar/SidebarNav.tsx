@@ -3,7 +3,7 @@ import {
   faNewspaper,
   IconDefinition,
 } from '@fortawesome/free-regular-svg-icons';
-import { faGauge, faTag, faTrophy } from '@fortawesome/free-solid-svg-icons';
+import {faTag, faTrophy } from '@fortawesome/free-solid-svg-icons';
 import React, { PropsWithChildren } from 'react';
 import { Nav } from 'react-bootstrap';
 import Link from 'next/link';

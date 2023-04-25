@@ -9,21 +9,29 @@ type Props = {
   matchTitle: MatchDetailTitle | null;
 };
 // pixel
-const CLUB_LOGO_LINEUP_SIDE = 24 
+const CLUB_LOGO_LINEUP_SIDE = 24;
 
 const MatchLineUpComponent: FunctionComponent<Props> = ({
   matchLineUp,
   matchTitle,
 }) => {
-  const renderPitchRow = (pitchRows: Array<PitchRows>, shirt_color: string): ReactNode => {
+  const renderPitchRow = (
+    pitchRows: Array<PitchRows>,
+    // eslint-disable-next-line camelcase
+    shirt_color: string
+  ): ReactNode => {
     return (
       <>
         {pitchRows.map((row, index) => (
-          <div className="pitch-row" key={`pitch-row-${index}`}>{renderPlayer(row, shirt_color)}</div>
+          <div className="pitch-row" key={`pitch-row-${index}`}>
+            {/*eslint-disable-next-line camelcase */}
+            {renderPlayer(row, shirt_color)}
+          </div>
         ))}
       </>
     );
   };
+  // eslint-disable-next-line camelcase
   const renderPlayer = (row: PitchRows, shirt_color: string): ReactNode => {
     return (
       <>
@@ -31,7 +39,11 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
           <div className="pitch-item" key={`pitch-item-${player.player_name}`}>
             <div className="team-player">
               <div className="img">
-                <FontAwesomeIcon icon={faShirt} style={{color: shirt_color}}/>
+                <FontAwesomeIcon
+                  icon={faShirt}
+                  // eslint-disable-next-line camelcase
+                  style={{ color: shirt_color }}
+                />
                 <div className="player-number">{player.player_number}</div>
               </div>
               <div className="name">{player.player_name}</div>
@@ -42,7 +54,12 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
     );
   };
 
-  if (matchLineUp && matchTitle && matchLineUp.lineup_club_1.pitch_row && matchLineUp.lineup_club_2.pitch_row) {
+  if (
+    matchLineUp &&
+    matchTitle &&
+    matchLineUp.lineup_club_1.pitch_row &&
+    matchLineUp.lineup_club_2.pitch_row
+  ) {
     return (
       <div id="lineup" className="matchDetail__content--lineup">
         <div className="title">Lineup</div>
@@ -66,14 +83,20 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
           <div className="team-body">
             <div className="team-content team1">
               {matchLineUp.lineup_club_1.pitch_row ? (
-                renderPitchRow(matchLineUp.lineup_club_1.pitch_row,  matchLineUp.lineup_club_1.shirt_color)
+                renderPitchRow(
+                  matchLineUp.lineup_club_1.pitch_row,
+                  matchLineUp.lineup_club_1.shirt_color
+                )
               ) : (
                 <></>
               )}
             </div>
             <div className="team-content team2">
               {matchLineUp.lineup_club_2.pitch_row ? (
-                renderPitchRow(matchLineUp.lineup_club_2.pitch_row, matchLineUp.lineup_club_2.shirt_color)
+                renderPitchRow(
+                  matchLineUp.lineup_club_2.pitch_row,
+                  matchLineUp.lineup_club_2.shirt_color
+                )
               ) : (
                 <></>
               )}

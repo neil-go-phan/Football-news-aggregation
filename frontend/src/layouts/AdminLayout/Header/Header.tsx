@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import HeaderFeaturedNav from './HeaderFeaturedNav'
-import HeaderNotificationNav from './HeaderNotificationNav'
 import HeaderProfileNav from './HeaderProfileNav'
 import { Button, Container } from 'react-bootstrap'
 

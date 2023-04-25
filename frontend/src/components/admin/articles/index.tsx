@@ -10,7 +10,6 @@ import axiosClient from '@/helpers/axiosClient';
 import { ArticleType } from '@/components/matchDetail/relatedNews/article';
 import { ThreeDots } from 'react-loader-spinner';
 import AdminArticlePagination from './pagination';
-import { useRouter } from 'next/router';
 
 // all article is tagged with this tag. we use it to say to the server that we want to get all article
 const DEFAULT_TAGS = 'tin tuc bong da';
@@ -23,7 +22,6 @@ function ArticleAdmin() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const [keyword, setkeyword] = useState<string>('');
-  const router = useRouter()
 
   const requestArticleCount = async () => {
     try {
@@ -44,7 +42,7 @@ function ArticleAdmin() {
       });
     }
   };
-  const requestDeleteArticle = async (title: string, index:number) => {
+  const requestDeleteArticle = async (title: string) => {
     try {
       const { data } = await axiosProtectedAPI.post('article/delete', {
         title: title,
@@ -131,8 +129,8 @@ function ArticleAdmin() {
     requestArticle(keyword, 0);
   };
 
-  const handleUpdateTable = (title: string, index:number) => {
-    requestDeleteArticle(title, index);
+  const handleUpdateTable = (title: string) => {
+    requestDeleteArticle(title);
   };
   return (
     <div className="adminArticles">

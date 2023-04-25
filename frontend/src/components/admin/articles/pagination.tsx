@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import styles from './styles.module.css';
 import { Button } from 'react-bootstrap';
 import { ROW_PER_PAGE } from '.';
 
 type Props = {
   totalRows: number;
+  // eslint-disable-next-line no-unused-vars
   pageChangeHandler: (currentPage: number) => void;
 };
 
