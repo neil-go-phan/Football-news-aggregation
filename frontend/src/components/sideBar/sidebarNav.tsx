@@ -39,7 +39,7 @@ export default function SidebarNav() {
                 }}
                 className="text-decoration-none text-dark link"
               >
-                {league === "Tin tức bóng đá" ? "Football news": league}
+                {league === 'Tin tức bóng đá' ? 'Football news' : league}
               </Link>
             </Nav.Item>
           ))}

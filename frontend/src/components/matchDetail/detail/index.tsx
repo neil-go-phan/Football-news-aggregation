@@ -104,7 +104,6 @@ function Detail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath]);
   if (matchDetail) {
-    console.log(matchDetail)
     return (
       <div className="matchDetail__content px-5">
         <MatchTitle matchTitle={matchDetail.match_detail_title} date={date} />

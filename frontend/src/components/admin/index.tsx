@@ -4,7 +4,6 @@ import ArticleAdmin from './articles'
 import { _ROUTES } from '@/helpers/constants'
 import AdminLeagues from './leagues'
 import AdminTags from './tags'
-import AdminProfile from './adminProfile'
 
 function AdminComponent() {
   const router = useRouter()

@@ -1,11 +1,8 @@
 import { ArticleType } from '@/components/matchDetail/relatedNews/article';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Table } from 'react-bootstrap';
 import { Column, useTable } from 'react-table';
 import DeleteArticleBtn from './deleteBtn';
-import axiosClient from '@/helpers/axiosClient';
-import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
-import { toast } from 'react-toastify';
 import { ThreeDots } from 'react-loader-spinner';
 
 type ArticlesRender = {
@@ -19,11 +16,11 @@ type ArticlesRender = {
 type Props = {
   articles: Array<ArticleType>;
   currentPage: number;
-  handleUpdateTable: (title: string, index: number) => void;
+  // eslint-disable-next-line no-unused-vars
+  handleUpdateTable: (title: string) => void;
 };
 
 const ArticleTable: React.FC<Props> = (props: Props) => {
-  // const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const columns: Column<ArticlesRender>[] = React.useMemo(
     () => [
       {
@@ -53,7 +50,6 @@ const ArticleTable: React.FC<Props> = (props: Props) => {
         Cell: ({ row }) => (
           <DeleteArticleBtn
             title={row.values.title}
-            index={row.index}
             handleUpdateTable={props.handleUpdateTable}
             key={`delete-article-btn-${row.values.title}`}
           />

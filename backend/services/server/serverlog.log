@@ -12,3 +12,265 @@
 [INFO]: 2023-04-25 12:06:34 - [200 OK] Deleted document with id: lịch thi đấu của mu ở tứ kết europa league 2022-23
 [INFO]: 2023-04-25 12:06:38 - [200 OK] Deleted document with id: arsenal đón tin "sét đánh", man city chọn ai thay haaland đấu liverpool? 
 (clip 1 phút bóng đá 24h)
+[INFO]: 2023-04-25 12:09:36 - refresh cache...
+[INFO]: 2023-04-25 12:09:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:09:36 - refresh cache end.
+[INFO]: 2023-04-25 12:14:36 - refresh cache...
+[INFO]: 2023-04-25 12:14:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 12:14:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:14:36 - refresh cache end.
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[ERROR]: 2023-04-25 12:14:40 - [400 Bad Request] Error indexing document
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 12:14:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 12:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:14:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 12:14:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 12:14:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 12:14:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 12:14:40 - finished.
+[INFO]: 2023-04-25 12:19:36 - refresh cache...
+[INFO]: 2023-04-25 12:19:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:19:36 - refresh cache end.
+[INFO]: 2023-04-25 12:24:36 - refresh cache...
+[INFO]: 2023-04-25 12:24:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 12:24:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:24:36 - refresh cache end.
+[INFO]: 2023-04-25 12:24:40 - finished.
+[INFO]: 2023-04-25 12:29:36 - refresh cache...
+[INFO]: 2023-04-25 12:29:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:29:36 - refresh cache end.
+[INFO]: 2023-04-25 12:34:36 - refresh cache...
+[INFO]: 2023-04-25 12:34:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 12:34:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:34:36 - refresh cache end.
+[INFO]: 2023-04-25 12:34:39 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 12:34:39 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 12:34:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 12:34:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 12:34:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 12:34:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 12:34:40 - finished.
+[INFO]: 2023-04-25 12:39:36 - refresh cache...
+[INFO]: 2023-04-25 12:39:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:39:36 - refresh cache end.
+[INFO]: 2023-04-25 12:44:36 - refresh cache...
+[INFO]: 2023-04-25 12:44:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 12:44:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:44:36 - refresh cache end.
+[INFO]: 2023-04-25 12:44:40 - finished.
+[INFO]: 2023-04-25 12:49:36 - refresh cache...
+[INFO]: 2023-04-25 12:49:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:49:36 - refresh cache end.
+[INFO]: 2023-04-25 12:54:36 - refresh cache...
+[INFO]: 2023-04-25 12:54:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 12:54:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:54:36 - refresh cache end.
+[INFO]: 2023-04-25 12:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 12:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 12:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 12:54:40 - finished.
+[INFO]: 2023-04-25 12:59:36 - refresh cache...
+[INFO]: 2023-04-25 12:59:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 12:59:36 - refresh cache end.
+[INFO]: 2023-04-25 13:04:36 - refresh cache...
+[INFO]: 2023-04-25 13:04:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 13:04:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:04:36 - refresh cache end.
+[INFO]: 2023-04-25 13:04:39 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 13:04:39 - [201 Created] Indexed document with index: articles
+[ERROR]: 2023-04-25 13:04:40 - [400 Bad Request] Error indexing document
+[INFO]: 2023-04-25 13:04:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 13:04:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 13:04:40 - finished.
+[INFO]: 2023-04-25 13:09:36 - refresh cache...
+[INFO]: 2023-04-25 13:09:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:09:36 - refresh cache end.
+[INFO]: 2023-04-25 13:14:36 - refresh cache...
+[INFO]: 2023-04-25 13:14:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 13:14:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:14:36 - refresh cache end.
+[INFO]: 2023-04-25 13:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:14:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:14:40 - finished.
+[INFO]: 2023-04-25 13:19:36 - refresh cache...
+[INFO]: 2023-04-25 13:19:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:19:36 - refresh cache end.
+[INFO]: 2023-04-25 13:24:36 - refresh cache...
+[INFO]: 2023-04-25 13:24:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 13:24:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:24:36 - refresh cache end.
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[ERROR]: 2023-04-25 13:24:40 - [400 Bad Request] Error indexing document
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:24:41 - Document already exist in index articles
+[ERROR]: 2023-04-25 13:24:41 - [400 Bad Request] Error indexing document
+[INFO]: 2023-04-25 13:24:41 - finished.
+[INFO]: 2023-04-25 13:29:36 - refresh cache...
+[INFO]: 2023-04-25 13:29:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:29:36 - refresh cache end.
+[INFO]: 2023-04-25 13:34:36 - refresh cache...
+[INFO]: 2023-04-25 13:34:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 13:34:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:34:36 - refresh cache end.
+[INFO]: 2023-04-25 13:34:40 - finished.
+[INFO]: 2023-04-25 13:39:36 - refresh cache...
+[INFO]: 2023-04-25 13:39:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:39:36 - refresh cache end.
+[INFO]: 2023-04-25 13:44:36 - refresh cache...
+[INFO]: 2023-04-25 13:44:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 13:44:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:44:36 - refresh cache end.
+[INFO]: 2023-04-25 13:44:40 - finished.
+[INFO]: 2023-04-25 13:49:36 - refresh cache...
+[INFO]: 2023-04-25 13:49:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:49:36 - refresh cache end.
+[INFO]: 2023-04-25 13:54:36 - refresh cache...
+[INFO]: 2023-04-25 13:54:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 13:54:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:54:36 - refresh cache end.
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:39 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 13:54:39 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:39 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[ERROR]: 2023-04-25 13:54:40 - [400 Bad Request] Error indexing document
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - Document already exist in index articles
+[INFO]: 2023-04-25 13:54:40 - finished.
+[INFO]: 2023-04-25 13:59:36 - refresh cache...
+[INFO]: 2023-04-25 13:59:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 13:59:36 - refresh cache end.
+[INFO]: 2023-04-25 14:04:36 - refresh cache...
+[INFO]: 2023-04-25 14:04:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 14:04:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:04:36 - refresh cache end.
+[INFO]: 2023-04-25 14:04:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 14:04:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 14:04:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 14:04:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 14:04:40 - finished.
+[INFO]: 2023-04-25 14:09:36 - refresh cache...
+[INFO]: 2023-04-25 14:09:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:09:36 - refresh cache end.
+[INFO]: 2023-04-25 14:14:36 - refresh cache...
+[INFO]: 2023-04-25 14:14:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 14:14:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:14:36 - refresh cache end.
+[INFO]: 2023-04-25 14:14:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 14:14:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 14:14:40 - finished.
+[INFO]: 2023-04-25 14:19:36 - refresh cache...
+[INFO]: 2023-04-25 14:19:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:19:36 - refresh cache end.
+[INFO]: 2023-04-25 14:24:36 - refresh cache...
+[INFO]: 2023-04-25 14:24:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 14:24:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:24:36 - refresh cache end.
+[INFO]: 2023-04-25 14:24:39 - Document already exist in index articles
+[INFO]: 2023-04-25 14:24:40 - Document already exist in index articles
+[INFO]: 2023-04-25 14:24:40 - finished.
+[INFO]: 2023-04-25 14:29:36 - refresh cache...
+[INFO]: 2023-04-25 14:29:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:29:36 - refresh cache end.
+[INFO]: 2023-04-25 14:34:36 - refresh cache...
+[INFO]: 2023-04-25 14:34:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 14:34:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:34:36 - refresh cache end.
+[INFO]: 2023-04-25 14:34:39 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 14:34:39 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 14:34:40 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 14:34:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 14:34:40 - finished.
+[INFO]: 2023-04-25 14:39:36 - refresh cache...
+[INFO]: 2023-04-25 14:39:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:39:36 - refresh cache end.
+[INFO]: 2023-04-25 14:44:36 - refresh cache...
+[INFO]: 2023-04-25 14:44:36 - Start get stream of article...
+
+[INFO]: 2023-04-25 14:44:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-25 14:44:36 - refresh cache end.
+[INFO]: 2023-04-25 14:44:39 - Document not found in index articles, creating new one...
+[INFO]: 2023-04-25 14:44:40 - [201 Created] Indexed document with index: articles
+[INFO]: 2023-04-25 14:44:40 - finished.
