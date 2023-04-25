@@ -104,8 +104,6 @@ func CrawlMatchDetail(matchUrl string, xPath entities.XPathMatchDetail) (entitie
 		wg.Done()
 	}(&wg)
 
-
-
 	// log crawl error
 	done := make(chan bool)
 	go func (done chan bool)  {

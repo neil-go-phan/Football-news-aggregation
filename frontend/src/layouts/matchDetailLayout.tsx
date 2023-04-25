@@ -11,6 +11,7 @@ function MatchDetailLayout({ children }: PropsWithChildren) {
         <title>Chi tiết trận đấu</title>
         <meta name="description" content="Neil intern demo 1" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="wrapper d-flex flex-column min-vh-100 bg-light">
