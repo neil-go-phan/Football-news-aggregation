@@ -18,7 +18,6 @@ export default function NewsLayout({ children }: PropsWithChildren) {
         <title>Tổng hợp tin tức bóng đá</title>
         <meta name="description" content="Neil intern demo 1" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta httpEquiv="Content-Security-Policy" content="upgrade-insecure-requests" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="wrapper d-flex flex-column min-vh-100 bg-light">
