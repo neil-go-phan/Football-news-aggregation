@@ -2,7 +2,6 @@ package serverhelper
 
 import (
 	"reflect"
-	serverhelper "server/helper"
 	"testing"
 	"time"
 )
@@ -15,7 +14,7 @@ type formatVietnameseTestcase struct {
 
 func assertFormatVietnamese(t *testing.T, testName string, input string, output string) {
 	want := output
-	got := serverhelper.FormatVietnamese(input)
+	got := FormatVietnamese(input)
 	if got != want {
 		t.Errorf("%s with input = '%s' is supose to %v, but got %s", testName, input, want, got)
 	}
@@ -44,7 +43,7 @@ type formatElasticSearchIndexNameTestcase struct {
 
 func assertFormatElasticSearchIndexName(t *testing.T, testName string, input string, output string) {
 	want := output
-	got := serverhelper.FormatElasticSearchIndexName(input)
+	got := FormatElasticSearchIndexName(input)
 	if got != want {
 		t.Errorf("%s with input = '%s' is supose to %v, but got %s", testName, input, want, got)
 	}
@@ -75,7 +74,7 @@ type fortmatTagsFromRequestTestcase struct {
 
 func assertFormatTagsFromRequest(t *testing.T, testName string, input string, output []string) {
 	want := output
-	got := serverhelper.FortmatTagsFromRequest(input)
+	got := FortmatTagsFromRequest(input)
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("%s with input = '%s' is supose to %v, but got %s", testName, input, want, got)
 	}
@@ -104,7 +103,7 @@ type fortmatDateVietnameseToDateStringTestcase struct {
 
 func assertFormatDateToVietnamesDateSting(t *testing.T, testName string, input time.Time, output string) {
 	want := output
-	got := serverhelper.FormatDateToVietnamesDateSting(input)
+	got := FormatDateToVietnamesDateSting(input)
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("%s with input = '%s' is supose to %v, but got %s", testName, input, want, got)
 	}
@@ -131,7 +130,7 @@ type formatCacheKeyTestcase struct {
 
 func assertFormatCacheKey(t *testing.T, testName string, input string, output string) {
 	want := output
-	got := serverhelper.FormatCacheKey(input)
+	got := FormatCacheKey(input)
 	if got != want {
 		t.Errorf("%s with input = '%s' is supose to %v, but got %s", testName, input, want, got)
 	}

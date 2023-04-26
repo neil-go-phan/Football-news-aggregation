@@ -16,7 +16,7 @@ func ReadAdminJSON(jsonPath string) (entities.Admin, error) {
 	adminConfigJson, err := os.Open(fmt.Sprintf("%sadminConfig.json", jsonPath))
 	if err != nil {
 		log.Errorln(err)
-		return adminConfig, err
+		return adminConfig, fmt.Errorf("file json not found")
 	}
 	defer adminConfigJson.Close()
 
@@ -41,7 +41,7 @@ func ReadleaguesJSON(jsonPath string) (entities.Leagues, error) {
 	leaguesConfigJson, err := os.Open(fmt.Sprintf("%sleaguesConfig.json", jsonPath))
 	if err != nil {
 		log.Errorln(err)
-		return leaguesConfig, err
+		return leaguesConfig, fmt.Errorf("file json not found")
 	}
 	defer leaguesConfigJson.Close()
 
@@ -66,7 +66,7 @@ func ReadTagsJSON(jsonPath string) (entities.Tags, error) {
 	tagsConfigJson, err := os.Open(fmt.Sprintf("%stagsConfig.json", jsonPath))
 	if err != nil {
 		log.Errorln(err)
-		return tagsConfig, err
+		return tagsConfig, fmt.Errorf("file json not found")
 	}
 	defer tagsConfigJson.Close()
 
@@ -91,7 +91,7 @@ func ReadHtmlClassJSON(jsonPath string) (entities.HtmlClasses, error) {
 	classConfigJson, err := os.Open(fmt.Sprintf("%shtmlClassesConfig.json", jsonPath))
 	if err != nil {
 		log.Errorln(err)
-		return classConfig, err
+		return classConfig, fmt.Errorf("file json not found")
 	}
 	defer classConfigJson.Close()
 
