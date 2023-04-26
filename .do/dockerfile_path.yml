@@ -1,0 +1,8 @@
+
+name: elastic-dockerfile
+services:
+- name: web
+  git:
+    repo_clone_url: https://github.com/neil-go-phan/Football-news-aggregation.git
+    branch: develop
+  dockerfile_path: Dockerfile
