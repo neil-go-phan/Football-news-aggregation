@@ -35,7 +35,7 @@ func (repo *tagsRepo) AddTag(newTags string) error {
 	err = repo.WriteTagsJSON(repo.Tags)
 	if err != nil {
 		log.Errorf("error occurs: %s", err)
-		return err
+		return fmt.Errorf("file json not found")
 	}
 	return nil
 }
@@ -58,6 +58,9 @@ func (repo *tagsRepo) DeleteTag(tag string) error {
 }
 
 func removeTag(slice []string, index int) []string {
+	if index < 0 || index > len(slice) - 1 {
+		return slice
+	}
 	slice[index] = slice[len(slice)-1]
 	return slice[:len(slice)-1]
 }
@@ -71,7 +74,7 @@ func (repo *tagsRepo) checkTagExist(tagCheck string) (int, error) {
 	return -1, fmt.Errorf("tag %s not found", tagCheck)
 }
 
-func (repo *tagsRepo)ReadTagsJSON() (entities.Tags, error) {
+func (repo *tagsRepo) ReadTagsJSON() (entities.Tags, error) {
 	var tagsConfig entities.Tags
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
@@ -101,7 +104,7 @@ func (repo *tagsRepo) ListTags() entities.Tags {
 	return repo.Tags
 }
 
-func (repo *tagsRepo)WriteTagsJSON(newTag entities.Tags) error {
+func (repo *tagsRepo) WriteTagsJSON(newTag entities.Tags) error {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	file, err := os.Create(fmt.Sprintf("%stagsConfig.json", repo.path))
 	if err != nil {

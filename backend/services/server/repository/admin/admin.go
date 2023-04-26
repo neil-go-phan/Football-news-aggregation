@@ -38,7 +38,7 @@ func (repo *adminRepo) ReadAdminJSON() (entities.Admin, error) {
 	adminConfigJson, err := os.Open(fmt.Sprintf("%sadminConfig.json", repo.path))
 	if err != nil {
 		log.Errorln(err)
-		return adminConfig, err
+		return adminConfig, fmt.Errorf("json file not found")
 	}
 	defer adminConfigJson.Close()
 

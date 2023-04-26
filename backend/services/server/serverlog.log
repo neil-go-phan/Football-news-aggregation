@@ -274,3 +274,168 @@
 [INFO]: 2023-04-25 14:44:39 - Document not found in index articles, creating new one...
 [INFO]: 2023-04-25 14:44:40 - [201 Created] Indexed document with index: articles
 [INFO]: 2023-04-25 14:44:40 - finished.
+[INFO]: 2023-04-26 09:32:02 - Error checking if the index articles exists: read tcp 127.0.0.1:57398->127.0.0.1:9200: read: connection reset by peer
+[INFO]: 2023-04-26 09:32:02 - Index: articles is not exist, create a new one...
+[INFO]: 2023-04-26 09:32:02 - Error createing index: error creating the index: EOF, try again in 10 seconds
+[INFO]: 2023-04-26 09:32:13 - Error createing index: error creating index articles: 400 Bad Request, try again in 10 seconds
+[INFO]: 2023-04-26 09:32:16 - Index: articles is already exist, skip it...
+[INFO]: 2023-04-26 09:32:16 - Index: schedules is already exist, skip it...
+[INFO]: 2023-04-26 09:32:16 - Index: match_detail is already exist, skip it...
+[INFO]: 2023-04-26 09:32:16 - refresh cache...
+[INFO]: 2023-04-26 09:32:16 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:32:16 - refresh cache end.
+[INFO]: 2023-04-26 09:32:16 - Setup routes
+[INFO]: 2023-04-26 09:32:46 - FOUND CACHE:  article_cache_tin_tuc_bong_da
+[INFO]: 2023-04-26 09:32:46 - FOUND CACHE:  article_cache_tin_tuc_bong_da
+[INFO]: 2023-04-26 09:33:54 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:33:54 - refresh cache...
+[INFO]: 2023-04-26 09:33:54 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:33:54 - refresh cache end.
+[INFO]: 2023-04-26 09:33:54 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:33:54 - refresh cache...
+[INFO]: 2023-04-26 09:33:54 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:33:54 - refresh cache end.
+[INFO]: 2023-04-26 09:33:54 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:33:54 - refresh cache...
+[INFO]: 2023-04-26 09:33:54 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:33:54 - refresh cache end.
+[INFO]: 2023-04-26 09:34:11 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:34:11 - refresh cache...
+[INFO]: 2023-04-26 09:34:11 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:34:11 - refresh cache end.
+[INFO]: 2023-04-26 09:34:11 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:34:11 - refresh cache...
+[INFO]: 2023-04-26 09:34:11 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:34:11 - refresh cache end.
+[INFO]: 2023-04-26 09:34:11 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:34:11 - refresh cache...
+[INFO]: 2023-04-26 09:34:11 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:34:11 - refresh cache end.
+[INFO]: 2023-04-26 09:36:21 - Index: articles is already exist, skip it...
+[INFO]: 2023-04-26 09:36:21 - Index: schedules is already exist, skip it...
+[INFO]: 2023-04-26 09:36:21 - Index: match_detail is already exist, skip it...
+[INFO]: 2023-04-26 09:36:21 - refresh cache...
+[INFO]: 2023-04-26 09:36:21 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:36:21 - refresh cache end.
+[INFO]: 2023-04-26 09:36:21 - Setup routes
+[INFO]: 2023-04-26 09:36:27 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:36:27 - refresh cache...
+[INFO]: 2023-04-26 09:36:27 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:36:27 - refresh cache end.
+[INFO]: 2023-04-26 09:36:27 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:36:27 - refresh cache...
+[INFO]: 2023-04-26 09:36:27 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:36:27 - refresh cache end.
+[INFO]: 2023-04-26 09:37:33 - Index: articles is already exist, skip it...
+[INFO]: 2023-04-26 09:37:33 - Index: schedules is already exist, skip it...
+[INFO]: 2023-04-26 09:37:33 - Index: match_detail is already exist, skip it...
+[INFO]: 2023-04-26 09:37:33 - refresh cache...
+[INFO]: 2023-04-26 09:37:33 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:37:33 - refresh cache end.
+[INFO]: 2023-04-26 09:37:33 - Setup routes
+[INFO]: 2023-04-26 09:37:39 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:37:39 - refresh cache...
+[INFO]: 2023-04-26 09:37:39 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:37:39 - refresh cache end.
+[INFO]: 2023-04-26 09:37:39 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:37:39 - refresh cache...
+[INFO]: 2023-04-26 09:37:39 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:37:39 - refresh cache end.
+[INFO]: 2023-04-26 09:40:33 - Index: articles is already exist, skip it...
+[INFO]: 2023-04-26 09:40:33 - Index: schedules is already exist, skip it...
+[INFO]: 2023-04-26 09:40:33 - Index: match_detail is already exist, skip it...
+[INFO]: 2023-04-26 09:40:33 - refresh cache...
+[INFO]: 2023-04-26 09:40:33 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:40:33 - refresh cache end.
+[INFO]: 2023-04-26 09:40:33 - Setup routes
+[INFO]: 2023-04-26 09:40:40 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:40:40 - refresh cache...
+[INFO]: 2023-04-26 09:40:40 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:40:40 - refresh cache end.
+[INFO]: 2023-04-26 09:40:40 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:40:40 - refresh cache...
+[INFO]: 2023-04-26 09:40:40 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:40:40 - refresh cache end.
+[INFO]: 2023-04-26 09:41:02 - Index: articles is already exist, skip it...
+[INFO]: 2023-04-26 09:41:02 - Index: schedules is already exist, skip it...
+[INFO]: 2023-04-26 09:41:02 - Index: match_detail is already exist, skip it...
+[INFO]: 2023-04-26 09:41:02 - refresh cache...
+[INFO]: 2023-04-26 09:41:02 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:41:02 - refresh cache end.
+[INFO]: 2023-04-26 09:41:02 - Setup routes
+[INFO]: 2023-04-26 09:41:07 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:41:07 - refresh cache...
+[INFO]: 2023-04-26 09:41:07 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:41:07 - refresh cache end.
+[INFO]: 2023-04-26 09:41:07 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:41:07 - refresh cache...
+[INFO]: 2023-04-26 09:41:07 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:41:07 - refresh cache end.
+[INFO]: 2023-04-26 09:43:30 - Index: articles is already exist, skip it...
+[INFO]: 2023-04-26 09:43:30 - Index: schedules is already exist, skip it...
+[INFO]: 2023-04-26 09:43:30 - Index: match_detail is already exist, skip it...
+[INFO]: 2023-04-26 09:43:30 - refresh cache...
+[INFO]: 2023-04-26 09:43:30 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:43:30 - refresh cache end.
+[INFO]: 2023-04-26 09:43:30 - Setup routes
+[INFO]: 2023-04-26 09:43:36 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:43:36 - refresh cache...
+[INFO]: 2023-04-26 09:43:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:43:36 - refresh cache end.
+[INFO]: 2023-04-26 09:43:36 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:43:36 - refresh cache...
+[INFO]: 2023-04-26 09:43:36 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:43:36 - refresh cache end.
+[INFO]: 2023-04-26 09:43:36 - FOUND CACHE:  article_cache_tin_tuc_bong_da
+[INFO]: 2023-04-26 09:45:00 - Index: articles is already exist, skip it...
+[INFO]: 2023-04-26 09:45:00 - Index: schedules is already exist, skip it...
+[INFO]: 2023-04-26 09:45:00 - Index: match_detail is already exist, skip it...
+[INFO]: 2023-04-26 09:45:00 - refresh cache...
+[INFO]: 2023-04-26 09:45:00 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:45:00 - refresh cache end.
+[INFO]: 2023-04-26 09:45:00 - Setup routes
+[INFO]: 2023-04-26 09:45:04 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:45:04 - refresh cache...
+[INFO]: 2023-04-26 09:45:04 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:45:04 - refresh cache end.
+[INFO]: 2023-04-26 09:45:04 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:45:04 - refresh cache...
+[INFO]: 2023-04-26 09:45:04 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:45:04 - refresh cache end.
+[INFO]: 2023-04-26 09:45:05 - FOUND CACHE:  article_cache_tin_tuc_bong_da
+[INFO]: 2023-04-26 09:45:10 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:45:10 - refresh cache...
+[INFO]: 2023-04-26 09:45:10 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:45:10 - refresh cache end.
+[INFO]: 2023-04-26 09:45:10 - MISS CACHE:  article_cache_
+[INFO]: 2023-04-26 09:45:10 - refresh cache...
+[INFO]: 2023-04-26 09:45:10 - refresh cache key article_cache_tin_tuc_bong_da
+
+[INFO]: 2023-04-26 09:45:10 - refresh cache end.
+[INFO]: 2023-04-26 09:45:10 - FOUND CACHE:  article_cache_tin_tuc_bong_da

@@ -67,7 +67,7 @@ func (repo *leaguesRepo)ReadleaguesJSON() (entities.Leagues, error) {
 	leaguesConfigJson, err := os.Open(fmt.Sprintf("%sleaguesConfig.json", repo.path))
 	if err != nil {
 		log.Errorln(err)
-		return leaguesConfig, err
+		return leaguesConfig, fmt.Errorf("file json not found")
 	}
 	defer leaguesConfigJson.Close()
 
@@ -90,7 +90,7 @@ func (repo *leaguesRepo) WriteLeaguesJSON(leagues entities.Leagues) error {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	file, err := os.Create(fmt.Sprintf("%sleaguesConfig.json", repo.path))
 	if err != nil {
-		return err
+		return fmt.Errorf("file json not found")
 	}
 	defer file.Close()
 
@@ -99,6 +99,6 @@ func (repo *leaguesRepo) WriteLeaguesJSON(leagues entities.Leagues) error {
 	if err != nil {
 		return err
 	}
-
+	repo.leagues = leagues
 	return nil
 }
