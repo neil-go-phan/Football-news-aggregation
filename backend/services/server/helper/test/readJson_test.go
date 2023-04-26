@@ -1,4 +1,4 @@
-package serverhelper_test
+package serverhelper
 
 import (
 	serverhelper "server/helper"
