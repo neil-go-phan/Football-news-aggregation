@@ -57,7 +57,7 @@ func (repo *schedulesRepo) GetSchedules(date *pb.Date) {
 	elasticSchedules := PbSchedulesToScheduleElastic(pbSchedules)
 	dateCasted, err := time.Parse("02-01-2006", pbSchedules.GetDateFormated())
 	if err != nil {
-		log.Errorf("error when parse date:", err)
+		log.Errorf("error when parse date: %v", err)
 	}
 	repo.matchURLsOnDay.Date = dateCasted
 	for _, schedule := range elasticSchedules {

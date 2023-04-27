@@ -10,7 +10,7 @@ import { Leagues } from '../leagues';
 import { toLowerCaseNonAccentVietnamese } from '@/helpers/format';
 import { useRouter } from 'next/router';
 import DeleteBtn from './deleteBtn';
-import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
+import { ERROR_POPUP_ADMIN_TIME, ERROR_POPUP_USER_TIME } from '@/helpers/constants';
 
 const TIN_TUC_BONG_DA_TAG = 'tin tuc bong da';
 
@@ -219,7 +219,7 @@ export default function AdminTags() {
     } catch (error) {
       toast.error('Error occurred while tagged article', {
         position: 'top-right',
-        autoClose: ERROR_POPUP_ADMIN_TIME,
+        autoClose: ERROR_POPUP_USER_TIME,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -265,22 +265,22 @@ export default function AdminTags() {
         </div>
         <div className="adminTags__list">
           <h2 className="adminTags__list--title">Danh sách tags</h2>
-          <div className="adminTags__list--search d-flex">
-            <div className="searchBar col-6">
+          <div className="adminTags__list--search d-sm-flex">
+            <div className="searchBar col-sm-6">
               <InputGroup className="mb-3">
                 <InputGroup.Text>
                   <FontAwesomeIcon icon={faMagnifyingGlass} fixedWidth />
                 </InputGroup.Text>
                 <Form.Control
-                  placeholder="Search league"
+                  placeholder="Search tags"
                   type="text"
                   value={globalFilter || ''}
                   onChange={(e) => setGlobalFilter(e.target.value)}
                 />
               </InputGroup>
             </div>
-            <div className="col-2"></div>
-            <div className="addBtn col-4">
+            <div className="col-sm-1"></div>
+            <div className="addBtn col-sm-5">
               <form onSubmit={handleAddTag}>
                 <InputGroup className="mb-3">
                   <InputGroup.Text>
@@ -293,7 +293,7 @@ export default function AdminTags() {
                     onChange={(e) => setNewTagName(e.target.value)}
                   />
                   <Button type="submit" variant="success">
-                    Add new tag
+                    Add
                   </Button>
                 </InputGroup>
               </form>

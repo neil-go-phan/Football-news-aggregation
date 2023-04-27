@@ -4,7 +4,6 @@ export const formatVietnameseDate = (date: Date | undefined): string => {
     return [
       padTo2Digits(date.getDate()),
       padTo2Digits(date.getMonth() + 1),
-      date.getFullYear(),
     ].join('/');
   }
   return '';
