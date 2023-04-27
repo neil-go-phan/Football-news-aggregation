@@ -20,6 +20,7 @@
   - Log: Sentry
 - Deploy: 
   - Frontend: Vercel
+    - Link: https://football-news-aggregation.vercel.app/
   - Backend: Digital Ocean droplets
 ## How to run
 - Device dev must install: 
