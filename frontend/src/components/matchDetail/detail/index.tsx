@@ -105,7 +105,7 @@ function Detail() {
   }, [router.asPath]);
   if (matchDetail) {
     return (
-      <div className="matchDetail__content px-5">
+      <div className="matchDetail__content px-2 px-md-5">
         <MatchTitle matchTitle={matchDetail.match_detail_title} date={date} />
 
         <div className="matchDetail__content--navbar d-flex">

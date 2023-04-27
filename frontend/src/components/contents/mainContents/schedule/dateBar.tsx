@@ -131,12 +131,12 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
 
   return (
     <div className="schedule__dateBar d-flex px-3">
-      <div className="schedule__dateBar--weekdays d-flex col-10">
+      <div className="schedule__dateBar--weekdays d-flex col-9">
         <div
           className={
             getFollowingDays(0) === formatVietnameseDate(date)
-              ? 'weekdays--item col-2 active'
-              : 'weekdays--item col-2'
+              ? 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2 active'
+              : 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2'
           }
           onClick={() => {
             let today = new Date();
@@ -150,8 +150,8 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
         <div
           className={
             getFollowingDays(1) === formatVietnameseDate(date)
-              ? 'weekdays--item col-2 active'
-              : 'weekdays--item col-2'
+              ? 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2 active'
+              : 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2'
           }
           onClick={() => {
             let today = new Date();
@@ -165,8 +165,8 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
         <div
           className={
             getFollowingDays(2) === formatVietnameseDate(date)
-              ? 'weekdays--item col-2 active'
-              : 'weekdays--item col-2'
+              ? 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2 active'
+              : 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2'
           }
           onClick={() => {
             let today = new Date();
@@ -180,8 +180,8 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
         <div
           className={
             getFollowingDays(3) === formatVietnameseDate(date)
-              ? 'weekdays--item col-2 active'
-              : 'weekdays--item col-2'
+              ? 'weekdays--item col-lg-2 col-sm-3 col-md-2 d-none d-sm-block active'
+              : 'weekdays--item col-lg-2 col-sm-3 col-md-2 d-none d-sm-block '
           }
           onClick={() => {
             let today = new Date();
@@ -195,8 +195,8 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
         <div
           className={
             getFollowingDays(4) === formatVietnameseDate(date)
-              ? 'weekdays--item col-2 active'
-              : 'weekdays--item col-2'
+              ? 'weekdays--item col-lg-2 col-md-2 d-none d-md-block active'
+              : 'weekdays--item col-lg-2 col-md-2 d-none d-md-block '
           }
           onClick={() => {
             let today = new Date();
@@ -210,8 +210,8 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
         <div
           className={
             getFollowingDays(5) === formatVietnameseDate(date)
-              ? 'weekdays--item col-2 active'
-              : 'weekdays--item col-2'
+              ? 'weekdays--item col-lg-2 col-md-2 d-none d-md-block active'
+              : 'weekdays--item col-lg-2 col-md-2 d-none d-md-block '
           }
           onClick={() => {
             let today = new Date();
@@ -223,7 +223,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
           <p>{getWeeksDay(5)}</p>
         </div>
       </div>
-      <div className="schedule__dateBar--chooseDay col-2">
+      <div className="schedule__dateBar--chooseDay col-3">
         <DatePicker
           selected={date}
           onChange={(date: Date) => handleOnClickChooseDay(date)}

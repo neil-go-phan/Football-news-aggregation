@@ -1,6 +1,6 @@
 # Football news aggregation
 ## Description
-- Website aggregating news, schedule and automatic match information
+- Website automatically aggregates football news, schedule and match information
 ## Admin
 - To access: 
   - go to `/admin`
@@ -17,6 +17,10 @@
   - Message between services: gRPC
   - Database: elasticsearch
   - Code convention: golangci-lint
+  - Log: Sentry
+- Deploy: 
+  - Frontend: Vercel
+  - Backend: Digital Ocean droplets
 ## How to run
 - Device dev must install: 
   - docker
@@ -36,4 +40,4 @@
     - `docker compose up`
 
 ## Sequence diagram
-
+[![](https://mermaid.ink/img/pako:eNqNUsFuwyAM_RWL65ofyKHS1E67L1cuHnE6JDAdMa2qqv8-EE2zbuk0Tsb283vPcFYm9KRaNdJnIja0tbiL6DVDPhtniaVZr586igeKLbySAEaxxtFYe9CIPaAQ1JaarHEBblHwHUdagva0CJ4gTcY3E_Hzv0kLaxX-E_WAz4Wwh5d8PYEQg7echGrp3ssm4tEVMZ3dMTqQAKakbrZgiMGDZaHIJPOIG-11wly5JoroyekbHqHPK5ibvun-NWDR0aMnuF_HHysh7jWrlfIUPdo-_49zKWglH-RJqzaHPQ2YnGil-ZJbMUnoTmxUKzHRSqV9NjF9J9UO6Ea6fAGo-c0W?type=png)](https://mermaid.live/edit#pako:eNqNUsFuwyAM_RWL65ofyKHS1E67L1cuHnE6JDAdMa2qqv8-EE2zbuk0Tsb283vPcFYm9KRaNdJnIja0tbiL6DVDPhtniaVZr586igeKLbySAEaxxtFYe9CIPaAQ1JaarHEBblHwHUdagva0CJ4gTcY3E_Hzv0kLaxX-E_WAz4Wwh5d8PYEQg7echGrp3ssm4tEVMZ3dMTqQAKakbrZgiMGDZaHIJPOIG-11wly5JoroyekbHqHPK5ibvun-NWDR0aMnuF_HHysh7jWrlfIUPdo-_49zKWglH-RJqzaHPQ2YnGil-ZJbMUnoTmxUKzHRSqV9NjF9J9UO6Ea6fAGo-c0W)
