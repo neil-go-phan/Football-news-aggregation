@@ -259,12 +259,12 @@ export default function AdminTags() {
         <div className="adminTags__overview">
           <div className="adminTags__overview--item">
             <p>
-              Tổng số tags: <span>{tags.length}</span>
+              Total tags: <span>{tags.length}</span>
             </p>
           </div>
         </div>
         <div className="adminTags__list">
-          <h2 className="adminTags__list--title">Danh sách tags</h2>
+          <h2 className="adminTags__list--title">Tags list</h2>
           <div className="adminTags__list--search d-sm-flex">
             <div className="searchBar col-sm-6">
               <InputGroup className="mb-3">
