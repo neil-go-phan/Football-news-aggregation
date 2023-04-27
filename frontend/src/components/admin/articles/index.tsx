@@ -22,7 +22,6 @@ function ArticleAdmin() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const [keyword, setkeyword] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const requestArticleCount = async () => {
     try {
