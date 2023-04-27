@@ -25,7 +25,7 @@ $sidebar-overlay-z-index: 1025;
 
 .sidebar {
   flex: 0 0 var(--sidebar-width);
-  width: var(--sidebar-width);
+  // width: var(--sidebar-width);
   color: $sidebar-text-color;
   background: #f8f9fa;
   transition: margin-left 0.15s, margin-right 0.15s, box-shadow 0.075s,
@@ -61,8 +61,19 @@ $sidebar-overlay-z-index: 1025;
     .nav__item {
       padding: 0.3rem;
       color: black;
+      a {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       &:hover {
         border-left: 3px solid #0084c6;
+        a {
+          white-space: normal;
+          overflow: visible;
+          text-overflow: ellipsis;
+        }
+
         .link {
           color: #0084c6 !important;
         }

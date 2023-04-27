@@ -65,7 +65,9 @@ function ArticleAdmin() {
           //this is time to wait for elastic search delete document. 
           //TODO: mirage database to mongodb
           requestArticleCount();
-          requestArticle('', 0)
+          requestArticle('', 0);
+          setCurrentPage(1)
+          pageChangeHandler(1)
         }, 1000);
 
       }
@@ -124,9 +126,13 @@ function ArticleAdmin() {
     if (keyword.trim() === '') {
       setkeyword('');
       requestArticle('', 0);
+      setCurrentPage(1)
+      pageChangeHandler(1)
       return;
     }
     requestArticle(keyword, 0);
+    setCurrentPage(1)
+    pageChangeHandler(1)
   };
 
   const handleUpdateTable = (title: string) => {
