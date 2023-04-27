@@ -38,6 +38,9 @@ const AdminArticlePagination: React.FC<Props> = ({
   useEffect(() => {
     pageChangeHandler(currentPage);
   }, [currentPage]);
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [totalRows]);
   return (
     <div className="btnPaging">
       <Button

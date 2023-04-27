@@ -22,6 +22,7 @@ function ArticleAdmin() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [articles, setArticles] = useState<Array<ArticleType>>([]);
   const [keyword, setkeyword] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const requestArticleCount = async () => {
     try {
@@ -65,7 +66,9 @@ function ArticleAdmin() {
           //this is time to wait for elastic search delete document. 
           //TODO: mirage database to mongodb
           requestArticleCount();
-          requestArticle('', 0)
+          requestArticle('', 0);
+          setCurrentPage(1)
+          pageChangeHandler(1)
         }, 1000);
 
       }
@@ -124,9 +127,13 @@ function ArticleAdmin() {
     if (keyword.trim() === '') {
       setkeyword('');
       requestArticle('', 0);
+      setCurrentPage(1)
+      pageChangeHandler(1)
       return;
     }
     requestArticle(keyword, 0);
+    setCurrentPage(1)
+    pageChangeHandler(1)
   };
 
   const handleUpdateTable = (title: string) => {
