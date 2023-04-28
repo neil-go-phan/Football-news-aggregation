@@ -37,7 +37,7 @@ export default function SidebarNav() {
                   pathname: `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`,
                   query: { league: league },
                 }}
-                className={league === 'Tin tức bóng đá' ? 'text-decoration-none text-dark link fw-bold' : "text-decoration-none text-dark link"}
+                className={league === 'Tin tức bóng đá' ? 'text-decoration-none text-dark link fw-bold' : 'text-decoration-none text-dark link'}
               >
                 {league === 'Tin tức bóng đá' ? 'FOOTBALL NEWS' : league}
               </Link>
