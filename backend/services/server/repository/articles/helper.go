@@ -211,7 +211,6 @@ func queryGetTotalCrawledArtilce() map[string]interface{} {
 	return query
 }
 
-
 // producer sending job continuously to job chan until no more job
 func producerRequestArticle(jobs chan<- *work, s *articleRepo, tag string, firstPitID string, firstSearchAfterQuery []interface{}) {
 	pitID := firstPitID
@@ -351,7 +350,6 @@ func requestOpenPointInTime(es *elasticsearch.Client) (string, error) {
 	return pointInTime, nil
 }
 
-
 func querySearchFirstPageArticlesWithTagAsKeyword(tag string, pitID string) map[string]interface{} {
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
@@ -405,33 +403,44 @@ func queryGetNextPageOfArticleWithTagAsKeyword(tag string, pitID string, searchA
 	return query
 }
 
-
 // Nếu gửi từng bài bào lên elastic check thì mỗi lần tìm sẽ gửi vài ngàn request
 // Solution: Server lưu kết quả cào ở lần trước đó, sau đó lấy kết quả mới so sánh với cũ, nếu có bài báo nào mới thì sẽ check lại với elasticsearch. Elasticsearch chưa có thì thêm vào
 
 func checkSimilarArticles(respArticles []*pb.Article, es *elasticsearch.Client, league string, tags []string) {
 	// Condition: similar title
 	for _, article := range respArticles {
-
+		
 		// check if it a bet web
-		if strings.Contains(strings.ToLower(article.Description), "cá cược") {
+		if checkBetWeb(article) {
 			log.Println("Detect a online bet web, skip it")
 			continue
 		}
-
+		mapKey := fmt.Sprintf("%s-%s", article.Title ,article.Link)
 		// check if it exist in previous results
-		_, ok := PREV_ARTICLES[article.Title]
+		_, ok := PREV_ARTICLES[mapKey]
+
 		if !ok {
 			exist := checkArtilceWithElasticSearch(article, es)
 			if !exist {
 				entityArticle := newEntitiesArticleFromPb(article, tags, league)
+				
 				if entityArticle.Title != "" && entityArticle.Link != "" && entityArticle.Description != "" {
 					storeArticleInElasticsearch(entityArticle, es)
 				}
-				
 			}
 		}
 	}
+}
+
+func checkBetWeb(article *pb.Article) bool {
+	betKeywords := []string{"ca cuoc", "nha cai", "keo bong da", "danh bac", "song bac", "casino", "xo so"}
+	for _, keyword := range betKeywords {
+		articleInfo := serverhelper.FormatVietnamese(article.Description) + serverhelper.FormatVietnamese(article.Title)
+		if strings.Contains(articleInfo, keyword) {
+			return true
+		}
+	}
+	return false
 }
 
 func checkArtilceWithElasticSearch(article *pb.Article, es *elasticsearch.Client) bool {
@@ -460,7 +469,8 @@ func checkArtilceWithElasticSearch(article *pb.Article, es *elasticsearch.Client
 
 func saveToMapSearchResult(respArticles []*pb.Article, mapSearchResult map[string]bool) {
 	for _, article := range respArticles {
-		mapSearchResult[article.Title] = true
+		mapKey := fmt.Sprintf("%s-%s", article.Title ,article.Link)
+		mapSearchResult[mapKey] = true
 	}
 }
 
@@ -519,7 +529,7 @@ func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Cli
 	defer res.Body.Close()
 
 	if res.IsError() {
-		log.Errorf("[%s] Error indexing document", res.Status())
+		log.Errorf("[%s] Error indexing article document with id='%s'", res.Status(), strings.ToLower(article.Title))
 	} else {
 		log.Printf("[%s] Indexed document with index: %s", res.Status(), ARTICLES_INDEX_NAME)
 	}
@@ -553,4 +563,3 @@ func taggedWhenCrawl(article *pb.Article, tags []string, keyword string) []strin
 
 	return articleTagsSlice
 }
-

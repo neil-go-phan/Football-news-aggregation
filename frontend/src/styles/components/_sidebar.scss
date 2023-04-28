@@ -66,6 +66,10 @@ $sidebar-overlay-z-index: 1025;
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      .mainTag {
+        text-transform: uppercase;
+        
+      }
       &:hover {
         border-left: 3px solid #0084c6;
         a {

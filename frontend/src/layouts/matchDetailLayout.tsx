@@ -15,8 +15,8 @@ function MatchDetailLayout({ children }: PropsWithChildren) {
       </Head>
       <div className="wrapper d-flex flex-column min-vh-100 bg-light">
         <Navbar bg="secondary" expand="lg">
-          <Container fluid className="header-navbar d-flex align-items-center">
-            <Navbar.Brand className="text-light">
+          <Container fluid className="header-navbar justify-content-center">
+            <Navbar.Brand className="text-light fw-bold">
               <Link className="linkToHome" href={'/news/tin+tuc+bong+da?league=Tin+tức+bóng+đá'} >
                 Footbal news
               </Link>

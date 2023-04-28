@@ -29,6 +29,7 @@ type schedulesRepo struct {
 	leagueRepo     repository.LeaguesRepository
 	tagsRepo       repository.TagRepository
 	matchURLsOnDay entities.MatchURLsOnDay
+	matchURLsWithTimeOnDay entities.MatchURLsWithTimeOnDay
 	// notification    repository.NotificationRepository
 }
 
@@ -65,9 +66,17 @@ func (repo *schedulesRepo) GetSchedules(date *pb.Date) {
 		go func(schedule entities.ScheduleElastic) {
 			defer wg.Done()
 
-			matchUrls := getMatchUrlOnDay(schedule)
+			matchUrls := getMatchUrl(schedule)
 			repo.matchURLsOnDay.Urls = append(repo.matchURLsOnDay.Urls, matchUrls...)
-
+			for _,match := range schedule.Matchs {
+				exactTime, err := readTime(match, schedule.Date)
+				if err != nil {
+					log.Error(err)
+					continue
+				}
+				addMatchUrl(exactTime, match.MatchDetailLink, &repo.matchURLsWithTimeOnDay)
+			}
+		
 			// auto store new league
 			isNewLeague := isNewLeague(repo.leagueRepo.GetLeagues().Leagues, schedule.LeagueName)
 			if isNewLeague {
@@ -101,7 +110,6 @@ func (repo *schedulesRepo) GetSchedules(date *pb.Date) {
 
 	}
 	wg.Wait()
-
 	// repo.notification.Send(NOTI_COMPLETE_CRAWL_TITLE, NOTI_COMPLETE_CRAWL_TYPE, fmt.Sprintf("Crawler scrape schedule on %s success", date.GetDate()))
 }
 
@@ -193,4 +201,12 @@ func (repo *schedulesRepo) GetMatchURLsOnDay() entities.MatchURLsOnDay {
 
 func (repo *schedulesRepo) ClearMatchURLsOnDay() {
 	repo.matchURLsOnDay = entities.MatchURLsOnDay{}
+}
+
+func (repo *schedulesRepo) GetMatchURLsOnTime() entities.MatchURLsWithTimeOnDay {
+	return repo.matchURLsWithTimeOnDay
+}
+
+func (repo *schedulesRepo) ClearMatchURLsOnTime() {
+	repo.matchURLsWithTimeOnDay = entities.MatchURLsWithTimeOnDay{}
 }

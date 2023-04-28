@@ -108,6 +108,7 @@ func main() {
 		log.Errorln("error occurred while connecting to elasticsearch node: ", err)
 	}
 	amountOfNewIndex := createElaticsearchIndex(es)
+	
 	// declare services
 	htmlclassesRepo := htmlclassesrepo.NewHtmlClassesRepo(classConfig)
 
@@ -160,6 +161,7 @@ func main() {
 		log.Infoln("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
 		seedDataFirstRun(articleService, schedulesService, matchDetailService)
 	}
+
 	createArticleCache(articleService)
 
 	// cronjob Setup
@@ -377,11 +379,13 @@ func createArticleIndex(es *elasticsearch.Client, indexName string) error {
 func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchDetailService services.MatchDetailServices) {
 	// crawl data on previous 7 days and the following 7 days
 	now := time.Now()
+	
 	var DAYOFWEEK = 7
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
 		date := now.AddDate(0, 0, i)
 		schedulesService.GetSchedules(date.Format("02-01-2006"))
 		matchUrls := schedulesService.GetMatchURLsOnDay()
+		log.Printf("seed for date: %v\n", matchUrls.Date)
 		matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 		schedulesService.ClearMatchURLsOnDay()
 	}
