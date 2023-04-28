@@ -26,6 +26,7 @@ import (
 )
 
 var PREV_ARTICLES = make(map[string]bool)
+
 var ARTICLES_INDEX_NAME = "articles"
 var DEFAULT_TAG = "tin tuc bong da"
 var PIT_LIVE = "1m"
@@ -416,7 +417,8 @@ func (repo *articleRepo) GetArticles(keywords []string) {
 			tags := repo.tagsRepo.ListTags().Tags
 
 			checkSimilarArticles(respArticles, repo.es, league, tags)
-
+			
+			
 			saveToMapSearchResult(respArticles, mapSearchResult)
 
 		}
@@ -432,6 +434,7 @@ func (repo *articleRepo) GetArticles(keywords []string) {
 }
 
 func (repo *articleRepo) DeleteArticle(title string) error {
+	
 	req := esapi.DeleteRequest{
 		Index:      ARTICLES_INDEX_NAME,
 		DocumentID: strings.ToLower(title),
@@ -440,12 +443,12 @@ func (repo *articleRepo) DeleteArticle(title string) error {
 	res, err := req.Do(context.Background(), repo.es)
 	if err != nil {
 		log.Errorf("Error getting response for delete request: %s", err)
-		return err
+		return fmt.Errorf("error getting response for delete request")
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
-		log.Errorf("[%s] Error delete document", res.Status())
+		log.Errorf("[%s] Error delete article document with ID='%s'", res.Status(), strings.ToLower(title))
 		return fmt.Errorf(res.Status())
 	} else {
 		log.Printf("[%s] Deleted document with id: %s", res.Status(), strings.ToLower(title))

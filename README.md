@@ -20,6 +20,7 @@
   - Log: Sentry
 - Deploy: 
   - Frontend: Vercel
+    - Link: https://football-news-aggregation.vercel.app/
   - Backend: Digital Ocean droplets
 ## How to run
 - Device dev must install: 
@@ -40,4 +41,4 @@
     - `docker compose up`
 
 ## Sequence diagram
-[![](https://mermaid.ink/img/pako:eNqNUsFuwyAM_RWL65ofyKHS1E67L1cuHnE6JDAdMa2qqv8-EE2zbuk0Tsb283vPcFYm9KRaNdJnIja0tbiL6DVDPhtniaVZr586igeKLbySAEaxxtFYe9CIPaAQ1JaarHEBblHwHUdagva0CJ4gTcY3E_Hzv0kLaxX-E_WAz4Wwh5d8PYEQg7echGrp3ssm4tEVMZ3dMTqQAKakbrZgiMGDZaHIJPOIG-11wly5JoroyekbHqHPK5ibvun-NWDR0aMnuF_HHysh7jWrlfIUPdo-_49zKWglH-RJqzaHPQ2YnGil-ZJbMUnoTmxUKzHRSqV9NjF9J9UO6Ea6fAGo-c0W?type=png)](https://mermaid.live/edit#pako:eNqNUsFuwyAM_RWL65ofyKHS1E67L1cuHnE6JDAdMa2qqv8-EE2zbuk0Tsb283vPcFYm9KRaNdJnIja0tbiL6DVDPhtniaVZr586igeKLbySAEaxxtFYe9CIPaAQ1JaarHEBblHwHUdagva0CJ4gTcY3E_Hzv0kLaxX-E_WAz4Wwh5d8PYEQg7echGrp3ssm4tEVMZ3dMTqQAKakbrZgiMGDZaHIJPOIG-11wly5JoroyekbHqHPK5ibvun-NWDR0aMnuF_HHysh7jWrlfIUPdo-_49zKWglH-RJqzaHPQ2YnGil-ZJbMUnoTmxUKzHRSqV9NjF9J9UO6Ea6fAGo-c0W)
+[![](https://mermaid.ink/img/pako:eNqNUsFuwyAM_RWL65ofyKHS1E67L1cuHjgdEpiOmFZV1X8fKE2zbuk0Tsb283vPcFYmWlKtGugzExvaOtwlDJqhnI13xNKs108dpQOlFl5JAJM442kYe9CIO6AQjC1jcowrcIuC7zjQEtTSIniCNAXfTMTP_yatrKPwn6gHfD7GPbyU6wmEGILjLBPk3swm4dFXNZ3bMXqQCKambr6gTzGAY6HEJPOIG-91wly5JqrqyeobHsGWHcxN34T_GrBo6dEb3O_jj50QW81qpQKlgM6WD3KuBa3kgwJp1ZbQUo_Zi1aaL6UVs8TuxEa1kjKtVN4XE9N_Um2PfqDLF6IgzYk?type=png)](https://mermaid.live/edit#pako:eNqNUsFuwyAM_RWL65ofyKHS1E67L1cuHjgdEpiOmFZV1X8fKE2zbuk0Tsb283vPcFYmWlKtGugzExvaOtwlDJqhnI13xNKs108dpQOlFl5JAJM442kYe9CIO6AQjC1jcowrcIuC7zjQEtTSIniCNAXfTMTP_yatrKPwn6gHfD7GPbyU6wmEGILjLBPk3swm4dFXNZ3bMXqQCKambr6gTzGAY6HEJPOIG-91wly5JqrqyeobHsGWHcxN34T_GrBo6dEb3O_jj50QW81qpQKlgM6WD3KuBa3kgwJp1ZbQUo_Zi1aaL6UVs8TuxEa1kjKtVN4XE9N_Um2PfqDLF6IgzYk)

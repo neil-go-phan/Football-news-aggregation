@@ -7,6 +7,17 @@ type MatchURLsOnDay struct {
 	Urls []string
 }
 
+// The matchs takes place in a spectific time on a day
+type MatchURLsOnTime struct {
+	Date time.Time
+	Urls []string
+}
+
+type MatchURLsWithTimeOnDay struct {
+	MatchsOnTimes []MatchURLsOnTime
+}
+
+
 type MatchDetail struct {
 	MatchDetailTitle MatchDetailTitle `json:"match_detail_title"`
 	MatchOverview MatchOverview `json:"match_overview"`

@@ -1,11 +1,12 @@
 package handler
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"server/entities"
 	"server/services"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,13 +22,6 @@ func NewMatchDetailHandler(handler services.MatchDetailServices) *MatchDetailHan
 	}
 	return matchDetailHandler
 }
-
-// func (matchDetailHandler *MatchDetailHandler) SignalToCrawler(cronjob *cron.Cron) {
-// 	_, err := cronjob.AddFunc("0 0 * * *", func() { matchDetailHandler.handler })
-// 	if err != nil {
-// 		log.Println("error occurred while seting up getSchedules cronjob: ", err)
-// 	}
-// }
 
 func (matchDetailHandler *MatchDetailHandler) SignalToCrawler(matchUrl entities.MatchURLsOnDay) {
 	matchDetailHandler.handler.GetMatchDetailsOnDayFromCrawler(matchUrl)

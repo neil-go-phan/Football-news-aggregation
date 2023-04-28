@@ -337,3 +337,38 @@ func TestQuerySearchArticle(t *testing.T) {
 		})
 	}
 }
+
+type checkTagWhenAddTagTestCase struct {
+	name   string
+	inputTag  string
+	output bool
+}
+
+func assertCheckTagWhenAddTag(t *testing.T, testCase checkTagWhenAddTagTestCase, article entities.Article) {
+	want := testCase.output
+	got := checkTagWhenAddTag(article, testCase.inputTag)
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("%s with input = '%#v' is supose to %#v, but got %#v", testCase.name, testCase.inputTag, want, got)
+	}
+}
+
+func TestCheckTagWhenAddTagExist(t *testing.T) {
+	inputArticle := entities.Article{
+		Title: "Test article title",
+		Description: "Test article description",
+		Link: "Test",
+		Tags: []string{"tag1", "tag2"},
+	}
+	checkTagWhenAddTagTestCases := []checkTagWhenAddTagTestCase{
+		{name: "tag already exist", inputTag: "tag1", output: false},
+		{name: "article contain tag", inputTag: "title", output: true},
+		{name: "article not contain tag", inputTag: "not contain", output: false},
+	}
+
+	for _, c := range checkTagWhenAddTagTestCases {
+		t.Run(c.name, func(t *testing.T) {
+			assertCheckTagWhenAddTag(t, c, inputArticle)
+		})
+	}
+
+}

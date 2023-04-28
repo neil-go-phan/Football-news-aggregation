@@ -11,7 +11,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 // to slow down crawl match process (TODO: research about how to control amount of go routine suitable for server power)
-var AMOUNT_REQUEST_PER_GOROUTINE = 20
+var AMOUNT_MATCH_PER_GOROUTINE = 10
 
 func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerService_GetMatchDetailServer) error {
 	matchUrls := configs.GetUrl()
@@ -21,7 +21,7 @@ func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerServ
 		log.Println("can not read file htmlSchedulesClass.json, err: ", err)
 	}
 
-	matchUrlsChunk := matchUrlsChunk(matchUrls, AMOUNT_REQUEST_PER_GOROUTINE)
+	matchUrlsChunk := matchUrlsChunk(matchUrls, AMOUNT_MATCH_PER_GOROUTINE)
 	var wg sync.WaitGroup
 	log.Println("Start scrapt match detail")
 
@@ -84,6 +84,7 @@ func crawledMatchDetailToPbMatchDetail(matchDetailEntity entities.MatchDetail, u
 	if err != nil {
 		log.Printf("error occrus when marshal crawled schedules: %s", err)
 	}
+
 	err = json.Unmarshal(matchDetailByte, pbMatchDetail)
 	if err != nil {
 		log.Printf("error occrus when unmarshal crawled schedules to proto.Schedules: %s", err)

@@ -6,6 +6,7 @@ import (
 	"server/entities"
 	serverhelper "server/helper"
 	pb "server/proto"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,13 +16,50 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func getMatchUrlOnDay(schedule entities.ScheduleElastic) []string {
+func getMatchUrl(schedule entities.ScheduleElastic) []string {
 	matchUrls := make([]string, 0)
 	for _, match := range schedule.Matchs {
 		url := fmt.Sprintf("https://bongda24h.vn%s", match.MatchDetailLink)
 		matchUrls = append(matchUrls, url)
 	}
 	return matchUrls
+}
+
+func readTime(match entities.Match, dayTime time.Time) (time.Time, error) {
+	exactTime := dayTime
+
+	timeStr := strings.Split(match.Time, "-")
+	if strings.Trim(timeStr[0], " ") == "FT" {
+		return exactTime, fmt.Errorf("the match is already end")
+	}
+	timeDetail := strings.Split(timeStr[0], ":")
+	hours, err := strconv.Atoi(strings.Trim(timeDetail[0], " "))
+	if err != nil {
+		return exactTime, fmt.Errorf("can not parse hour to set cronjob err: %s", err)
+	}
+	mins, err := strconv.Atoi(strings.Trim(timeDetail[1], " "))
+	if err != nil {
+		return exactTime, fmt.Errorf("can not parse minute to set cronjob err: %s", err)
+	}
+
+	exactTime = exactTime.Add(time.Hour*time.Duration(hours) + time.Minute*time.Duration(mins))
+	
+	return exactTime.UTC(), nil
+}
+
+func addMatchUrl(time time.Time, inputurl string, matchsOnTime *entities.MatchURLsWithTimeOnDay) {
+	url := fmt.Sprintf("https://bongda24h.vn%s", inputurl)
+	for _, matchOnTime := range matchsOnTime.MatchsOnTimes {
+		if matchOnTime.Date == time {
+			matchOnTime.Urls = append(matchOnTime.Urls, url)
+			return 
+		}
+	}
+	newMatchOnTimes := entities.MatchURLsOnTime{
+		Date: time,
+		Urls: []string{url},
+	}
+	matchsOnTime.MatchsOnTimes = append(matchsOnTime.MatchsOnTimes, newMatchOnTimes)
 }
 
 func querySearchAllScheduleOnDay(dateISO8601 time.Time) map[string]interface{} {
@@ -175,9 +213,9 @@ func isNewLeague(leagues []entities.League, newLeaegueName string) bool {
 	return true
 }
 
-func  isLeagueActive(leagues []entities.League, leaegueName string) bool {
+func isLeagueActive(leagues []entities.League, leaegueName string) bool {
 	// detect new league
-	for _, league := range leagues  {
+	for _, league := range leagues {
 		if leaegueName == league.LeagueName && league.Active {
 			return true
 		}

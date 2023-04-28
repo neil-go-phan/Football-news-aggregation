@@ -46,3 +46,11 @@ func (s *schedulesService) GetMatchURLsOnDay() entities.MatchURLsOnDay {
 func (s *schedulesService) ClearMatchURLsOnDay() {
 	s.repo.ClearMatchURLsOnDay()
 }
+
+func (s *schedulesService)  GetMatchURLsOnTime() entities.MatchURLsWithTimeOnDay {
+	return s.repo.GetMatchURLsOnTime()
+}
+
+func (s *schedulesService) ClearMatchURLsOnTime() {
+	s.repo.ClearMatchURLsOnTime()
+}

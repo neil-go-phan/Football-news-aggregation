@@ -44,6 +44,8 @@ type SchedulesRepository interface {
 	GetMatchURLsOnDay() entities.MatchURLsOnDay
 	ClearMatchURLsOnDay()
 	GetSchedules(date *pb.Date)
+	GetMatchURLsOnTime() entities.MatchURLsWithTimeOnDay 
+	ClearMatchURLsOnTime()
 }
 
 //go:generate mockery --name HtmlClassesRepository
