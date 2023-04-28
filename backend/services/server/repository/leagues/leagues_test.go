@@ -174,9 +174,10 @@ func TestWriteLeaguesJSON(t *testing.T) {
 		},
 	}
 	leaguesRepo := NewLeaguesRepo(contructorLeagues, PATH)
-	leaguesRepo.WriteLeaguesJSON(want)
+	err := leaguesRepo.WriteLeaguesJSON(want)
 	got := leaguesRepo.GetLeagues()
 	assert.Equal(want, got, fmt.Sprintf("Method ReadleaguesJSON is supose to %#v, but got %#v", want, got))
+	assert.Nil(err)
 }
 
 func TestWriteLeaguesJSONCantOpenFile(t *testing.T) {
