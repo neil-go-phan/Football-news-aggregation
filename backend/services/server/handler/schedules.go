@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"server/entities"
 	"net/http"
+	"server/entities"
 	"server/services"
 	"sync"
 	"time"
@@ -29,7 +29,6 @@ func NewSchedulesHandler(handler services.SchedulesServices) *ScheduleHandler {
 func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.Cron) {
 	_, err := cronjob.AddFunc("0 23 * * *", func() {
 		var wg sync.WaitGroup
-		var matchsToDay entities.MatchURLsWithTimeOnDay
 		now := time.Now()
 		var DAYOFWEEK = 7
 		for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
@@ -41,14 +40,9 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 				matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
 				schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
 				schedulesHandler.handler.ClearMatchURLsOnDay()
-				if date == time.Now() {
-					matchsToDay = schedulesHandler.handler.GetMatchURLsOnTime()
-				}
-
 			}(date)
 		}
 		wg.Wait()
-		makeCronJob(matchsToDay, schedulesHandler)
 	})
 	if err != nil {
 		log.Println("error occurred while seting up getSchedules cronjob: ", err)
@@ -57,31 +51,31 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 
 func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *ScheduleHandler) {
 	for _, matchsOnTime := range matchsToDay.MatchsOnTimes {
-		go func (matchsOnTime entities.MatchURLsOnTime)  {
+		go func(matchsOnTime entities.MatchURLsOnTime) {
 			matchURLs := entities.MatchURLsOnDay(matchsOnTime)
-			utcTime:= time.Now().UTC()
+			utcTime := time.Now().UTC()
 			duration := utcTime.Sub(matchsOnTime.Date)
 			time.Sleep(duration)
-			
+
 			log.Printf("Start cronjob crawl match at: %s", matchsOnTime.Date)
 			ticker := time.NewTicker(1 * time.Minute)
 			done := make(chan bool)
 
 			go func() {
-        for {
-            select {
-            case <-done:
-              return
-            case <-ticker.C:
-              schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchURLs)
-            }
-        }
-    }()
-		// wait 2 hours. Let's say the match lasts for 2 hours
-		time.Sleep(2 * time.Hour)
-    ticker.Stop()
-    done <- true
-    log.Printf("Stop cronjob crawl match at: %s", matchsOnTime.Date)
+				for {
+					select {
+					case <-done:
+						return
+					case <-ticker.C:
+						schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchURLs)
+					}
+				}
+			}()
+			// wait 2 hours. Let's say the match lasts for 2 hours
+			time.Sleep(2 * time.Hour)
+			ticker.Stop()
+			done <- true
+			log.Printf("Stop cronjob crawl match at: %s", matchsOnTime.Date)
 		}(matchsOnTime)
 	}
 }
