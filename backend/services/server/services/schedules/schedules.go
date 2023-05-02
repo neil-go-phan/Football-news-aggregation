@@ -8,19 +8,19 @@ import (
 )
 
 type schedulesService struct {
-	repo repository.SchedulesRepository
+	repo            repository.SchedulesRepository
 	matchDetailRepo repository.MatchDetailRepository
 }
 
 func NewSchedulesService(repo repository.SchedulesRepository, matchDetailRepo repository.MatchDetailRepository) *schedulesService {
 	schedulesService := &schedulesService{
-		repo: repo,
+		repo:            repo,
 		matchDetailRepo: matchDetailRepo,
 	}
 	return schedulesService
 }
 
-func (s *schedulesService) SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay){
+func (s *schedulesService) SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay) {
 	s.matchDetailRepo.GetMatchDetailsOnDayFromCrawler(matchURLs)
 }
 
@@ -47,7 +47,7 @@ func (s *schedulesService) ClearMatchURLsOnDay() {
 	s.repo.ClearMatchURLsOnDay()
 }
 
-func (s *schedulesService)  GetMatchURLsOnTime() entities.MatchURLsWithTimeOnDay {
+func (s *schedulesService) GetMatchURLsOnTime() entities.MatchURLsWithTimeOnDay {
 	return s.repo.GetMatchURLsOnTime()
 }
 

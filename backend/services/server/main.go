@@ -112,11 +112,6 @@ func main() {
 	// declare services
 	htmlclassesRepo := htmlclassesrepo.NewHtmlClassesRepo(classConfig)
 
-	// notificationChan := make(chan entities.Notification)
-
-	// notificationRepo := notificationrepo.NewNotificationRepo(notificationChan)
-	// notificationService := notificationservices.NewNotificationService(notificationRepo)
-
 	tagRepo := tagsrepo.NewTagsRepo(tagsConfig, env.JsonPath)
 	tagsService := tagsservices.NewTagsService(tagRepo)
 
@@ -153,9 +148,6 @@ func main() {
 	adminHandler := handler.NewAdminHandler(adminService)
 	adminRoute := routes.NewAdminRoutes(adminHandler)
 
-	// notificationHandler := handler.NewNotificationHandler(notificationService)
-	// notificationRoute := routes.NewNotificationRoutes(notificationHandler)
-
 	// check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
 	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
 		log.Infoln("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
@@ -179,9 +171,6 @@ func main() {
 	log.Infoln("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
-
-	// TODO: Fix realtime push notification
-	// go notificationRoute.Setup(r)
 
 	tagsRoutes.Setup(r)
 	leaguesRoutes.Setup(r)
