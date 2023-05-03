@@ -306,6 +306,7 @@ func requestAddTagArticle(bulkRequestBody []byte, es *elasticsearch.Client) {
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
 		log.Errorf("can not send a bulk update request to elastic search %s", err)
+		return
 	}
 	defer res.Body.Close()
 
@@ -525,6 +526,7 @@ func storeArticleInElasticsearch(article entities.Article, es *elasticsearch.Cli
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
 		log.Errorf("Error getting response: %s", err)
+		return
 	}
 	defer res.Body.Close()
 
@@ -545,7 +547,7 @@ func taggedWhenCrawl(article *pb.Article, tags []string, keyword string) []strin
 
 		if !ok {
 			if strings.Contains(serverhelper.FormatVietnamese(article.Description), formatedTag) || strings.Contains(serverhelper.FormatVietnamese(article.Title), formatedTag) {
-				articleTags[tag] = true
+				articleTags[formatedTag] = true
 			}
 		}
 	}

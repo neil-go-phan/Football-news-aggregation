@@ -16,8 +16,6 @@ import (
 	htmlclassesrepo "server/repository/htmlClasses"
 	leaguesrepo "server/repository/leagues"
 	matchdetailrepo "server/repository/matchDetail"
-
-	// notificationrepo "server/repository/notification"
 	schedulesrepo "server/repository/schedules"
 	tagsrepo "server/repository/tags"
 	"server/routes"
@@ -26,8 +24,6 @@ import (
 	articlesservices "server/services/articles"
 	leaguesservices "server/services/leagues"
 	matchdetailservices "server/services/matchDetail"
-
-	// notificationservices "server/services/notification"
 	schedulesservices "server/services/schedules"
 	tagsservices "server/services/tags"
 
