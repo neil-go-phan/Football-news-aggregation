@@ -142,6 +142,7 @@ func storeScheduleElasticsearch(schedule entities.ScheduleElastic, es *elasticse
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
 		log.Errorf("Error getting response: %s", err)
+		return
 	}
 	defer res.Body.Close()
 
