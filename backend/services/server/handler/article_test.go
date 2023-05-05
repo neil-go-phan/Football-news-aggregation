@@ -110,7 +110,7 @@ func TestAPICrawlArticleLeague(t *testing.T) {
 		Header: make(http.Header),
 	}
 	q := req.URL.Query()
-	leagueName:= []string{"league 1"}
+	leagueName := []string{"league 1"}
 	q.Add("league", "league 1")
 
 	c.Request = req
@@ -119,7 +119,6 @@ func TestAPICrawlArticleLeague(t *testing.T) {
 	mockArticleServices := new(mock.MockArticleServices)
 	articleHandler := NewArticleHandler(mockArticleServices)
 	assert := assert.New(t)
-
 
 	mockArticleServices.On("GetArticles", leagueName)
 	articleHandler.APICrawlArticleLeague(c)
@@ -206,4 +205,122 @@ func TestAPIGetArticleCountFail(t *testing.T) {
 
 	assert.Equal(http.StatusInternalServerError, w.Code, "Expected HTTP status code 500")
 	assert.JSONEq(`{"success":false,"message":"Server error"}`, w.Body.String(), "Expected 'Server error' message to be returned")
+}
+
+func TestAPIDeleteArticleBindJSONFail(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = &http.Request{
+		Header: make(http.Header),
+	}
+	invalidArticleJson := "invalid"
+
+	mockJsonPost(c, invalidArticleJson)
+
+	mockArticleServices := new(mock.MockArticleServices)
+	articleHandler := NewArticleHandler(mockArticleServices)
+	assert := assert.New(t)
+
+	mockArticleServices.On("DeleteArticle", "Article title").Return(fmt.Errorf("Delete failed"))
+
+	articleHandler.APIDeleteArticle(c)
+
+	assert.Equal(http.StatusBadRequest, w.Code, "Expected HTTP status code 400")
+	assert.JSONEq(`{"success":false,"message":"Delete article failed"}`, w.Body.String(), "Expected message 'Delete article failed' to be returned")
+}
+
+func TestAPIDeleteArticleFail(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = &http.Request{
+		Header: make(http.Header),
+	}
+	inputArticleJson := map[string]interface{}{"title": "Article title"}
+
+	mockJsonPost(c, inputArticleJson)
+
+	mockArticleServices := new(mock.MockArticleServices)
+	articleHandler := NewArticleHandler(mockArticleServices)
+	assert := assert.New(t)
+
+	mockArticleServices.On("DeleteArticle", "Article title").Return(fmt.Errorf("Delete failed"))
+
+	articleHandler.APIDeleteArticle(c)
+
+	assert.Equal(http.StatusInternalServerError, w.Code, "Expected HTTP status code 400")
+	assert.JSONEq(`{"success":false,"message":"Delete article failed"}`, w.Body.String(), "Expected message 'Delete article failed' to be returned")
+}
+
+func TestAPIDeleteArticleSuccess(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = &http.Request{
+		Header: make(http.Header),
+	}
+	inputArticleJson := map[string]interface{}{"title": "Article title"}
+
+	mockJsonPost(c, inputArticleJson)
+
+	mockArticleServices := new(mock.MockArticleServices)
+	articleHandler := NewArticleHandler(mockArticleServices)
+	assert := assert.New(t)
+
+	mockArticleServices.On("DeleteArticle", "Article title").Return(nil)
+
+	articleHandler.APIDeleteArticle(c)
+
+	assert.Equal(http.StatusOK, w.Code, "Expected HTTP status code 400")
+	assert.JSONEq(`{"success":true,"message":"Delete article successfull"}`, w.Body.String(), "Expected message 'Delete article successfull' to be returned")
+}
+
+func TestAPIGetFirstPageOfLeagueRelatedArticleSuccess(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	req := &http.Request{
+		URL:    &url.URL{},
+		Header: make(http.Header),
+	}
+	q := req.URL.Query()
+	q.Add("league", "league test")
+
+	c.Request = req
+	c.Request.URL.RawQuery = q.Encode()
+
+	articles := []entities.Article{}
+	mockArticleServices := new(mock.MockArticleServices)
+	articleHandler := NewArticleHandler(mockArticleServices)
+	assert := assert.New(t)
+
+	mockArticleServices.On("GetFirstPageOfLeagueRelatedArticle", "league test").Return(articles, nil)
+	articleHandler.APIGetFirstPageOfLeagueRelatedArticle(c)
+
+	assert.Equal(http.StatusOK, w.Code, "Expected HTTP status code 200")
+	assert.JSONEq(`{"success":true,"articles":[]}`, w.Body.String(), "Expected 'articles' to be returned")
+}
+
+func TestAPIGetFirstPageOfLeagueRelatedArticleFail(t *testing.T) {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	req := &http.Request{
+		URL:    &url.URL{},
+		Header: make(http.Header),
+	}
+	q := req.URL.Query()
+	q.Add("league", "league test")
+
+	c.Request = req
+	c.Request.URL.RawQuery = q.Encode()
+
+	articles := []entities.Article{}
+	mockArticleServices := new(mock.MockArticleServices)
+	articleHandler := NewArticleHandler(mockArticleServices)
+	assert := assert.New(t)
+
+	mockArticleServices.On("GetFirstPageOfLeagueRelatedArticle", "league test").Return(articles, fmt.Errorf("Cant get articles"))
+	articleHandler.APIGetFirstPageOfLeagueRelatedArticle(c)
+
+	assert.Equal(http.StatusInternalServerError, w.Code, "Expected HTTP status code 500")
+	assert.JSONEq(`{"success":false,"message":"Server error"}`, w.Body.String(), "Expected 'Server error' to be returned")
 }

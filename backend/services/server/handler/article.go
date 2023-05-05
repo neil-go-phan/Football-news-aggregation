@@ -76,11 +76,13 @@ func (articleHandler *ArticleHandler) APIDeleteArticle(c *gin.Context) {
 	var inputArticle InputDeleteArticle
 	err := c.BindJSON(&inputArticle)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		return
 	}
 	err = articleHandler.handler.DeleteArticle(inputArticle.Title)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Delete article successfull"})
 }
@@ -92,6 +94,7 @@ func (articleHandler *ArticleHandler) APIGetFirstPageOfLeagueRelatedArticle(c *g
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword with index: %s, err: %v\n", "articles", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }

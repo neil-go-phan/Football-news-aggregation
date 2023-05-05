@@ -392,5 +392,4 @@ func configSentry() {
 	if err != nil {
 		log.Fatalf("sentry.Init: %s", err)
 	}
-
 }

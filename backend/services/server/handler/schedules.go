@@ -85,6 +85,7 @@ func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Con
 	date, err := time.Parse(DATE_LAYOUT, dateString)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Date invalid"})
+		return
 	}
 
 	// request to elasticsearch
@@ -92,6 +93,7 @@ func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Con
 	if err != nil {
 		log.Printf("error occurred while services layer request to elastic search to get schedules on date: %s\n", date)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "schedules": schedules})
 }
@@ -101,6 +103,7 @@ func (schedulesHandler *ScheduleHandler) APIGetScheduleLeagueOnDay(c *gin.Contex
 	date, err := time.Parse(DATE_LAYOUT, dateString)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Date invalid"})
+		return
 	}
 	league := c.Query("league")
 
@@ -109,6 +112,7 @@ func (schedulesHandler *ScheduleHandler) APIGetScheduleLeagueOnDay(c *gin.Contex
 	if err != nil {
 		log.Printf("error occurred while services layer request to elastic search to get schedule of league: %s on date: %s\n", league, date)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "schedules": schedules})
 }
