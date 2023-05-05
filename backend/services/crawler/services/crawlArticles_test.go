@@ -26,12 +26,13 @@ func TestCrawlArticles_Success(t *testing.T) {
 				</div>
 			</body>
 		</html>`
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(htmlDoc))
-	}))
-	defer server.Close()
 
 	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte(htmlDoc))
+		assert.Nil(err)
+	}))
+	defer server.Close()
 
 	searchUrl := fmt.Sprintf("%s/", server.URL)
 	page := 0
@@ -62,12 +63,13 @@ func TestCrawlArticles_ReCaptcha(t *testing.T) {
 							</div>
 					</body>
 			</html>`
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(htmlDoc))
-	}))
-	defer server.Close()
 
 	assert := assert.New(t)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte(htmlDoc))
+		assert.Nil(err)
+	}))
+	defer server.Close()
 
 	searchUrl := fmt.Sprintf("%s/", server.URL)
 	page := 0

@@ -310,12 +310,12 @@ var htmlDoc = `
 `
 
 func TestCrawlMatchDetail_Success(t *testing.T) {
+	assert := assert.New(t)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(htmlDoc))
+		_, err := w.Write([]byte(htmlDoc))
+		assert.Nil(err)
 	}))
 	defer server.Close()
-
-	assert := assert.New(t)
 
 	searchUrl := fmt.Sprintf("%s/", server.URL)
 
