@@ -35,7 +35,7 @@ func CrawlArticles(searchUrl string, page int, htmlClasses entities.HtmlArticleC
 	}
 
 	doc.Find("#recaptcha").Each(func(i int, s *goquery.Selection) {
-		log.Printf("Google detect you trying to crawl article. Please shut down crawler services or change proxy")
+		log.Error("Google detect you trying to crawl article. Please shut down crawler services or change proxy")
 	})
 
 	doc.Find(crawlerhelpers.FormatClassName(htmlClasses.ArticleClass)).Each(func(i int, s *goquery.Selection) {
