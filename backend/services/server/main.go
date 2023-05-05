@@ -373,6 +373,7 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 		log.Printf("seed for date: %v\n", matchUrls.Date)
 		matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 		schedulesService.ClearMatchURLsOnDay()
+		fmt.Printf("%#v", schedulesService.GetMatchURLsOnTime())
 	}
 
 	// Get articles

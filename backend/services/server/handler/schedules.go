@@ -30,19 +30,24 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 	_, err := cronjob.AddFunc("0 23 * * *", func() {
 		var wg sync.WaitGroup
 		now := time.Now()
+		var matchsToDay entities.MatchURLsWithTimeOnDay
 		var DAYOFWEEK = 7
-		for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
+		for i := -1; i <= DAYOFWEEK; i++ {
 			wg.Add(1)
 			date := now.AddDate(0, 0, i)
-			go func(date time.Time) {
+			go func(date time.Time, matchsToDay *entities.MatchURLsWithTimeOnDay) {
 				defer wg.Done()
 				schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
 				matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
 				schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
 				schedulesHandler.handler.ClearMatchURLsOnDay()
-			}(date)
+				if date.Day() == time.Now().Day() {
+					*matchsToDay = schedulesHandler.handler.GetMatchURLsOnTime()
+				}
+			}(date, &matchsToDay)
 		}
 		wg.Wait()
+		makeCronJob(matchsToDay, schedulesHandler)
 	})
 	if err != nil {
 		log.Println("error occurred while seting up getSchedules cronjob: ", err)
