@@ -22,6 +22,7 @@ func FormatClassName(class string) string {
 }
 
 func FormatToSearch(keyword string) string {
+	keyword = strings.ToLower(keyword)
 	var Regexp_A = `à|á|ạ|ã|ả|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ`
 	var Regexp_E = `è|ẻ|ẽ|é|ẹ|ê|ề|ể|ễ|ế|ệ`
 	var Regexp_I = `ì|ỉ|ĩ|í|ị`
@@ -48,8 +49,7 @@ func FormatToSearch(keyword string) string {
 	var RegexpPara = `\(.*\)`
 	reg_para := regexp.MustCompile(RegexpPara)
 	keyword = reg_para.ReplaceAllLiteralString(keyword, "")
-
-	keyword = strings.ToLower(keyword)
+	
 	return strings.Replace(keyword, " ", "+", -1)
 }
 
