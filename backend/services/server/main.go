@@ -16,8 +16,6 @@ import (
 	htmlclassesrepo "server/repository/htmlClasses"
 	leaguesrepo "server/repository/leagues"
 	matchdetailrepo "server/repository/matchDetail"
-
-	// notificationrepo "server/repository/notification"
 	schedulesrepo "server/repository/schedules"
 	tagsrepo "server/repository/tags"
 	"server/routes"
@@ -26,8 +24,6 @@ import (
 	articlesservices "server/services/articles"
 	leaguesservices "server/services/leagues"
 	matchdetailservices "server/services/matchDetail"
-
-	// notificationservices "server/services/notification"
 	schedulesservices "server/services/schedules"
 	tagsservices "server/services/tags"
 
@@ -112,11 +108,6 @@ func main() {
 	// declare services
 	htmlclassesRepo := htmlclassesrepo.NewHtmlClassesRepo(classConfig)
 
-	// notificationChan := make(chan entities.Notification)
-
-	// notificationRepo := notificationrepo.NewNotificationRepo(notificationChan)
-	// notificationService := notificationservices.NewNotificationService(notificationRepo)
-
 	tagRepo := tagsrepo.NewTagsRepo(tagsConfig, env.JsonPath)
 	tagsService := tagsservices.NewTagsService(tagRepo)
 
@@ -153,9 +144,6 @@ func main() {
 	adminHandler := handler.NewAdminHandler(adminService)
 	adminRoute := routes.NewAdminRoutes(adminHandler)
 
-	// notificationHandler := handler.NewNotificationHandler(notificationService)
-	// notificationRoute := routes.NewNotificationRoutes(notificationHandler)
-
 	// check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
 	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
 		log.Infoln("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
@@ -179,9 +167,6 @@ func main() {
 	log.Infoln("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
-
-	// TODO: Fix realtime push notification
-	// go notificationRoute.Setup(r)
 
 	tagsRoutes.Setup(r)
 	leaguesRoutes.Setup(r)
@@ -388,6 +373,7 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 		log.Printf("seed for date: %v\n", matchUrls.Date)
 		matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 		schedulesService.ClearMatchURLsOnDay()
+		fmt.Printf("%#v", schedulesService.GetMatchURLsOnTime())
 	}
 
 	// Get articles
@@ -407,5 +393,4 @@ func configSentry() {
 	if err != nil {
 		log.Fatalf("sentry.Init: %s", err)
 	}
-
 }

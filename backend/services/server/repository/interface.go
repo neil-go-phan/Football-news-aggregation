@@ -63,7 +63,6 @@ type ArticleRepository interface {
 	GetArticleCount() (total float64, today float64, err error) 
 	DeleteArticle(title string) error 
 }
-
 //go:generate mockery --name NotificationRepository
 type NotificationRepository interface {
 	Send(title string, notiType string, message string)

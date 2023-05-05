@@ -83,6 +83,7 @@ func upsertMatchDetailElastic(matchDetail entities.MatchDetail, es *elasticsearc
 	res, err := req.Do(context.Background(), es)
 	if err != nil {
 		log.Errorf("Error getting response: %s", err)
+		return
 	}
 	defer res.Body.Close()
 

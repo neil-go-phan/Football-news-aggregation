@@ -30,19 +30,24 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 	_, err := cronjob.AddFunc("0 23 * * *", func() {
 		var wg sync.WaitGroup
 		now := time.Now()
+		var matchsToDay entities.MatchURLsWithTimeOnDay
 		var DAYOFWEEK = 7
-		for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
+		for i := -1; i <= DAYOFWEEK; i++ {
 			wg.Add(1)
 			date := now.AddDate(0, 0, i)
-			go func(date time.Time) {
+			go func(date time.Time, matchsToDay *entities.MatchURLsWithTimeOnDay) {
 				defer wg.Done()
 				schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
 				matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
 				schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
 				schedulesHandler.handler.ClearMatchURLsOnDay()
-			}(date)
+				if date.Day() == time.Now().Day() {
+					*matchsToDay = schedulesHandler.handler.GetMatchURLsOnTime()
+				}
+			}(date, &matchsToDay)
 		}
 		wg.Wait()
+		makeCronJob(matchsToDay, schedulesHandler)
 	})
 	if err != nil {
 		log.Println("error occurred while seting up getSchedules cronjob: ", err)
@@ -85,6 +90,7 @@ func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Con
 	date, err := time.Parse(DATE_LAYOUT, dateString)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Date invalid"})
+		return
 	}
 
 	// request to elasticsearch
@@ -92,6 +98,7 @@ func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Con
 	if err != nil {
 		log.Printf("error occurred while services layer request to elastic search to get schedules on date: %s\n", date)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "schedules": schedules})
 }
@@ -101,6 +108,7 @@ func (schedulesHandler *ScheduleHandler) APIGetScheduleLeagueOnDay(c *gin.Contex
 	date, err := time.Parse(DATE_LAYOUT, dateString)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Date invalid"})
+		return
 	}
 	league := c.Query("league")
 
@@ -109,6 +117,7 @@ func (schedulesHandler *ScheduleHandler) APIGetScheduleLeagueOnDay(c *gin.Contex
 	if err != nil {
 		log.Printf("error occurred while services layer request to elastic search to get schedule of league: %s on date: %s\n", league, date)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "schedules": schedules})
 }

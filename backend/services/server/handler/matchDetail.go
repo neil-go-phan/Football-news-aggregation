@@ -35,12 +35,14 @@ func (matchDetailHandler *MatchDetailHandler) APIGetMatchDetail(c *gin.Context) 
 	date, err := time.Parse(DATE_LAYOUT, dateString)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Date invalid"})
+		return
 	}
 	// request to elasticsearch
 	matchDetail, err := matchDetailHandler.handler.GetMatchDetail(date, club1Name, club2Name)
 	if err != nil {
 		log.Printf("error occurred while services layer request to elastic search to get match detail: %s\n", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "match_detail": matchDetail})
 }

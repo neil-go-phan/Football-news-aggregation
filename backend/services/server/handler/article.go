@@ -38,6 +38,7 @@ func (articleHandler *ArticleHandler) APISearchTagsAndKeyword(c *gin.Context) {
 	if err != nil {
 		log.Printf("can not convert %s string to int err: %v\n",fromString, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Bad request"})
+		return
 	}
 
 	keyword = strings.TrimSpace(keyword)
@@ -45,6 +46,7 @@ func (articleHandler *ArticleHandler) APISearchTagsAndKeyword(c *gin.Context) {
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, "articles", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles, "total": total})
 }
@@ -65,6 +67,7 @@ func (articleHandler *ArticleHandler) APIAddUpdateNewTag(c *gin.Context) {
 	err := articleHandler.handler.AddTagForAllArticle(tag)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Update tag failed"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Update tag successfull"})
 }
@@ -73,11 +76,13 @@ func (articleHandler *ArticleHandler) APIDeleteArticle(c *gin.Context) {
 	var inputArticle InputDeleteArticle
 	err := c.BindJSON(&inputArticle)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		return
 	}
 	err = articleHandler.handler.DeleteArticle(inputArticle.Title)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Delete article successfull"})
 }
@@ -89,6 +94,7 @@ func (articleHandler *ArticleHandler) APIGetFirstPageOfLeagueRelatedArticle(c *g
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword with index: %s, err: %v\n", "articles", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }
@@ -112,6 +118,7 @@ func (articleHandler *ArticleHandler) APIGetArticleCount(c *gin.Context) {
 	if err != nil {
 		log.Printf("error occrus when get article count %s", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Get article count success", "total": total, "today": today})
 }

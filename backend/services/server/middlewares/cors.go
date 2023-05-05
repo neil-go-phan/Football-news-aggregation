@@ -6,11 +6,6 @@ import (
 
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// allowList := map[string]bool{
-		// 	"http://localhost:3000": true,
-		// 	"http://localhost:8080": true,
-		// 	"https://football-news-aggregation.vercel.app": true,
-		// }
 		origin := c.Request.Header.Get("Origin")
 		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")

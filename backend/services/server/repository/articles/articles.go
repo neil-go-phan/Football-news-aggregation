@@ -60,7 +60,6 @@ type articleRepo struct {
 	htmlClassesRepo repository.HtmlClassesRepository
 	leaguesRepo     repository.LeaguesRepository
 	tagsRepo        repository.TagRepository
-	// notification    repository.NotificationRepository
 }
 
 func NewArticleRepo(leaguesRepo repository.LeaguesRepository, htmlClassesRepo repository.HtmlClassesRepository, tagsRepo repository.TagRepository, conn *grpc.ClientConn, es *elasticsearch.Client) *articleRepo {
@@ -70,7 +69,6 @@ func NewArticleRepo(leaguesRepo repository.LeaguesRepository, htmlClassesRepo re
 		leaguesRepo:     leaguesRepo,
 		htmlClassesRepo: htmlClassesRepo,
 		tagsRepo:        tagsRepo,
-		// notification:    notification,
 	}
 	return articleRepo
 }

@@ -56,6 +56,38 @@ func (_c *MockSchedulesRepository_ClearMatchURLsOnDay_Call) RunAndReturn(run fun
 	return _c
 }
 
+// ClearMatchURLsOnTime provides a mock function with given fields:
+func (_m *MockSchedulesRepository) ClearMatchURLsOnTime() {
+	_m.Called()
+}
+
+// MockSchedulesRepository_ClearMatchURLsOnTime_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ClearMatchURLsOnTime'
+type MockSchedulesRepository_ClearMatchURLsOnTime_Call struct {
+	*mock.Call
+}
+
+// ClearMatchURLsOnTime is a helper method to define mock.On call
+func (_e *MockSchedulesRepository_Expecter) ClearMatchURLsOnTime() *MockSchedulesRepository_ClearMatchURLsOnTime_Call {
+	return &MockSchedulesRepository_ClearMatchURLsOnTime_Call{Call: _e.mock.On("ClearMatchURLsOnTime")}
+}
+
+func (_c *MockSchedulesRepository_ClearMatchURLsOnTime_Call) Run(run func()) *MockSchedulesRepository_ClearMatchURLsOnTime_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockSchedulesRepository_ClearMatchURLsOnTime_Call) Return() *MockSchedulesRepository_ClearMatchURLsOnTime_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockSchedulesRepository_ClearMatchURLsOnTime_Call) RunAndReturn(run func()) *MockSchedulesRepository_ClearMatchURLsOnTime_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetAllScheduleLeagueOnDay provides a mock function with given fields: date
 func (_m *MockSchedulesRepository) GetAllScheduleLeagueOnDay(date time.Time) (entities.ScheduleOnDay, error) {
 	ret := _m.Called(date)
@@ -145,6 +177,47 @@ func (_c *MockSchedulesRepository_GetMatchURLsOnDay_Call) Return(_a0 entities.Ma
 }
 
 func (_c *MockSchedulesRepository_GetMatchURLsOnDay_Call) RunAndReturn(run func() entities.MatchURLsOnDay) *MockSchedulesRepository_GetMatchURLsOnDay_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetMatchURLsOnTime provides a mock function with given fields:
+func (_m *MockSchedulesRepository) GetMatchURLsOnTime() entities.MatchURLsWithTimeOnDay {
+	ret := _m.Called()
+
+	var r0 entities.MatchURLsWithTimeOnDay
+	if rf, ok := ret.Get(0).(func() entities.MatchURLsWithTimeOnDay); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(entities.MatchURLsWithTimeOnDay)
+	}
+
+	return r0
+}
+
+// MockSchedulesRepository_GetMatchURLsOnTime_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMatchURLsOnTime'
+type MockSchedulesRepository_GetMatchURLsOnTime_Call struct {
+	*mock.Call
+}
+
+// GetMatchURLsOnTime is a helper method to define mock.On call
+func (_e *MockSchedulesRepository_Expecter) GetMatchURLsOnTime() *MockSchedulesRepository_GetMatchURLsOnTime_Call {
+	return &MockSchedulesRepository_GetMatchURLsOnTime_Call{Call: _e.mock.On("GetMatchURLsOnTime")}
+}
+
+func (_c *MockSchedulesRepository_GetMatchURLsOnTime_Call) Run(run func()) *MockSchedulesRepository_GetMatchURLsOnTime_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *MockSchedulesRepository_GetMatchURLsOnTime_Call) Return(_a0 entities.MatchURLsWithTimeOnDay) *MockSchedulesRepository_GetMatchURLsOnTime_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *MockSchedulesRepository_GetMatchURLsOnTime_Call) RunAndReturn(run func() entities.MatchURLsWithTimeOnDay) *MockSchedulesRepository_GetMatchURLsOnTime_Call {
 	_c.Call.Return(run)
 	return _c
 }
