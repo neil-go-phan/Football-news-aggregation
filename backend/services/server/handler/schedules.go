@@ -58,8 +58,7 @@ func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *
 	for _, matchsOnTime := range matchsToDay.MatchsOnTimes {
 		go func(matchsOnTime entities.MatchURLsOnTime) {
 			matchURLs := entities.MatchURLsOnDay(matchsOnTime)
-			utcTime := time.Now().UTC()
-			duration := utcTime.Sub(matchsOnTime.Date)
+			duration := time.Until(matchsOnTime.Date)
 			time.Sleep(duration)
 
 			log.Printf("Start cronjob crawl match at: %s", matchsOnTime.Date)

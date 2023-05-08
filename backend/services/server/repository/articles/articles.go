@@ -267,12 +267,14 @@ func (repo *articleRepo) AddTagForAllArticle(tag string) error {
 	// 5 worker
 	for i := 0; i < 5; i++ {
 		wg1.Add(1)
+		// worker: take job from jobs chanel -> Do something -> add result to results chanel
 		go workerAddTagBulkRequest(jobs, results, tagFormated, &wg1, i)
 	}
-
+	// producer: create job and add to jobs chanel
 	go producerRequestArticle(jobs, repo, tagFormated, newPitID, searchAfterQuery)
 
 	wg2.Add(1)
+	// analyzer: summarizing results (log error)
 	go analyzedResult(results, repo.es, &wg2)
 
 	wg1.Wait()
