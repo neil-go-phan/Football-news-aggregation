@@ -60,7 +60,6 @@ func (repo *schedulesRepo) GetSchedules(date *pb.Date) {
 	if err != nil {
 		log.Errorf("error when parse date: %v", err)
 	}
-	fmt.Printf("dateCash: %v", dateCasted)
 	repo.matchURLsOnDay.Date = dateCasted
 	for _, schedule := range elasticSchedules {
 		wg.Add(1)

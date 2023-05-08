@@ -165,7 +165,7 @@ func main() {
 		cronjob.Run()
 	}()
 
-
+	schedulesHandler.SignalToCrawlerTest()
 
 	// app routes
 	log.Infoln("Setup routes")
@@ -380,8 +380,10 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 		matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 		schedulesService.ClearMatchURLsOnDay()
 		if date.Day() == time.Now().Day() {
+			fmt.Printf("today: %v and %v", date.Day(), time.Now().Day())
 			matchsToDay = schedulesService.GetMatchURLsOnTime()
 		}
+		schedulesService.ClearMatchURLsOnTime()
 	}
 	go func() {
 		handler.MakeCronJobCrawlMatch(matchsToDay, &schedulesHandler)

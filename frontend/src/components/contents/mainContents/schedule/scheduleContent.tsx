@@ -46,7 +46,7 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
                       {match.club_1.name}
                       <Image
                         alt="club-logo"
-                        src={match.club_1.logo}
+                        src={match.club_1.logo === "/images/CLB-MacDinh.svg" ? "https://bongda24h.vn/images/CLB-MacDinh.svg" : match.club_1.logo}
                         width={20}
                         height={20}
                       ></Image>
@@ -59,7 +59,7 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
                     <p>
                       <Image
                         alt="club-logo"
-                        src={match.club_2.logo}
+                        src={match.club_2.logo === "/images/CLB-MacDinh.svg" ? "https://bongda24h.vn/images/CLB-MacDinh.svg" : match.club_2.logo}
                         width={20}
                         height={20}
                       ></Image>
@@ -78,7 +78,7 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
                           club_1: match.club_1.name,
                           // eslint-disable-next-line camelcase
                           club_2: match.club_2.name,
-                          league: scheduleOnLeague.league_name
+                          league: scheduleOnLeague.league_name,
                         },
                       }}
                     >
@@ -92,10 +92,18 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
         </div>
       );
     }
-    return <div className="schedule__content">No matches for the day</div>;
+    return (
+      <div className="schedule__content">
+        <p className="text">No matches for the day</p>
+      </div>
+    );
   }
 
-  return <div className="schedule__content">No matches for the day</div>;
+  return (
+    <div className="schedule__content">
+      <p className="text">No matches for the day</p>
+    </div>
+  );
 };
 
 export default ScheduleContent;

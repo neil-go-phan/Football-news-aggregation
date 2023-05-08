@@ -42,9 +42,10 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 				matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
 				schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
 				schedulesHandler.handler.ClearMatchURLsOnDay()
-				if date.Day() == time.Now().Day() {
+				if date.Day() == time.Now().Day() + 1 {
 					*matchsToDay = schedulesHandler.handler.GetMatchURLsOnTime()
 				}
+				schedulesHandler.handler.ClearMatchURLsOnTime()
 			}(date, &matchsToDay)
 		}
 		wg.Wait()
@@ -81,6 +82,8 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 
 			duration := matchsOnTime.Date.Sub(utcTime)
 
+			fmt.Printf("create a cronjob sleep from %v to %v is with duration %v: \n",utcTime,matchsOnTime.Date, duration)
+
 			time.Sleep(duration)
 
 			log.Printf("Start cronjob crawl match at: %s", matchsOnTime.Date)
@@ -93,11 +96,11 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 					case <-done:
 						return
 					case <-ticker.C:
-						fmt.Printf("it meee")
 						schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchURLs)
 					}
 				}
 			}()
+
 			// wait 2 hours. Let's say the match lasts for 2 hours
 			time.Sleep(2 * time.Hour)
 			ticker.Stop()
@@ -107,14 +110,15 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 	}
 }
 
-// func (schedulesHandler *ScheduleHandler) SignalToCrawlerTest() {
-// 	date := time.Now()
-// 	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
-// 	matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
-// 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
-// 	schedulesHandler.handler.ClearMatchURLsOnDay()
-// 	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
-// }
+func (schedulesHandler *ScheduleHandler) SignalToCrawlerTest() {
+	date := time.Now()
+	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
+	matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
+	schedulesHandler.handler.ClearMatchURLsOnDay()
+	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
+}
+
 
 func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Context) {
 	dateString := c.Query("date")

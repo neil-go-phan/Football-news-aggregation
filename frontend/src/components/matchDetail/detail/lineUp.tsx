@@ -67,7 +67,11 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
           <div className="team-head">
             <div className="team-name">
               <Image
-                src={matchTitle.club_1.logo}
+                src={
+                  matchTitle.club_1.logo === '/images/CLB-MacDinh.svg'
+                    ? 'https://bongda24h.vn/images/CLB-MacDinh.svg'
+                    : matchTitle.club_1.logo
+                }
                 alt={`${matchTitle.club_1.name} logo`}
                 width={CLUB_LOGO_LINEUP_SIDE}
                 height={CLUB_LOGO_LINEUP_SIDE}
@@ -106,7 +110,11 @@ const MatchLineUpComponent: FunctionComponent<Props> = ({
           <div className="team-head">
             <div className="team-name">
               <Image
-                src={matchTitle.club_2.logo}
+                src={
+                  matchTitle.club_2.logo === '/images/CLB-MacDinh.svg'
+                    ? 'https://bongda24h.vn/images/CLB-MacDinh.svg'
+                    : matchTitle.club_2.logo
+                }
                 alt={`${matchTitle.club_2.name} logo`}
                 width={CLUB_LOGO_LINEUP_SIDE}
                 height={CLUB_LOGO_LINEUP_SIDE}

@@ -32,15 +32,29 @@ export default function SidebarNav() {
                   : ''
               }`}
             >
-              <Link
-                href={{
-                  pathname: `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`,
-                  query: { league: league },
-                }}
-                className={league === 'Tin tức bóng đá' ? 'text-decoration-none text-dark link fw-bold' : 'text-decoration-none text-dark link'}
-              >
-                {league === 'Tin tức bóng đá' ? 'FOOTBALL NEWS' : league}
-              </Link>
+              {league === 'Tin tức bóng đá' ? (
+                <Link
+                  href={{
+                    pathname: `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`,
+                    query: { league: league },
+                  }}
+                  className={'text-decoration-none text-dark link fw-bold'}
+                >
+                  FOOTBALL NEWS
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href={{
+                      pathname: `${_ROUTES.NEWS_PAGE}/${formatRoute(league)}`,
+                      query: { league: league },
+                    }}
+                    className={'text-decoration-none text-dark link nav-border'}
+                  >
+                    {league}
+                  </Link>
+                </>
+              )}
             </Nav.Item>
           ))}
           {data.length > 10 ? (

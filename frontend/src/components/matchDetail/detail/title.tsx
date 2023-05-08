@@ -17,7 +17,11 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
           <div className="col-4">
             <div className="club1 d-none d-xl-block">
               <Image
-                src={matchTitle.club_1.logo}
+                src={
+                  matchTitle.club_1.logo === '/images/CLB-MacDinh.svg'
+                    ? 'https://bongda24h.vn/images/CLB-MacDinh.svg'
+                    : matchTitle.club_1.logo
+                }
                 alt={`${matchTitle.club_1.name} logo`}
                 width={CLUB_LOGO_TITLE_SIZE}
                 height={CLUB_LOGO_TITLE_SIZE}
@@ -29,7 +33,11 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
             </div>
             <div className="club1 clubsm d-block d-xl-none">
               <Image
-                src={matchTitle.club_1.logo}
+                src={
+                  matchTitle.club_1.logo === '/images/CLB-MacDinh.svg'
+                    ? 'https://bongda24h.vn/images/CLB-MacDinh.svg'
+                    : matchTitle.club_1.logo
+                }
                 alt={`${matchTitle.club_1.name} logo`}
                 width={CLUB_LOGO_TITLE_SIZE}
                 height={CLUB_LOGO_TITLE_SIZE}
@@ -47,7 +55,11 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
                 {matchTitle.club_2.name}
               </span>
               <Image
-                src={matchTitle.club_2.logo}
+                src={
+                  matchTitle.club_2.logo === '/images/CLB-MacDinh.svg'
+                    ? 'https://bongda24h.vn/images/CLB-MacDinh.svg'
+                    : matchTitle.club_2.logo
+                }
                 alt={`${matchTitle.club_2.name} logo`}
                 width={CLUB_LOGO_TITLE_SIZE}
                 height={CLUB_LOGO_TITLE_SIZE}
@@ -56,7 +68,11 @@ const MatchTitle: FunctionComponent<Props> = ({ matchTitle, date }) => {
             </div>
             <div className="club2 clubsm d-block d-xl-none">
               <Image
-                src={matchTitle.club_2.logo}
+                src={
+                  matchTitle.club_2.logo === '/images/CLB-MacDinh.svg'
+                    ? 'https://bongda24h.vn/images/CLB-MacDinh.svg'
+                    : matchTitle.club_2.logo
+                }
                 alt={`${matchTitle.club_2.name} logo`}
                 width={CLUB_LOGO_TITLE_SIZE}
                 height={CLUB_LOGO_TITLE_SIZE}
