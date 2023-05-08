@@ -58,8 +58,7 @@ func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *
 	for _, matchsOnTime := range matchsToDay.MatchsOnTimes {
 		go func(matchsOnTime entities.MatchURLsOnTime) {
 			matchURLs := entities.MatchURLsOnDay(matchsOnTime)
-			utcTime := time.Now().UTC()
-			duration := utcTime.Sub(matchsOnTime.Date)
+			duration := time.Until(matchsOnTime.Date)
 			time.Sleep(duration)
 
 			log.Printf("Start cronjob crawl match at: %s", matchsOnTime.Date)
@@ -82,6 +81,19 @@ func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *
 			done <- true
 			log.Printf("Stop cronjob crawl match at: %s", matchsOnTime.Date)
 		}(matchsOnTime)
+	}
+}
+
+func (schedulesHandler *ScheduleHandler) SignalToCrawlerOn2Min(cronjob *cron.Cron) {
+	_, err := cronjob.AddFunc("@every 0h2m", func() {
+		now := time.Now()
+		schedulesHandler.handler.GetSchedules(now.Format("02-01-2006"))
+		matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+		schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
+		schedulesHandler.handler.ClearMatchURLsOnDay()
+	})
+	if err != nil {
+		log.Println("error occurred while seting up getSchedules cronjob: ", err)
 	}
 }
 
