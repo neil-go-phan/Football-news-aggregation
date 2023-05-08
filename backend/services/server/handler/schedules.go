@@ -118,7 +118,7 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 				}
 			}()
 			wg.Wait()
-			log.Printf("Stop cronjob crawl match at: %s", matchsOnTime.Date)
+			log.Printf("Stop cronjob crawl match at: %s", time.Now())
 		}(matchsOnTime)
 	}
 }
