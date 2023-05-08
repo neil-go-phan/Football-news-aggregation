@@ -33,7 +33,7 @@ type TagRepository interface {
 
 //go:generate mockery --name MatchDetailRepository
 type MatchDetailRepository interface {
-	GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay)
+	GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) []entities.MatchDetail
 	GetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error)
 }
 

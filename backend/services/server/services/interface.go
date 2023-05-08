@@ -42,14 +42,14 @@ type SchedulesServices interface {
 	GetMatchURLsOnDay() entities.MatchURLsOnDay
 	ClearMatchURLsOnDay()
 	GetSchedules(date string)
-	SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay)
+	SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay) []entities.MatchDetail
 	GetMatchURLsOnTime() entities.MatchURLsWithTimeOnDay 
 	ClearMatchURLsOnTime()
 }
 
 //go:generate mockery --name MatchDetailServices
 type MatchDetailServices interface {
-	GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay)
+	GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) []entities.MatchDetail
 	GetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error)
 }
 

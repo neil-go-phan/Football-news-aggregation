@@ -77,8 +77,19 @@ func (_c *MockMatchDetailServices_GetMatchDetail_Call) RunAndReturn(run func(tim
 }
 
 // GetMatchDetailsOnDayFromCrawler provides a mock function with given fields: matchURLs
-func (_m *MockMatchDetailServices) GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) {
-	_m.Called(matchURLs)
+func (_m *MockMatchDetailServices) GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) []entities.MatchDetail {
+	ret := _m.Called(matchURLs)
+
+	var r0 []entities.MatchDetail
+	if rf, ok := ret.Get(0).(func(entities.MatchURLsOnDay) []entities.MatchDetail); ok {
+		r0 = rf(matchURLs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]entities.MatchDetail)
+		}
+	}
+
+	return r0
 }
 
 // MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMatchDetailsOnDayFromCrawler'
@@ -99,12 +110,12 @@ func (_c *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call) Run(run 
 	return _c
 }
 
-func (_c *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call) Return() *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call {
-	_c.Call.Return()
+func (_c *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call) Return(_a0 []entities.MatchDetail) *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call) RunAndReturn(run func(entities.MatchURLsOnDay)) *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call {
+func (_c *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call) RunAndReturn(run func(entities.MatchURLsOnDay) []entities.MatchDetail) *MockMatchDetailServices_GetMatchDetailsOnDayFromCrawler_Call {
 	_c.Call.Return(run)
 	return _c
 }

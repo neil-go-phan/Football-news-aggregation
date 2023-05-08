@@ -369,7 +369,7 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 	// crawl data on previous 7 days and the following 7 days
 	now := time.Now()
 	
-	var DAYOFWEEK = 7
+	var DAYOFWEEK = 1
 	var matchsToDay entities.MatchURLsWithTimeOnDay
 
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
@@ -380,7 +380,6 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 		matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 		schedulesService.ClearMatchURLsOnDay()
 		if date.Day() == time.Now().Day() {
-			fmt.Printf("today: %v and %v", date.Day(), time.Now().Day())
 			matchsToDay = schedulesService.GetMatchURLsOnTime()
 		}
 		schedulesService.ClearMatchURLsOnTime()

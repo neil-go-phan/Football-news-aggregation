@@ -27,7 +27,6 @@ const (
 // CrawlerServiceClient is the client API for CrawlerService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//go:generate mockery --name CrawlerServiceClient
 type CrawlerServiceClient interface {
 	GetArticles(ctx context.Context, in *AllConfigsArticles, opts ...grpc.CallOption) (CrawlerService_GetArticlesClient, error)
 	GetSchedulesOnDay(ctx context.Context, in *Date, opts ...grpc.CallOption) (*SchedulesReponse, error)
@@ -56,7 +55,7 @@ func (c *crawlerServiceClient) GetArticles(ctx context.Context, in *AllConfigsAr
 	}
 	return x, nil
 }
-//go:generate mockery --name CrawlerService_GetArticlesClient
+
 type CrawlerService_GetArticlesClient interface {
 	Recv() (*ArticlesReponse, error)
 	grpc.ClientStream
@@ -97,7 +96,7 @@ func (c *crawlerServiceClient) GetMatchDetail(ctx context.Context, in *MatchURLs
 	}
 	return x, nil
 }
-//go:generate mockery --name CrawlerService_GetMatchDetailClient
+
 type CrawlerService_GetMatchDetailClient interface {
 	Recv() (*MatchDetail, error)
 	grpc.ClientStream
@@ -118,7 +117,6 @@ func (x *crawlerServiceGetMatchDetailClient) Recv() (*MatchDetail, error) {
 // CrawlerServiceServer is the server API for CrawlerService service.
 // All implementations must embed UnimplementedCrawlerServiceServer
 // for forward compatibility
-//go:generate mockery --name CrawlerServiceServer
 type CrawlerServiceServer interface {
 	GetArticles(*AllConfigsArticles, CrawlerService_GetArticlesServer) error
 	GetSchedulesOnDay(context.Context, *Date) (*SchedulesReponse, error)
@@ -144,7 +142,6 @@ func (UnimplementedCrawlerServiceServer) mustEmbedUnimplementedCrawlerServiceSer
 // UnsafeCrawlerServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to CrawlerServiceServer will
 // result in compilation errors.
-//go:generate mockery --name UnsafeCrawlerServiceServer
 type UnsafeCrawlerServiceServer interface {
 	mustEmbedUnimplementedCrawlerServiceServer()
 }
@@ -160,7 +157,7 @@ func _CrawlerService_GetArticles_Handler(srv interface{}, stream grpc.ServerStre
 	}
 	return srv.(CrawlerServiceServer).GetArticles(m, &crawlerServiceGetArticlesServer{stream})
 }
-//go:generate mockery --name CrawlerService_GetArticlesServer
+
 type CrawlerService_GetArticlesServer interface {
 	Send(*ArticlesReponse) error
 	grpc.ServerStream
@@ -199,7 +196,7 @@ func _CrawlerService_GetMatchDetail_Handler(srv interface{}, stream grpc.ServerS
 	}
 	return srv.(CrawlerServiceServer).GetMatchDetail(m, &crawlerServiceGetMatchDetailServer{stream})
 }
-//go:generate mockery --name CrawlerService_GetMatchDetailServer
+
 type CrawlerService_GetMatchDetailServer interface {
 	Send(*MatchDetail) error
 	grpc.ServerStream

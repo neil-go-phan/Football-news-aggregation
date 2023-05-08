@@ -126,7 +126,11 @@ func findMatchTitle(doc *html.Node, matchDetail *entities.MatchDetail, xPath ent
 	if err == nil && matchScoreNode != nil  {
 		matchDetail.MatchDetailTitle.MatchScore = htmlquery.InnerText(matchScoreNode)
 	}
-
+	matchStatusNode, err := htmlquery.Query(doc, xPath.MatchDetailTitle.MatchStatus)
+	if err == nil && matchStatusNode != nil  {
+		matchDetail.MatchDetailTitle.MatchStatus = htmlquery.InnerText(matchStatusNode)
+	}
+	
 	matchClub1NameNode, err := htmlquery.Query(doc, xPath.MatchDetailTitle.Club1.Name)
 	if err == nil && matchClub1NameNode != nil  {
 		matchDetail.MatchDetailTitle.Club1.Name = htmlquery.InnerText(matchClub1NameNode)

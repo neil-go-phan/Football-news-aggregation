@@ -20,8 +20,8 @@ func NewSchedulesService(repo repository.SchedulesRepository, matchDetailRepo re
 	return schedulesService
 }
 
-func (s *schedulesService) SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay) {
-	s.matchDetailRepo.GetMatchDetailsOnDayFromCrawler(matchURLs)
+func (s *schedulesService) SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay) []entities.MatchDetail {
+	return s.matchDetailRepo.GetMatchDetailsOnDayFromCrawler(matchURLs)
 }
 
 func (s *schedulesService) GetSchedules(date string) {

@@ -17,8 +17,8 @@ func NewMatchDetailervice(repo repository.MatchDetailRepository) *matchDetailSer
 	return matchDetailService
 }
 
-func (s *matchDetailService) GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) {
-	s.repo.GetMatchDetailsOnDayFromCrawler(matchURLs)
+func (s *matchDetailService) GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) []entities.MatchDetail {
+	return s.repo.GetMatchDetailsOnDayFromCrawler(matchURLs)
 }
 
 func (s *matchDetailService) GetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error) {

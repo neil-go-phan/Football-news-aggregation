@@ -36,17 +36,20 @@ func NewMatchDetailRepo(conn *grpc.ClientConn, es *elasticsearch.Client) *matchD
 	return matchDetailRepo
 }
 
-func (repo *matchDetailRepo) GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) {
+func (repo *matchDetailRepo) GetMatchDetailsOnDayFromCrawler(matchURLs entities.MatchURLsOnDay) []entities.MatchDetail {
 	client := pb.NewCrawlerServiceClient(repo.conn)
 
 	in := &pb.MatchURLs{
 		Url: matchURLs.Urls,
 	}
+
+	matchDetails := make([]entities.MatchDetail, 0)
+
 	// send gRPC request to crawler
 	stream, err := client.GetMatchDetail(context.Background(), in)
 	if err != nil {
 		log.Errorf("error occurred while openning stream error %v ", err)
-		return
+		return matchDetails
 	}
 
 	done := make(chan bool)
@@ -71,13 +74,14 @@ func (repo *matchDetailRepo) GetMatchDetailsOnDayFromCrawler(matchURLs entities.
 
 			matchDetail := pbMatchDetailToEntityMatchDetail(resp)
 			upsertMatchDetailElastic(matchDetail, repo.es, date)
-
+			matchDetails = append(matchDetails, matchDetail)
 		}
 	}(matchURLs.Date)
 
 	<-done
-
+	
 	log.Printf("finished crawl match detail")
+	return matchDetails
 }
 
 func (repo *matchDetailRepo) GetMatchDetail(date time.Time, club1Name string, club2Name string) (entities.MatchDetail, error) {
