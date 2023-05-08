@@ -151,17 +151,21 @@ func main() {
 	}
 
 	createArticleCache(articleService)
-
+	
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
 
 		articleHandler.SignalToCrawlerAfter10Min(cronjob)
 		articleHandler.RefreshCacheAfter5Min(cronjob)
-		schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
-		schedulesHandler.SignalToCrawlerOn1Min(cronjob)
+		go func ()  {
+			schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
+		}()
+		
 		cronjob.Run()
 	}()
+
+
 
 	// app routes
 	log.Infoln("Setup routes")

@@ -27,7 +27,6 @@ func getMatchUrl(schedule entities.ScheduleElastic) []string {
 
 func readTime(match entities.Match, dayTime time.Time) (time.Time, error) {
 	exactTime := dayTime
-
 	timeStr := strings.Split(match.Time, "-")
 	if strings.Trim(timeStr[0], " ") == "FT" {
 		return exactTime, fmt.Errorf("the match is already end")
@@ -43,8 +42,8 @@ func readTime(match entities.Match, dayTime time.Time) (time.Time, error) {
 	}
 
 	exactTime = exactTime.Add(time.Hour*time.Duration(hours) + time.Minute*time.Duration(mins))
-	
-	return exactTime.UTC(), nil
+
+	return exactTime, nil
 }
 
 func addMatchUrl(time time.Time, inputurl string, matchsOnTime *entities.MatchURLsWithTimeOnDay) {
@@ -52,7 +51,7 @@ func addMatchUrl(time time.Time, inputurl string, matchsOnTime *entities.MatchUR
 	for _, matchOnTime := range matchsOnTime.MatchsOnTimes {
 		if matchOnTime.Date == time {
 			matchOnTime.Urls = append(matchOnTime.Urls, url)
-			return 
+			return
 		}
 	}
 	newMatchOnTimes := entities.MatchURLsOnTime{
