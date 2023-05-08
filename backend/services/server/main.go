@@ -383,7 +383,10 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 			matchsToDay = schedulesService.GetMatchURLsOnTime()
 		}
 	}
-	handler.MakeCronJobCrawlMatch(matchsToDay, &schedulesHandler)
+	go func() {
+		handler.MakeCronJobCrawlMatch(matchsToDay, &schedulesHandler)
+	}()
+	
 	// Get articles
 	articleService.GetArticles(make([]string, 0))
 	log.Printf("Add seed data success\n")
