@@ -159,7 +159,7 @@ func main() {
 		articleHandler.SignalToCrawlerAfter10Min(cronjob)
 		articleHandler.RefreshCacheAfter5Min(cronjob)
 		schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
-		schedulesHandler.SignalToCrawlerOn2Min(cronjob)
+		schedulesHandler.SignalToCrawlerOn1Min(cronjob)
 		cronjob.Run()
 	}()
 

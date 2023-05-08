@@ -84,8 +84,8 @@ func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *
 	}
 }
 
-func (schedulesHandler *ScheduleHandler) SignalToCrawlerOn2Min(cronjob *cron.Cron) {
-	_, err := cronjob.AddFunc("@every 0h2m", func() {
+func (schedulesHandler *ScheduleHandler) SignalToCrawlerOn1Min(cronjob *cron.Cron) {
+	_, err := cronjob.AddFunc("@every 0h1m", func() {
 		now := time.Now()
 		schedulesHandler.handler.GetSchedules(now.Format("02-01-2006"))
 		matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
