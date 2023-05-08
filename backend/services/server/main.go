@@ -165,6 +165,8 @@ func main() {
 		cronjob.Run()
 	}()
 
+	// schedulesHandler.SignalToCrawlerTest()
+
 	// app routes
 	log.Infoln("Setup routes")
 	r := gin.Default()
