@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"server/entities"
 	"server/services"
@@ -58,7 +59,25 @@ func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *
 	for _, matchsOnTime := range matchsToDay.MatchsOnTimes {
 		go func(matchsOnTime entities.MatchURLsOnTime) {
 			matchURLs := entities.MatchURLsOnDay(matchsOnTime)
-			duration := time.Until(matchsOnTime.Date)
+			now := time.Now()
+			loc, err := time.LoadLocation("UTC")
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			utcTime := time.Date(
+				now.Year(),
+				now.Month(),
+				now.Day(),
+				now.Hour(),
+				now.Minute(),
+				now.Second(),
+				now.Nanosecond(),
+				loc,
+			)
+
+			duration := utcTime.Sub(matchsOnTime.Date)
+
 			time.Sleep(duration)
 
 			log.Printf("Start cronjob crawl match at: %s", matchsOnTime.Date)
@@ -71,6 +90,7 @@ func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *
 					case <-done:
 						return
 					case <-ticker.C:
+						fmt.Printf("it meee")
 						schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchURLs)
 					}
 				}
@@ -81,19 +101,6 @@ func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *
 			done <- true
 			log.Printf("Stop cronjob crawl match at: %s", matchsOnTime.Date)
 		}(matchsOnTime)
-	}
-}
-
-func (schedulesHandler *ScheduleHandler) SignalToCrawlerOn1Min(cronjob *cron.Cron) {
-	_, err := cronjob.AddFunc("@every 0h1m", func() {
-		now := time.Now()
-		schedulesHandler.handler.GetSchedules(now.Format("02-01-2006"))
-		matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
-		schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
-		schedulesHandler.handler.ClearMatchURLsOnDay()
-	})
-	if err != nil {
-		log.Println("error occurred while seting up getSchedules cronjob: ", err)
 	}
 }
 
