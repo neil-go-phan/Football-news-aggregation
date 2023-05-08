@@ -84,6 +84,19 @@ func makeCronJob(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *
 	}
 }
 
+func (schedulesHandler *ScheduleHandler) SignalToCrawlerOn2Min(cronjob *cron.Cron) {
+	_, err := cronjob.AddFunc("@every 0h2m", func() {
+		now := time.Now()
+		schedulesHandler.handler.GetSchedules(now.Format("02-01-2006"))
+		matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+		schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
+		schedulesHandler.handler.ClearMatchURLsOnDay()
+	})
+	if err != nil {
+		log.Println("error occurred while seting up getSchedules cronjob: ", err)
+	}
+}
+
 func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Context) {
 	dateString := c.Query("date")
 	date, err := time.Parse(DATE_LAYOUT, dateString)
