@@ -46,7 +46,11 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
                       {match.club_1.name}
                       <Image
                         alt="club-logo"
-                        src={match.club_1.logo === "/images/CLB-MacDinh.svg" ? "https://bongda24h.vn/images/CLB-MacDinh.svg" : match.club_1.logo}
+                        src={
+                          match.club_1.logo === '/images/CLB-MacDinh.svg'
+                            ? 'https://bongda24h.vn/images/CLB-MacDinh.svg'
+                            : match.club_1.logo
+                        }
                         width={20}
                         height={20}
                       ></Image>
@@ -59,7 +63,11 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
                     <p>
                       <Image
                         alt="club-logo"
-                        src={match.club_2.logo === "/images/CLB-MacDinh.svg" ? "https://bongda24h.vn/images/CLB-MacDinh.svg" : match.club_2.logo}
+                        src={
+                          match.club_2.logo === '/images/CLB-MacDinh.svg'
+                            ? 'https://bongda24h.vn/images/CLB-MacDinh.svg'
+                            : match.club_2.logo
+                        }
                         width={20}
                         height={20}
                       ></Image>
