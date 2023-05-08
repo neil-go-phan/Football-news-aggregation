@@ -69,6 +69,7 @@ func upsertMatchDetailElastic(matchDetail entities.MatchDetail, es *elasticsearc
 		"doc":           matchDetail,
 		"doc_as_upsert": true,
 	}
+	
 	err := json.NewEncoder(&buffer).Encode(query)
 	if err != nil {
 		log.Errorf("error occrus when encoding query: %s", err)
