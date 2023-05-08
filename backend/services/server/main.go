@@ -147,7 +147,7 @@ func main() {
 	// check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
 	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
 		log.Infoln("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
-		seedDataFirstRun(articleService, schedulesService, matchDetailService)
+		seedDataFirstRun(articleService, schedulesService, matchDetailService, *schedulesHandler)
 	}
 
 	createArticleCache(articleService)
@@ -365,11 +365,13 @@ func createArticleIndex(es *elasticsearch.Client, indexName string) error {
 	return nil
 }
 
-func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchDetailService services.MatchDetailServices) {
+func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchDetailService services.MatchDetailServices, schedulesHandler handler.ScheduleHandler) {
 	// crawl data on previous 7 days and the following 7 days
 	now := time.Now()
 	
 	var DAYOFWEEK = 7
+	var matchsToDay entities.MatchURLsWithTimeOnDay
+
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
 		date := now.AddDate(0, 0, i)
 		schedulesService.GetSchedules(date.Format("02-01-2006"))
@@ -377,9 +379,11 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 		log.Printf("seed for date: %v\n", matchUrls.Date)
 		matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
 		schedulesService.ClearMatchURLsOnDay()
-		fmt.Printf("%#v", schedulesService.GetMatchURLsOnTime())
+		if date.Day() == time.Now().Day() {
+			matchsToDay = schedulesService.GetMatchURLsOnTime()
+		}
 	}
-
+	handler.MakeCronJobCrawlMatch(matchsToDay, &schedulesHandler)
 	// Get articles
 	articleService.GetArticles(make([]string, 0))
 	log.Printf("Add seed data success\n")
