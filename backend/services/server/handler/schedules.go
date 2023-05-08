@@ -48,7 +48,10 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 			}(date, &matchsToDay)
 		}
 		wg.Wait()
-		MakeCronJobCrawlMatch(matchsToDay, schedulesHandler)
+		go func() {
+			MakeCronJobCrawlMatch(matchsToDay, schedulesHandler)
+		}()
+		
 	})
 	if err != nil {
 		log.Println("error occurred while seting up getSchedules cronjob: ", err)
