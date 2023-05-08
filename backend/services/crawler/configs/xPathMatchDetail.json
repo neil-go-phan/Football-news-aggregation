@@ -1,6 +1,7 @@
 {
   "match_detail_title": {
     "match_score_id" :"//*[@id='match-score']",
+    "match_status": "//*[@id='match-status']",
     "club_1": {
       "club_name" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c1-result']/*[@class='name-clb1']/h3[@class='name-tie']",
       "club_logo" : "//*[@id='stickyblog']/*[@class='live-result fixs_ticky1']/*[@class='c1-result']/*[@class='logo-thumb1']//img"

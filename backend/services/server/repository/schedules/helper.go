@@ -43,6 +43,10 @@ func readTime(match entities.Match, dayTime time.Time) (time.Time, error) {
 
 	exactTime = exactTime.Add(time.Hour*time.Duration(hours) + time.Minute*time.Duration(mins))
 
+	if hours == 0 && mins == 0 {
+		exactTime = exactTime.AddDate(0, 0, 1)
+	}
+
 	return exactTime, nil
 }
 

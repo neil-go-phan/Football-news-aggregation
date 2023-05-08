@@ -30,6 +30,7 @@ type MatchDetailTitle struct {
 	Club1 Club`json:"club_1"`
 	Club2 Club`json:"club_2"`
 	MatchScore string`json:"match_score"`
+	MatchStatus string `json:"match_status"`
 }
 
 type MatchOverview struct {

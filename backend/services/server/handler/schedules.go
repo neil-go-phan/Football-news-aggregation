@@ -42,9 +42,10 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 				matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
 				schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
 				schedulesHandler.handler.ClearMatchURLsOnDay()
-				if date.Day() == time.Now().Day() {
+				if date.Day() == time.Now().Day() + 1 {
 					*matchsToDay = schedulesHandler.handler.GetMatchURLsOnTime()
 				}
+				schedulesHandler.handler.ClearMatchURLsOnTime()
 			}(date, &matchsToDay)
 		}
 		wg.Wait()
@@ -81,40 +82,66 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 
 			duration := matchsOnTime.Date.Sub(utcTime)
 
-			time.Sleep(duration)
+			fmt.Printf("create a cronjob sleep from %v to %v is with duration %v: \n",utcTime,matchsOnTime.Date, duration)
+
+			// time.Sleep(duration)
 
 			log.Printf("Start cronjob crawl match at: %s", matchsOnTime.Date)
 			ticker := time.NewTicker(1 * time.Minute)
 			done := make(chan bool)
+			matchEnded := false
+			var wg sync.WaitGroup
+			wg.Add(1)
 
 			go func() {
+				defer wg.Done()
 				for {
 					select {
 					case <-done:
 						return
 					case <-ticker.C:
-						fmt.Printf("it meee")
-						schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchURLs)
+						matchDetails := schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchURLs)
+						log.Printf("Crawl matchs on %v:%v\n", time.Now().Hour(), time.Now().Minute())
+						if checkMatchsEnd(matchDetails) {
+							matchEnded = true
+						}
 					}
+					// stop go routine
+					if matchEnded {
+            ticker.Stop()
+            done <- true
+            close(done)
+						// update schedules
+						schedulesHandler.handler.GetSchedules(time.Now().Format("02-01-2006"))
+            return
+        }
 				}
 			}()
-			// wait 2 hours. Let's say the match lasts for 2 hours
-			time.Sleep(2 * time.Hour)
-			ticker.Stop()
-			done <- true
-			log.Printf("Stop cronjob crawl match at: %s", matchsOnTime.Date)
+			wg.Wait()
+			log.Printf("Stop cronjob crawl match at: %s", time.Now())
 		}(matchsOnTime)
 	}
 }
 
-// func (schedulesHandler *ScheduleHandler) SignalToCrawlerTest() {
-// 	date := time.Now()
-// 	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
-// 	matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
-// 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
-// 	schedulesHandler.handler.ClearMatchURLsOnDay()
-// 	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
-// }
+// check if all match is ended
+func checkMatchsEnd(matchDetails []entities.MatchDetail) bool {
+	for _, matchDetail := range matchDetails {
+		if matchDetail.MatchDetailTitle.MatchStatus != "Kết thúc" {
+			return false
+		}
+	}
+	return true
+}
+
+func (schedulesHandler *ScheduleHandler) SignalToCrawlerTest() {
+	date := time.Now().AddDate(0,0,0)
+	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
+	matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
+	schedulesHandler.handler.ClearMatchURLsOnDay()
+	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
+}
+
 
 func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Context) {
 	dateString := c.Query("date")

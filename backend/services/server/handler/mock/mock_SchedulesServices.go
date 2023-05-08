@@ -307,8 +307,19 @@ func (_c *MockSchedulesServices_GetSchedules_Call) RunAndReturn(run func(string)
 }
 
 // SignalMatchDetailServiceToCrawl provides a mock function with given fields: matchURLs
-func (_m *MockSchedulesServices) SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay) {
-	_m.Called(matchURLs)
+func (_m *MockSchedulesServices) SignalMatchDetailServiceToCrawl(matchURLs entities.MatchURLsOnDay) []entities.MatchDetail {
+	ret := _m.Called(matchURLs)
+
+	var r0 []entities.MatchDetail
+	if rf, ok := ret.Get(0).(func(entities.MatchURLsOnDay) []entities.MatchDetail); ok {
+		r0 = rf(matchURLs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]entities.MatchDetail)
+		}
+	}
+
+	return r0
 }
 
 // MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SignalMatchDetailServiceToCrawl'
@@ -329,12 +340,12 @@ func (_c *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call) Run(run fu
 	return _c
 }
 
-func (_c *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call) Return() *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call {
-	_c.Call.Return()
+func (_c *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call) Return(_a0 []entities.MatchDetail) *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call {
+	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call) RunAndReturn(run func(entities.MatchURLsOnDay)) *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call {
+func (_c *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call) RunAndReturn(run func(entities.MatchURLsOnDay) []entities.MatchDetail) *MockSchedulesServices_SignalMatchDetailServiceToCrawl_Call {
 	_c.Call.Return(run)
 	return _c
 }

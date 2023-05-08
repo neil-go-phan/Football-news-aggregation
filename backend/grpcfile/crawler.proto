@@ -70,6 +70,7 @@ message MatchDetailTitle {
 	Club club_1 =1;
 	Club club_2 =2;
 	string match_score =3;
+  string match_status = 4;
 }
 
 message MatchOverview {
