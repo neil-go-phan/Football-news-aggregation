@@ -165,8 +165,6 @@ func main() {
 		cronjob.Run()
 	}()
 
-	schedulesHandler.SignalToCrawlerTest()
-
 	// app routes
 	log.Infoln("Setup routes")
 	r := gin.Default()
@@ -369,7 +367,7 @@ func seedDataFirstRun(articleService services.ArticleServices, schedulesService 
 	// crawl data on previous 7 days and the following 7 days
 	now := time.Now()
 	
-	var DAYOFWEEK = 1
+	var DAYOFWEEK = 7
 	var matchsToDay entities.MatchURLsWithTimeOnDay
 
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"server/entities"
 	"server/services"
@@ -82,9 +81,9 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 
 			duration := matchsOnTime.Date.Sub(utcTime)
 
-			fmt.Printf("create a cronjob sleep from %v to %v is with duration %v: \n",utcTime,matchsOnTime.Date, duration)
+			log.Printf("create a cronjob sleep from %v to %v is with duration %v: \n",utcTime,matchsOnTime.Date, duration)
 
-			// time.Sleep(duration)
+			time.Sleep(duration)
 
 			log.Printf("Start cronjob crawl match at: %s", matchsOnTime.Date)
 			ticker := time.NewTicker(1 * time.Minute)
@@ -133,15 +132,14 @@ func checkMatchsEnd(matchDetails []entities.MatchDetail) bool {
 	return true
 }
 
-func (schedulesHandler *ScheduleHandler) SignalToCrawlerTest() {
-	date := time.Now().AddDate(0,0,0)
-	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
-	matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
-	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
-	schedulesHandler.handler.ClearMatchURLsOnDay()
-	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
-}
-
+// func (schedulesHandler *ScheduleHandler) SignalToCrawlerTest() {
+// 	date := time.Now().AddDate(0,0,0)
+// 	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
+// 	matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+// 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
+// 	schedulesHandler.handler.ClearMatchURLsOnDay()
+// 	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
+// }
 
 func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Context) {
 	dateString := c.Query("date")
