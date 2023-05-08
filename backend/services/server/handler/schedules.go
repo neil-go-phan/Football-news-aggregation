@@ -79,7 +79,7 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 				loc,
 			)
 
-			duration := utcTime.Sub(matchsOnTime.Date)
+			duration := matchsOnTime.Date.Sub(utcTime)
 
 			time.Sleep(duration)
 
@@ -106,6 +106,15 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 		}(matchsOnTime)
 	}
 }
+
+// func (schedulesHandler *ScheduleHandler) SignalToCrawlerTest() {
+// 	date := time.Now()
+// 	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
+// 	matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+// 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
+// 	schedulesHandler.handler.ClearMatchURLsOnDay()
+// 	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
+// }
 
 func (schedulesHandler *ScheduleHandler) APIGetAllScheduleLeagueOnDay(c *gin.Context) {
 	dateString := c.Query("date")
