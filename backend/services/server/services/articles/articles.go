@@ -79,7 +79,7 @@ func (s *articleService) GetArticles(keywords []string) {
 	// send gRPC request to crawler
 	stream, err := s.grpcClient.GetArticles(context.Background(), in)
 	if err != nil {
-		log.Error("error occurred while openning stream error %v \n", err)
+		log.Errorln("error occurred while openning stream error ", err)
 		return
 	}
 

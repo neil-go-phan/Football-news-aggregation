@@ -105,7 +105,10 @@ func (s *schedulesService) autoStoreNewLeague(schedule entities.Schedule) {
 	isNewLeague := isNewLeague(*leagues, schedule.LeagueName)
 	if isNewLeague {
 		log.Println("detect a new league: ", schedule.LeagueName)
-		s.leagueServices.CreateLeague(schedule.LeagueName)
+		err = s.leagueServices.CreateLeague(schedule.LeagueName)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 }
 

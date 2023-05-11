@@ -351,18 +351,26 @@ func createArticleIndex(es *elasticsearch.Client, indexName string) error {
 
 func seedData(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchService services.MatchServices, leagueRepo repository.LeaguesRepository, tagRepo repository.TagRepository, adminRepo repository.AdminRepository) {
 	
-	leagueRepo.Create(&entities.League{
+	err := leagueRepo.Create(&entities.League{
 		LeagueName: "Tin tức bóng đá",
 		Active: true,
 	})
-	tagRepo.Create(&entities.Tag{
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = tagRepo.Create(&entities.Tag{
 		TagName: "tin tuc bong da",
 	})
-	adminRepo.Create(&entities.Admin{
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = adminRepo.Create(&entities.Admin{
 		Username: "admin2023",
 		Password: "fa585d89c851dd338a70dcf535aa2a92fee7836dd6aff1226583e88e0996293f16bc009c652826e0fc5c706695a03cddce372f139eff4d13959da6f1f5d3eabe",
 	})
-
+	if err != nil {
+		log.Fatal(err)
+	}
 	// crawl data on previous 7 days and the following 7 days
 	now := time.Now()
 	var DAYOFWEEK = 7

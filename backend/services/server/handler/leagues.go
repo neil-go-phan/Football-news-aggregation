@@ -25,7 +25,7 @@ func NewLeaguesHandler(handler services.LeaguesServices) *LeaguesHandler {
 func (leaguesHandler *LeaguesHandler) GetLeaguesName(c *gin.Context) {
 	leaguesNames, err := leaguesHandler.handler.GetLeaguesNameActive()
 	if err != nil {
-		log.Error("Error occurs when response League name active to frontend: %s", err)
+		log.Errorln("error occurs when response League name active to frontend: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Internal server error"})
 		return
 	}
@@ -35,7 +35,7 @@ func (leaguesHandler *LeaguesHandler) GetLeaguesName(c *gin.Context) {
 func (leaguesHandler *LeaguesHandler) ListLeagues(c *gin.Context) {
 	leagues, err := leaguesHandler.handler.ListLeagues()
 	if err != nil {
-		log.Error("Error occurs when response list leagues to frontend: %s", err)
+		log.Errorln("Error occurs when response list leagues to frontend: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Internal server error"})
 		return
 	}

@@ -27,7 +27,7 @@ func NewTagsHandler(handler services.TagsServices) *TagsHandler {
 func (tagsHandler *TagsHandler) ListTags(c *gin.Context) {
 	tags, err := tagsHandler.handler.ListTagsName()
 	if err != nil {
-		log.Error("Error occurs when response list tag to frontend: %s", err)
+		log.Errorln("error occurs when response list tag to frontend: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Internal server error"})
 		return
 	}
