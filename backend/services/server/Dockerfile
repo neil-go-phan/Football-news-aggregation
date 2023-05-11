@@ -14,7 +14,6 @@ FROM alpine:3.16
 ENV TZ=Asia/Ho_Chi_Minh
 
 WORKDIR /app
-COPY configs/*.json /app/configs/
 COPY .env .
 COPY --from=builder /app/main .
 
