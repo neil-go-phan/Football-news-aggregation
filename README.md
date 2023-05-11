@@ -13,12 +13,11 @@
   - Bootstrapt
   - Code convention: eslint
 - Backend: 
-  - Gin
+  - Framework: Gin
   - Docker
   - Crawler: goquery
   - Message between services: gRPC
   - Database: postgres
-  - Search engine: elasticsearch
   - Code convention: golangci-lint
   - Log: Sentry
 - Deploy: 
