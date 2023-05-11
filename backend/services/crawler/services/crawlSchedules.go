@@ -2,11 +2,12 @@ package services
 
 import (
 	"crawler/entities"
-	"crawler/helper"
+	crawlerhelpers "crawler/helper"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -49,14 +50,18 @@ func CrawlSchedules(date string, htmlClasses entities.HtmlSchedulesClass) (entit
 			var match entities.Match
 			match.Time = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Time)).Text()
 			match.Round = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Round)).Text()
+			match.Round = strings.TrimSpace(match.Round)
 			match.Time = strings.TrimSpace(strings.Replace(match.Time, match.Round, "", -1))
 			match.Scores = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Scores)).Text()
+			match.Scores = strings.TrimSpace(match.Scores)
 			m.Find(fmt.Sprintf("%s a", crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.MatchDetailLink))).Each(func(i int, s *goquery.Selection) {
 				href, _ := s.Attr("href")
 				match.MatchDetailLink = href
 			})
-			match.Club1.Name = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Name)).Text()
-			match.Club2.Name = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Text()
+			match.Club1.Name = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Name)).First().Clone().Children().Remove().End().Text()
+			match.Club1.Name = strings.TrimSpace(match.Club1.Name)
+			match.Club2.Name = m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).First().Clone().Children().Remove().End().Text()
+			match.Club2.Name = strings.TrimSpace(match.Club2.Name)
 			m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Name)).Children()
 			m.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club1.Name)).Each(func(i int, s *goquery.Selection) {
 				attr, _ := s.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
@@ -66,7 +71,7 @@ func CrawlSchedules(date string, htmlClasses entities.HtmlSchedulesClass) (entit
 				attr, _ := s.Find(crawlerhelpers.FormatClassName(htmlClasses.HtmlMatchClass.Club2.Logo)).Attr("src")
 				match.Club2.Logo = attr
 			})
-			schedule.Matchs = append(schedule.Matchs, match)
+			schedule.Matches = append(schedule.Matches, match)
 		})
 
 		schedules.ScheduleOnLeagues = append(schedules.ScheduleOnLeagues, schedule)

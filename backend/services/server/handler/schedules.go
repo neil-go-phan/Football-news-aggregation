@@ -2,15 +2,17 @@ package handler
 
 import (
 	"net/http"
-	"server/entities"
+	serverhelper "server/helper"
+	"server/repository"
 	"server/services"
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	pb "server/proto"
 
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
+	log "github.com/sirupsen/logrus"
 )
 
 var DATE_LAYOUT = "2006-01-02" // ISO-8601
@@ -27,48 +29,45 @@ func NewSchedulesHandler(handler services.SchedulesServices) *ScheduleHandler {
 }
 
 func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.Cron) {
-	_, err := cronjob.AddFunc("0 23 * * *", func() {
+	_, err := cronjob.AddFunc("00 23 * * *", func() {
 		var wg sync.WaitGroup
 		now := time.Now()
-		var matchsToDay entities.MatchURLsWithTimeOnDay
 		var DAYOFWEEK = 7
 		for i := -1; i <= DAYOFWEEK; i++ {
 			wg.Add(1)
 			date := now.AddDate(0, 0, i)
-			go func(date time.Time, matchsToDay *entities.MatchURLsWithTimeOnDay) {
+			go func(date time.Time) {
 				defer wg.Done()
 				schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
-				matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+				matchUrls := schedulesHandler.handler.GetAllMatchURLs()
 				schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
-				schedulesHandler.handler.ClearMatchURLsOnDay()
-				if date.Day() == time.Now().Day() + 1 {
-					*matchsToDay = schedulesHandler.handler.GetMatchURLsOnTime()
+				schedulesHandler.handler.ClearAllMatchURLs()
+
+				if date.Day() == time.Now().Day()+1 {
+					MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
 				}
-				schedulesHandler.handler.ClearMatchURLsOnTime()
-			}(date, &matchsToDay)
+
+			}(date)
 		}
 		wg.Wait()
-		go func() {
-			MakeCronJobCrawlMatch(matchsToDay, schedulesHandler)
-		}()
-		
+		schedulesHandler.handler.ClearMatchURLsOnTime()
 	})
 	if err != nil {
-		log.Println("error occurred while seting up getSchedules cronjob: ", err)
+		log.Errorln("error occurred while seting up getSchedules cronjob: ", err)
 	}
 }
 
-func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedulesHandler *ScheduleHandler) {
+func MakeCronJobCrawlMatch(matchsToDay repository.MatchURLsWithTimeOnDay, schedulesHandler *ScheduleHandler) {
 	for _, matchsOnTime := range matchsToDay.MatchsOnTimes {
-		go func(matchsOnTime entities.MatchURLsOnTime) {
-			matchURLs := entities.MatchURLsOnDay(matchsOnTime)
+		go func(matchsOnTime repository.MatchURLsOnTime) {
+			matchURLs := repository.AllMatchURLsOnDay(matchsOnTime)
 			now := time.Now()
 			loc, err := time.LoadLocation("UTC")
 			if err != nil {
 				log.Error(err)
 				return
 			}
-			utcTime := time.Date(
+			utcTimeNow := time.Date(
 				now.Year(),
 				now.Month(),
 				now.Day(),
@@ -78,14 +77,25 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 				now.Nanosecond(),
 				loc,
 			)
-
-			duration := matchsOnTime.Date.Sub(utcTime)
-
-			log.Printf("create a cronjob sleep from %v to %v is with duration %v: \n",utcTime,matchsOnTime.Date, duration)
+			utcTimeThen := time.Date(
+				matchsOnTime.Date.Year(),
+				matchsOnTime.Date.Month(),
+				matchsOnTime.Date.Day(),
+				matchsOnTime.Date.Hour(),
+				matchsOnTime.Date.Minute(),
+				matchsOnTime.Date.Second(),
+				matchsOnTime.Date.Nanosecond(),
+				loc,
+			)
+			duration := utcTimeThen.Sub(utcTimeNow)
+			if duration > time.Hour*time.Duration(24) || duration < 0{
+				return
+			}
+			log.Printf("create a cronjob sleep from %v to %v with duration %v and get %v match\n", utcTimeNow, utcTimeThen, duration, len(matchsOnTime.Urls))
 
 			time.Sleep(duration)
 
-			log.Printf("Start cronjob crawl match at: %s", matchsOnTime.Date)
+			log.Printf("Start cronjob crawl match at: %s", utcTimeThen)
 
 			ticker := time.NewTicker(1 * time.Minute)
 
@@ -121,9 +131,10 @@ func MakeCronJobCrawlMatch(matchsToDay entities.MatchURLsWithTimeOnDay, schedule
 }
 
 // check if all match is ended
-func checkMatchsEnd(matchDetails []entities.MatchDetail) bool {
+func checkMatchsEnd(matchDetails []*pb.MatchDetail) bool {
 	for _, matchDetail := range matchDetails {
-		if matchDetail.MatchDetailTitle.MatchStatus != "Kết thúc" {
+		log.Printf("%s vs %s: status %s\n", matchDetail.MatchDetailTitle.Club_1.Name, matchDetail.MatchDetailTitle.Club_2.Name, matchDetail.MatchDetailTitle.MatchStatus)
+		if serverhelper.FormatVietnamese(matchDetail.MatchDetailTitle.MatchStatus) != "ket thuc" {
 			return false
 		}
 	}
@@ -131,11 +142,11 @@ func checkMatchsEnd(matchDetails []entities.MatchDetail) bool {
 }
 
 func (schedulesHandler *ScheduleHandler) SignalToCrawlerToDay() {
-	date := time.Now().AddDate(0,0,0)
+	date := time.Now().AddDate(0, 0, 0)
 	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
-	matchUrls := schedulesHandler.handler.GetMatchURLsOnDay()
+	matchUrls := schedulesHandler.handler.GetAllMatchURLs()
 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
-	schedulesHandler.handler.ClearMatchURLsOnDay()
+	schedulesHandler.handler.ClearAllMatchURLs()
 	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
 	schedulesHandler.handler.ClearMatchURLsOnTime()
 }

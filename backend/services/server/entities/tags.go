@@ -1,5 +1,8 @@
 package entities
 
-type Tags struct {
-	Tags []string `json:"tags"`
+import "gorm.io/gorm"
+
+type Tag struct {
+	gorm.Model
+	TagName string `gorm:"uniqueIndex"`
 }

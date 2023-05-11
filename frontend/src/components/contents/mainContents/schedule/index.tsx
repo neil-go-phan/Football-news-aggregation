@@ -10,7 +10,7 @@ export type Schedules = {
 
 export type ScheduleOnLeague = {
   league_name: string;
-  matchs: Array<Match>;
+  matches: Array<Match>;
 };
 
 export type Match = {

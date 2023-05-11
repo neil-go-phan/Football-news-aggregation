@@ -1,10 +1,14 @@
 package entities
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"github.com/golang-jwt/jwt/v5"
+	"gorm.io/gorm"
+)
 
 type Admin struct {
-	Username string `json:"username" validate:"required,min=8,max=16"`
-	Password string `json:"password" validate:"required"`
+	gorm.Model
+	Username string `gorm:"uniqueIndex"`
+	Password string 
 }
 
 type JWTClaim struct {

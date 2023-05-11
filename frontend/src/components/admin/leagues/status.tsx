@@ -1,6 +1,6 @@
 import axiosProtectedAPI from '@/helpers/axiosProtectedAPI';
 import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
-import React, { useState } from 'react';
+import React from 'react';
 import { Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
@@ -11,8 +11,6 @@ type Props = {
 };
 
 const Status: React.FC<Props> = (props: Props) => {
-  const [isChecked, setIsChecked] = useState<boolean>(props.active);
-
   const onSwitchAction = () => {
     requestChangeLeagueActive();
   };
@@ -35,7 +33,6 @@ const Status: React.FC<Props> = (props: Props) => {
         progress: undefined,
         theme: 'light',
       });
-      setIsChecked(!isChecked);
       if (data.status_active) {
         requestArticleCrawler();
       }
@@ -90,8 +87,8 @@ const Status: React.FC<Props> = (props: Props) => {
     <Form.Check
       type='switch'
       onChange={onSwitchAction}
-      checked={isChecked}
-      label={isChecked ? 'Active' : 'Inactive'}
+      checked={props.active}
+      label={props.active ? 'Active' : 'Inactive'}
     />
   );
 };

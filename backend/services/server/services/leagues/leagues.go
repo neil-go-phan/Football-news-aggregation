@@ -1,60 +1,90 @@
 package leaguesservices
 
 import (
-	"fmt"
 	"server/entities"
+	serverhelper "server/helper"
 	"server/repository"
+	"server/services"
 )
 
 type leaguesService struct {
 	leaguesRepo repository.LeaguesRepository
-	tagRepo repository.TagRepository
+	tagService  services.TagsServices
 }
 
 var DEFAULT_LEAGUE_NAME = "Tin tức bóng đá"
 
-func NewleaguesService(leaguesRepo repository.LeaguesRepository, tagRepo repository.TagRepository) *leaguesService {
+func NewleaguesService(leaguesRepo repository.LeaguesRepository, tagService services.TagsServices) *leaguesService {
 	leaguesService := &leaguesService{
 		leaguesRepo: leaguesRepo,
-		tagRepo:        tagRepo,
+		tagService:     tagService,
 	}
 	return leaguesService
 }
 
-func (s *leaguesService) AddLeague(newLeaguesName string) {
-	s.leaguesRepo.AddLeague(newLeaguesName)
+func (s *leaguesService) CreateLeague(newLeaguesName string) error {
+	newLeague := &entities.League{
+		LeagueName: newLeaguesName,
+		Active:     false,
+	}
+	return s.leaguesRepo.Create(newLeague)
 }
 
-func (s *leaguesService) ListLeagues() entities.Leagues {
-	return s.leaguesRepo.GetLeagues()
+func (s *leaguesService) ListLeagues() (*[]entities.League, error) {
+	return s.leaguesRepo.List()
 }
 
-func (s *leaguesService)GetLeaguesNameActive() []string{
-	return s.leaguesRepo.GetLeaguesNameActive()
+func (s *leaguesService) GetLeaguesNameActive() ([]string, error) {
+	leagueName := []string{}
+	leagues, err := s.leaguesRepo.GetLeaguesNameActive()
+	if err != nil {
+		return leagueName, err
+	}
+
+	for _, league := range *leagues {
+		leagueName = append(leagueName, league.LeagueName)
+	}
+	return leagueName, nil
 }
 
+func (s *leaguesService) GetLeaguesName() ([]string, error) {
+	leagueName := []string{}
+	leagues, err := s.leaguesRepo.GetLeaguesName()
+	if err != nil {
+		return leagueName, err
+	}
+
+	for _, league := range *leagues {
+		leagueName = append(leagueName, league.LeagueName)
+	}
+	return leagueName, nil
+}
+
+// ChangeStatus: change league.active
 func (s *leaguesService) ChangeStatus(leagueName string) (bool, error) {
-	repoLeagues := s.leaguesRepo.GetLeagues()
-	for index, league := range repoLeagues.Leagues {
-		if league.LeagueName == leagueName {
-			repoLeagues.Leagues[index].Active = !league.Active
-			err := s.leaguesRepo.WriteLeaguesJSON(repoLeagues)
-			if err != nil {
-				return false, err
-			}
-			if repoLeagues.Leagues[index].Active {
-				err := s.tagRepo.AddTag(leagueName)
-				if err != nil {
-					return repoLeagues.Leagues[index].Active, err
-				}
-			} else {
-				err := s.tagRepo.DeleteTag(leagueName)
-				if err != nil {
-					return repoLeagues.Leagues[index].Active, err
-				}
-			}
-			return repoLeagues.Leagues[index].Active, nil
+	tagFromLeague := serverhelper.FormatVietnamese(leagueName)
+	league, err := s.leaguesRepo.GetByName(leagueName)
+	if err != nil {
+		return false, err
+	}
+	league.Active = !league.Active
+
+	err = s.leaguesRepo.Update(league)
+	if err != nil {
+		return false, err
+	}
+	// add new tag if league.active = true
+	if league.Active {
+		err := s.tagService.AddTag(tagFromLeague)
+		if err != nil {
+			return league.Active, err
+		}
+	} else {
+		// delete tag if league.active = false
+		err := s.tagService.DeleteTag(tagFromLeague)
+		if err != nil {
+			return league.Active, err
 		}
 	}
-	return false, fmt.Errorf("league not found")
+	return league.Active, nil
 }

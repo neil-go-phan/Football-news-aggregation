@@ -22,6 +22,13 @@ type AdminWithConfirmPassword struct {
 	PasswordConfirmation string `json:"password_confirmation" validate:"required"`
 }
 
+type JWTClaim struct {
+	Username string `json:"username"`
+	RandomString []byte `json:"random_string"`
+	jwt.RegisteredClaims
+}
+
+
 func checkIsAdminCorrect(admin *Admin, adminJson entities.Admin) error {
 	if admin.Username != adminJson.Username {
 		return errors.New("username is incorrect")

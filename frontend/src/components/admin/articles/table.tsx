@@ -6,6 +6,7 @@ import DeleteArticleBtn from './deleteBtn';
 import { ThreeDots } from 'react-loader-spinner';
 
 type ArticlesRender = {
+  id: number;
   index: number;
   title: string;
   description: string;
@@ -17,15 +18,15 @@ type Props = {
   articles: Array<ArticleType>;
   currentPage: number;
   // eslint-disable-next-line no-unused-vars
-  handleUpdateTable: (title: string) => void;
+  handleUpdateTable: (id: number) => void;
 };
 
 const ArticleTable: React.FC<Props> = (props: Props) => {
   const columns: Column<ArticlesRender>[] = React.useMemo(
     () => [
       {
-        header: 'Index',
-        accessor: 'index',
+        header: 'ID',
+        accessor: 'id',
       },
       {
         header: 'Title',
@@ -49,7 +50,7 @@ const ArticleTable: React.FC<Props> = (props: Props) => {
         accessor: 'action',
         Cell: ({ row }) => (
           <DeleteArticleBtn
-            title={row.values.title}
+            id={row.values.id}
             handleUpdateTable={props.handleUpdateTable}
             key={`delete-article-btn-${row.values.title}`}
           />
@@ -70,6 +71,7 @@ const ArticleTable: React.FC<Props> = (props: Props) => {
         return [];
       }
       return articles.map((article, index) => ({
+        id: article.id,
         index: index + 1 + 10 * (props.currentPage - 1),
         title: article.title,
         description: article.description,

@@ -1,5 +1,13 @@
 version: '3.9'
 services:
+  postgres: 
+    image: postgres:15.2-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=footballnews
+    ports:
+      - 5432:5432
 
   elasticsearch:
     image: elasticsearch:7.17.9
@@ -29,14 +37,19 @@ services:
       - CRAWLER_ADDRESS=crawler:8000
       - ELASTICSEARCH_ADDRESS=http://elasticsearch:9200/
       - JSON_PATH=/app/configs/
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=footballnews
     depends_on:
       - crawler
       - elasticsearch
+      - postgres
     entrypoint:
       [
-        # "/app/wait-for.sh",
-        # "elasticsearch:9200",
-        # "--",
+        "/app/wait-for.sh",
+        "postgres:5432",
+        "--",
         "/app/main"
       ]
 

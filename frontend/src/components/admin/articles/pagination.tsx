@@ -14,9 +14,9 @@ const AdminArticlePagination: React.FC<Props> = ({
 }) => {
   // Calculating max number of pages
   const noOfPages = Math.ceil(totalRows / ROW_PER_PAGE);
-
+  
   const [currentPage, setCurrentPage] = useState(1);
-
+  
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoNext, setCanGoNext] = useState(true);
 

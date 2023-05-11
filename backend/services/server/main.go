@@ -8,25 +8,25 @@ import (
 	"os"
 	"server/entities"
 	"server/handler"
-	serverhelper "server/helper"
 	"server/middlewares"
+	"server/migrations"
+	"server/repository"
+	pb "server/proto"
 
-	adminrepo "server/repository/admin"
-	articlerepo "server/repository/articles"
-	htmlclassesrepo "server/repository/htmlClasses"
-	leaguesrepo "server/repository/leagues"
-	matchdetailrepo "server/repository/matchDetail"
-	schedulesrepo "server/repository/schedules"
-	tagsrepo "server/repository/tags"
 	"server/routes"
 	"server/services"
 	adminservices "server/services/admin"
 	articlesservices "server/services/articles"
 	leaguesservices "server/services/leagues"
-	matchdetailservices "server/services/matchDetail"
 	schedulesservices "server/services/schedules"
 	tagsservices "server/services/tags"
-
+	clubservices "server/services/club"
+	statsitemservices "server/services/statsItem"
+	eventservices "server/services/event"
+	overviewitemservices "server/services/overviewItem"
+	playerservices "server/services/player"
+	lineupservices "server/services/lineup"
+	matchservices "server/services/match"
 	"strings"
 	"time"
 
@@ -63,13 +63,14 @@ func init() {
 	}
 }
 
-var ELASTIC_SEARCH_INDEXES = []string{articlerepo.ARTICLES_INDEX_NAME, schedulesrepo.SCHEDULE_INDEX_NAME, matchdetailrepo.MATCH_DETAIL_INDEX_NAME}
+var ELASTIC_SEARCH_INDEXES = []string{articlesservices.ARTICLES_INDEX_NAME}
 
 type EnvConfig struct {
 	ElasticsearchAddress string `mapstructure:"ELASTICSEARCH_ADDRESS"`
 	Port                 string `mapstructure:"PORT"`
 	CrawlerAddress       string `mapstructure:"CRAWLER_ADDRESS"`
 	JsonPath             string `mapstructure:"JSON_PATH"`
+	DBSource             string `mapstructure:"DB_SOURCE"`
 }
 
 func main() {
@@ -77,11 +78,6 @@ func main() {
 
 	if err != nil {
 		log.Fatalln("cannot load env")
-	}
-	// load default config
-	classConfig, leaguesconfig, tagsConfig, adminConfig, err := readConfigFromJSON(env.JsonPath)
-	if err != nil {
-		log.Fatalln("Fail to read config from JSON: ", err)
 	}
 
 	// write log file
@@ -96,34 +92,61 @@ func main() {
 	configSentry()
 	defer sentry.Flush(2 * time.Second)
 	sentry.CaptureMessage("Connect to server success")
+
+// connect crawler
 	conn := connectToCrawler(env)
+	grpcClient := pb.NewCrawlerServiceClient(conn)
+
+	// connect postgres
+	repository.ConnectDB(env.DBSource)
+	db := repository.GetDB()
+	err = migrations.Migrate(db)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// elastic search
 	es, err := connectToElasticsearch(env)
 	if err != nil {
 		log.Errorln("error occurred while connecting to elasticsearch node: ", err)
 	}
-	amountOfNewIndex := createElaticsearchIndex(es)
-	
-	// declare services
-	htmlclassesRepo := htmlclassesrepo.NewHtmlClassesRepo(classConfig)
+	createElaticsearchIndex(es)
 
-	tagRepo := tagsrepo.NewTagsRepo(tagsConfig, env.JsonPath)
+	// declare services
+	clubRepo := repository.NewClubRepo(db)
+	clubService := clubservices.NewClubService(clubRepo)
+
+	statsItemRepo := repository.NewStatsItemRepo(db)
+	statsItemService := statsitemservices.NewStatsItemService(statsItemRepo)
+
+	eventRepo := repository.NewEventRepo(db)
+	eventService := eventservices.NewEventService(eventRepo)
+
+	ovewviewItemRepo := repository.NewoOverviewItemRepo(db)
+	overviewItemServices := overviewitemservices.NewOverviewItemService(ovewviewItemRepo)
+
+	playerRepo := repository.NewPlayerRepo(db)
+	playerService := playerservices.NewPlayerService(playerRepo)
+
+	lineupRepo := repository.NewLineupRepo(db)
+	lineupService := lineupservices.NewLineupService(lineupRepo)
+
+	tagRepo := repository.NewTagRepo(db)
 	tagsService := tagsservices.NewTagsService(tagRepo)
 
-	leaguesRepo := leaguesrepo.NewLeaguesRepo(leaguesconfig, env.JsonPath)
-	leaguesService := leaguesservices.NewleaguesService(leaguesRepo, tagRepo)
+	leaguesRepo := repository.NewLeaguesRepo(db)
+	leaguesService := leaguesservices.NewleaguesService(leaguesRepo, tagsService)
 
-	articleRepo := articlerepo.NewArticleRepo(leaguesRepo, htmlclassesRepo, tagRepo, conn, es)
-	articleService := articlesservices.NewArticleService(articleRepo)
+	articleRepo := repository.NewArticleRepo(db)
+	articleService := articlesservices.NewArticleService(leaguesService, tagsService,grpcClient,es, articleRepo)
 
-	matchDetailRepo := matchdetailrepo.NewMatchDetailRepo(conn, es)
-	matchDetailService := matchdetailservices.NewMatchDetailervice(matchDetailRepo)
+	matchRepo := repository.NewMatchRepo(db)
+	matchService := matchservices.NewMatchService(grpcClient,matchRepo, clubService, statsItemService, eventService, overviewItemServices, lineupService, playerService)
 
-	schedulesRepo := schedulesrepo.NewSchedulesRepo(leaguesRepo, tagRepo, conn, es)
-	schedulesService := schedulesservices.NewSchedulesService(schedulesRepo, matchDetailRepo)
+	schedulesRepo := repository.NewScheduleRepo(db)
+	schedulesService := schedulesservices.NewSchedulesService(leaguesService, tagsService, grpcClient, es, schedulesRepo, matchService)
 
-	adminRepo := adminrepo.NewAdminRepo(adminConfig, env.JsonPath)
+	adminRepo := repository.NewAdminRepo(db)
 	adminService := adminservices.NewAdminService(adminRepo)
 
 	tagsHandler := handler.NewTagsHandler(tagsService)
@@ -138,30 +161,25 @@ func main() {
 	schedulesHandler := handler.NewSchedulesHandler(schedulesService)
 	schedulesRoute := routes.NewScheduleRoutes(schedulesHandler)
 
-	matchDetailHandler := handler.NewMatchDetailHandler(matchDetailService)
+	matchDetailHandler := handler.NewMatchDetailHandler(matchService)
 	matchDetailRoute := routes.NewMatchDetailRoutes(matchDetailHandler)
 
 	adminHandler := handler.NewAdminHandler(adminService)
 	adminRoute := routes.NewAdminRoutes(adminHandler)
 
-	// check is this a first run to add seed data. // condition: amount of new elastic indices create = amount of elastic indices in whole app
-	if amountOfNewIndex == len(ELASTIC_SEARCH_INDEXES) {
-		log.Infoln("This is first time you run this project ? Please wait sometime to add seed data. It's gonna be a longtime")
-		seedDataFirstRun(articleService, schedulesService, matchDetailService, *schedulesHandler)
-	}
-
 	createArticleCache(articleService)
-	
+
+	seedData(articleService, schedulesService, matchService,leaguesRepo, tagRepo, adminRepo)
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
 
 		articleHandler.SignalToCrawlerAfter10Min(cronjob)
 		articleHandler.RefreshCacheAfter5Min(cronjob)
-		go func ()  {
+		go func() {
 			schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
 		}()
-		
+
 		cronjob.Run()
 	}()
 
@@ -179,43 +197,10 @@ func main() {
 	matchDetailRoute.Setup(r)
 	adminRoute.Setup(r)
 
-	err = r.Run(":8080")
+	err = r.Run(env.Port)
 	if err != nil {
 		log.Fatalln("error occurred when run server")
 	}
-}
-
-func readConfigFromJSON(JsonPath string) (entities.HtmlClasses, entities.Leagues, entities.Tags, entities.Admin, error) {
-	var classConfig entities.HtmlClasses
-	var leaguesConfig entities.Leagues
-	var tagsConfig entities.Tags
-	var adminConfig entities.Admin
-
-	classConfig, err := serverhelper.ReadHtmlClassJSON(JsonPath)
-	if err != nil {
-		log.Println("Fail to read htmlClassesConfig.json: ", err)
-		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
-	}
-
-	leaguesConfig, err = serverhelper.ReadleaguesJSON(JsonPath)
-	if err != nil {
-		log.Println("Fail to read leaguesConfig.json: ", err)
-		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
-	}
-
-	tagsConfig, err = serverhelper.ReadTagsJSON(JsonPath)
-	if err != nil {
-		log.Println("Fail to read tagsConfig.json: ", err)
-		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
-	}
-
-	adminConfig, err = serverhelper.ReadAdminJSON(JsonPath)
-	if err != nil {
-		log.Println("Fail to read adminConfig.json: ", err)
-		return classConfig, leaguesConfig, tagsConfig, adminConfig, err
-	}
-
-	return classConfig, leaguesConfig, tagsConfig, adminConfig, nil
 }
 
 func loadEnv(path string) (env EnvConfig, err error) {
@@ -234,7 +219,6 @@ func loadEnv(path string) (env EnvConfig, err error) {
 }
 
 func connectToCrawler(env EnvConfig) *grpc.ClientConn {
-	// dial server
 	conn, err := grpc.Dial(env.CrawlerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("can not connect with server %v", err)
@@ -267,7 +251,7 @@ func createElaticsearchIndex(es *elasticsearch.Client) int {
 
 		if !exists {
 			log.Printf("Index: %s is not exist, create a new one...", indexName)
-			if indexName != articlerepo.ARTICLES_INDEX_NAME {
+			if indexName != articlesservices.ARTICLES_INDEX_NAME {
 				err = createIndex(es, indexName)
 			} else {
 				err = createArticleIndex(es, indexName)
@@ -365,22 +349,42 @@ func createArticleIndex(es *elasticsearch.Client, indexName string) error {
 	return nil
 }
 
-func seedDataFirstRun(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchDetailService services.MatchDetailServices, schedulesHandler handler.ScheduleHandler) {
+func seedData(articleService services.ArticleServices, schedulesService services.SchedulesServices, matchService services.MatchServices, leagueRepo repository.LeaguesRepository, tagRepo repository.TagRepository, adminRepo repository.AdminRepository) {
+	
+	err := leagueRepo.Create(&entities.League{
+		LeagueName: "Tin tức bóng đá",
+		Active: true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = tagRepo.Create(&entities.Tag{
+		TagName: "tin tuc bong da",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = adminRepo.Create(&entities.Admin{
+		Username: "admin2023",
+		Password: "fa585d89c851dd338a70dcf535aa2a92fee7836dd6aff1226583e88e0996293f16bc009c652826e0fc5c706695a03cddce372f139eff4d13959da6f1f5d3eabe",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	// crawl data on previous 7 days and the following 7 days
 	now := time.Now()
-	
-	var DAYOFWEEK = 1
+	var DAYOFWEEK = 7
 
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
 		date := now.AddDate(0, 0, i)
 		schedulesService.GetSchedules(date.Format("02-01-2006"))
-		matchUrls := schedulesService.GetMatchURLsOnDay()
-		log.Printf("seed for date: %v\n", matchUrls.Date)
-		matchDetailService.GetMatchDetailsOnDayFromCrawler(matchUrls)
-		schedulesService.ClearMatchURLsOnDay()
-		schedulesService.ClearMatchURLsOnTime()
+		matchUrls := schedulesService.GetAllMatchURLs()
+
+		log.Printf("seed for date: %v len: %v\n", matchUrls.Date, len(matchUrls.Urls))
+		matchService.GetMatchDetailsOnDayFromCrawler(matchUrls)
+		schedulesService.ClearAllMatchURLs()
 	}
-	
+
 	// Get articles
 	articleService.GetArticles(make([]string, 0))
 	log.Printf("Add seed data success\n")

@@ -32,7 +32,7 @@ const ScheduleContent: FunctionComponent<Props> = ({ schedule }) => {
               <div className="leagueName p-2">
                 <h3>{scheduleOnLeague.league_name}</h3>
               </div>
-              {scheduleOnLeague.matchs.map((match) => (
+              {scheduleOnLeague.matches.map((match) => (
                 <div
                   key={`scheduleOnleague--match--${match.match_detail_link}`}
                   className="match"
