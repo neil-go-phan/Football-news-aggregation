@@ -37,10 +37,7 @@ services:
       - CRAWLER_ADDRESS=crawler:8000
       - ELASTICSEARCH_ADDRESS=http://elasticsearch:9200/
       - JSON_PATH=/app/configs/
-      - POSTGRES_HOST=postgres
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=footballnews
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/footballnews?sslmode=disable
     depends_on:
       - crawler
       - elasticsearch
