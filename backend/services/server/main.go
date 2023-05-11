@@ -183,7 +183,7 @@ func main() {
 		cronjob.Run()
 	}()
 
-	// schedulesHandler.SignalToCrawlerToDay()
+	schedulesHandler.SignalToCrawlerToDay()
 
 	// app routes
 	log.Infoln("Setup routes")
