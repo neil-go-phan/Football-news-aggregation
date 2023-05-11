@@ -1,9 +1,12 @@
 package handler
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
+	"server/handler/presenter"
+	serverhelper "server/helper"
 	"server/services"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,13 +25,22 @@ func NewTagsHandler(handler services.TagsServices) *TagsHandler {
 }
 
 func (tagsHandler *TagsHandler) ListTags(c *gin.Context) {
-	tags := tagsHandler.handler.ListTags()
-	c.JSON(http.StatusOK, gin.H{"success": true, "tags": tags})
+	tags, err := tagsHandler.handler.ListTagsName()
+	if err != nil {
+		log.Error("Error occurs when response list tag to frontend: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Internal server error"})
+		return
+	}
+	resposeTags := presenter.Tags{
+		Tags: tags,
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "tags": resposeTags})
 }
 
 func (tagsHandler *TagsHandler) DeleteTag(c *gin.Context) {
 	tag := c.Query("tag")
-	err := tagsHandler.handler.DeleteTag(tag)
+	tagFormated := serverhelper.FormatVietnamese(tag)
+	err := tagsHandler.handler.DeleteTag(tagFormated)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Delete failed"})
 		return
@@ -38,7 +50,8 @@ func (tagsHandler *TagsHandler) DeleteTag(c *gin.Context) {
 
 func (tagsHandler *TagsHandler) AddTag(c *gin.Context) {
 	tag := c.Query("tag")
-	err := tagsHandler.handler.AddTag(tag)
+	tagFormated := serverhelper.FormatVietnamese(tag)
+	err := tagsHandler.handler.AddTag(tagFormated)
 	if err != nil {
 		log.Printf("error occus when add tag: %s\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Add tag failed"})

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"server/handler/presenter"
 	"server/helper"
 	"server/services"
 	"strconv"
@@ -17,8 +18,8 @@ type ArticleHandler struct {
 	handler services.ArticleServices
 }
 
-type InputDeleteArticle struct {
-	Title string `json:"title"`
+type InputDeleteArticleID struct {
+	ID uint `json:"id"`
 }
 
 func NewArticleHandler(handler services.ArticleServices) *ArticleHandler {
@@ -32,23 +33,42 @@ func (articleHandler *ArticleHandler) APISearchTagsAndKeyword(c *gin.Context) {
 	keyword := c.Query("q")
 	tags := c.Query("tags")
 	fromString := c.Query("from")
-	fromInt , err := strconv.Atoi(fromString)
+	fromInt, err := strconv.Atoi(fromString)
 	formatedTags := serverhelper.FortmatTagsFromRequest(tags)
 
 	if err != nil {
-		log.Printf("can not convert %s string to int err: %v\n",fromString, err)
+		log.Printf("can not convert %s string to int err: %v\n", fromString, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": "Bad request"})
 		return
 	}
 
 	keyword = strings.TrimSpace(keyword)
-	articles, total, err := articleHandler.handler.SearchArticlesTagsAndKeyword(keyword, formatedTags, fromInt)
+	articles, total, err := articleHandler.handler.SearchArticles(keyword, formatedTags, fromInt)
 	if err != nil {
 		log.Printf("error occurred while services layer searching for keyword %s, with index: %s, err: %v\n", keyword, "articles", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles, "total": total})
+
+	// parse to presenter
+	resposeArticles := make([]presenter.Article, 0)
+
+	for _, article := range articles {
+		tags := make([]string, 0)
+		for _, tag := range article.Tags {
+			tags = append(tags, tag.TagName)
+		}
+		presenterArticle := presenter.Article{
+			ID:          article.ID,
+			Title:       article.Title,
+			Description: article.Description,
+			Link:        article.Link,
+			Tags:        tags,
+		}
+		resposeArticles = append(resposeArticles, presenterArticle)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "articles": resposeArticles, "total": total})
 }
 
 func (articleHandler *ArticleHandler) APICrawlArticleLeague(c *gin.Context) {
@@ -61,10 +81,10 @@ func (articleHandler *ArticleHandler) APICrawlArticleLeague(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Signal crawl artilce success"})
 }
 
-func (articleHandler *ArticleHandler) APIAddUpdateNewTag(c *gin.Context) {
+func (articleHandler *ArticleHandler) APIUpdateNewTag(c *gin.Context) {
 	tag := c.Query("tag")
-
-	err := articleHandler.handler.AddTagForAllArticle(tag)
+	tagFormated := serverhelper.FormatVietnamese(tag)
+	err := articleHandler.handler.AddTagForAllArticle(tagFormated)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Update tag failed"})
 		return
@@ -73,13 +93,14 @@ func (articleHandler *ArticleHandler) APIAddUpdateNewTag(c *gin.Context) {
 }
 
 func (articleHandler *ArticleHandler) APIDeleteArticle(c *gin.Context) {
-	var inputArticle InputDeleteArticle
+	var inputArticle InputDeleteArticleID
 	err := c.BindJSON(&inputArticle)
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Delete article failed"})
 		return
 	}
-	err = articleHandler.handler.DeleteArticle(inputArticle.Title)
+	err = articleHandler.handler.DeleteArticle(inputArticle.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Delete article failed"})
 		return
@@ -96,6 +117,7 @@ func (articleHandler *ArticleHandler) APIGetFirstPageOfLeagueRelatedArticle(c *g
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Server error"})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
 }
 

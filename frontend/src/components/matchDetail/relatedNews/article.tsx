@@ -5,6 +5,7 @@ interface ArticleProps {
 }
 
 export type ArticleType = {
+  id: number;
   title: string;
   description: string;
   link: string;

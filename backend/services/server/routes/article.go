@@ -23,7 +23,7 @@ func (articleRoutes *ArticleRoutes) Setup(r *gin.Engine) {
 	{
 		routes.GET("search-tag-keyword", articleRoutes.articleHandler.APISearchTagsAndKeyword)
 		routes.GET("signal-crawler", middlewares.CheckToken(), articleRoutes.articleHandler.APICrawlArticleLeague)
-		routes.GET("update-tag", middlewares.CheckToken(), articleRoutes.articleHandler.APIAddUpdateNewTag)
+		routes.GET("update-tag", middlewares.CheckToken(), articleRoutes.articleHandler.APIUpdateNewTag)
 		routes.GET("get-first-page", articleRoutes.articleHandler.APIGetFirstPageOfLeagueRelatedArticle)
 		routes.GET("count", middlewares.CheckToken(), articleRoutes.articleHandler.APIGetArticleCount)
 		routes.POST("delete", middlewares.CheckToken(), articleRoutes.articleHandler.APIDeleteArticle)

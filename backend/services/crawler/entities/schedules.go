@@ -7,7 +7,7 @@ type ScheduleOnDay struct {
 
 type ScheduleOnLeague struct {
 	LeagueName string  `json:"league_name"`
-	Matchs     []Match `json:"matchs"`
+	Matches     []Match `json:"matches"`
 }
 
 type Match struct {

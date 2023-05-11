@@ -28,7 +28,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CrawlerServiceClient interface {
-	GetArticles(ctx context.Context, in *AllConfigsArticles, opts ...grpc.CallOption) (CrawlerService_GetArticlesClient, error)
+	GetArticles(ctx context.Context, in *KeywordToSearch, opts ...grpc.CallOption) (CrawlerService_GetArticlesClient, error)
 	GetSchedulesOnDay(ctx context.Context, in *Date, opts ...grpc.CallOption) (*SchedulesReponse, error)
 	GetMatchDetail(ctx context.Context, in *MatchURLs, opts ...grpc.CallOption) (CrawlerService_GetMatchDetailClient, error)
 }
@@ -41,7 +41,7 @@ func NewCrawlerServiceClient(cc grpc.ClientConnInterface) CrawlerServiceClient {
 	return &crawlerServiceClient{cc}
 }
 
-func (c *crawlerServiceClient) GetArticles(ctx context.Context, in *AllConfigsArticles, opts ...grpc.CallOption) (CrawlerService_GetArticlesClient, error) {
+func (c *crawlerServiceClient) GetArticles(ctx context.Context, in *KeywordToSearch, opts ...grpc.CallOption) (CrawlerService_GetArticlesClient, error) {
 	stream, err := c.cc.NewStream(ctx, &CrawlerService_ServiceDesc.Streams[0], CrawlerService_GetArticles_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (x *crawlerServiceGetMatchDetailClient) Recv() (*MatchDetail, error) {
 // All implementations must embed UnimplementedCrawlerServiceServer
 // for forward compatibility
 type CrawlerServiceServer interface {
-	GetArticles(*AllConfigsArticles, CrawlerService_GetArticlesServer) error
+	GetArticles(*KeywordToSearch, CrawlerService_GetArticlesServer) error
 	GetSchedulesOnDay(context.Context, *Date) (*SchedulesReponse, error)
 	GetMatchDetail(*MatchURLs, CrawlerService_GetMatchDetailServer) error
 	mustEmbedUnimplementedCrawlerServiceServer()
@@ -128,7 +128,7 @@ type CrawlerServiceServer interface {
 type UnimplementedCrawlerServiceServer struct {
 }
 
-func (UnimplementedCrawlerServiceServer) GetArticles(*AllConfigsArticles, CrawlerService_GetArticlesServer) error {
+func (UnimplementedCrawlerServiceServer) GetArticles(*KeywordToSearch, CrawlerService_GetArticlesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetArticles not implemented")
 }
 func (UnimplementedCrawlerServiceServer) GetSchedulesOnDay(context.Context, *Date) (*SchedulesReponse, error) {
@@ -151,7 +151,7 @@ func RegisterCrawlerServiceServer(s grpc.ServiceRegistrar, srv CrawlerServiceSer
 }
 
 func _CrawlerService_GetArticles_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(AllConfigsArticles)
+	m := new(KeywordToSearch)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}

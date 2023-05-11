@@ -1,16 +1,16 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
 type Props = {
-  title: string;
+  id: number;
   // eslint-disable-next-line no-unused-vars
-  handleUpdateTable: (title: string) => void;
+  handleUpdateTable: (id: number) => void;
 };
 
 const DeleteArticleBtn: React.FC<Props> = (props: Props) => {
   return (
     <Button
       variant="danger"
-      onClick={() => props.handleUpdateTable(props.title)}
+      onClick={() => props.handleUpdateTable(props.id)}
     >
       Delete
     </Button>

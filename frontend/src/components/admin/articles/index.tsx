@@ -42,10 +42,10 @@ function ArticleAdmin() {
       });
     }
   };
-  const requestDeleteArticle = async (title: string) => {
+  const requestDeleteArticle = async (id: number) => {
     try {
       const { data } = await axiosProtectedAPI.post('article/delete', {
-        title: title,
+        id: id,
       });
       if (!data.success) {
         throw 'Throw error occurred while delete article';
@@ -135,8 +135,8 @@ function ArticleAdmin() {
     pageChangeHandler(1)
   };
 
-  const handleUpdateTable = (title: string) => {
-    requestDeleteArticle(title);
+  const handleUpdateTable = (id: number) => {
+    requestDeleteArticle(id);
   };
   return (
     <div className="adminArticles">

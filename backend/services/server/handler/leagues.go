@@ -1,9 +1,11 @@
 package handler
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
+	"server/handler/presenter"
 	"server/services"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,13 +23,34 @@ func NewLeaguesHandler(handler services.LeaguesServices) *LeaguesHandler {
 }
 
 func (leaguesHandler *LeaguesHandler) GetLeaguesName(c *gin.Context) {
-	leaguesNames := leaguesHandler.handler.GetLeaguesNameActive()
+	leaguesNames, err := leaguesHandler.handler.GetLeaguesNameActive()
+	if err != nil {
+		log.Error("Error occurs when response League name active to frontend: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Internal server error"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "leagues": leaguesNames})
 }
 
 func (leaguesHandler *LeaguesHandler) ListLeagues(c *gin.Context) {
-	leagues := leaguesHandler.handler.ListLeagues()
-	c.JSON(http.StatusOK, gin.H{"success": true, "leagues": leagues})
+	leagues, err := leaguesHandler.handler.ListLeagues()
+	if err != nil {
+		log.Error("Error occurs when response list leagues to frontend: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Internal server error"})
+		return
+	}
+	// parse to presenter
+	resposeLeagues := new(presenter.Leagues)
+	for _,league := range *leagues {
+		if league.LeagueName != "Tin tức bóng đá" {
+			presenterLeague := presenter.League{
+				LeagueName: league.LeagueName,
+				Active: league.Active,
+			}
+			resposeLeagues.Leagues = append(resposeLeagues.Leagues, presenterLeague)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "leagues": resposeLeagues})
 }
 
 func (leaguesHandler *LeaguesHandler) ChangeStatus(c *gin.Context) {

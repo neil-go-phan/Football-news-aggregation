@@ -1,10 +1,10 @@
 package entities
 
-type Leagues struct {
-	Leagues []League `json:"leagues"`
-}
+import "gorm.io/gorm"
 
 type League struct {
-	LeagueName string `json:"league_name"`
-	Active bool `json:"active"`
+	gorm.Model
+	LeagueName string `gorm:"uniqueIndex:idx_league_name"`
+	Active bool 
 }
+

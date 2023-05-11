@@ -116,3 +116,31 @@ func ReadXPathClassMatchDetailJSON() (entities.XPathMatchDetail, error){
 	}
 	return classes, nil
 }
+
+func ReadHtmlArticlesClassJSON() (entities.HtmlArticleClass, error) {
+	var classes entities.HtmlArticleClass
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	env, err := LoadEnv("./")
+	if err != nil {
+		log.Fatalln("cannot load env: ", err)
+	}
+	classesJson, err := os.Open(fmt.Sprintf("%shtmlArticlesClassesConfig.json", env.JsonPath))
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+	defer classesJson.Close()
+
+	classesByte, err := io.ReadAll(classesJson)
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+
+	err = json.Unmarshal(classesByte, &classes)
+	if err != nil {
+		log.Println(err)
+		return classes, err
+	}
+	return classes, nil
+}

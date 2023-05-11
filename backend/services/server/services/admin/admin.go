@@ -33,12 +33,18 @@ func (s *adminService) GetAdminUsername(username string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("unauthorized access")
 	}
-	repoAdmin := s.adminRepo.GetAdmin()
+	repoAdmin,err := s.adminRepo.Get(username)
+	if err != nil {
+		return "", err
+	}
 	return repoAdmin.Username, nil
 }
 
 func (s *adminService) ChangePassword(admin *AdminWithConfirmPassword, usernameToken string) error {
-	repoAdmin := s.adminRepo.GetAdmin()
+	repoAdmin, err := s.adminRepo.Get(admin.Username)
+	if err != nil {
+		return err
+	}
 	if repoAdmin.Username != admin.Username {
 		log.Errorf("error occrus when trying to change admin password: admin username input different from admin username\n")
 		return fmt.Errorf("input invalid")
@@ -49,7 +55,7 @@ func (s *adminService) ChangePassword(admin *AdminWithConfirmPassword, usernameT
 		Password: admin.Password,
 	}
 
-	err := validateAdmin(adminValidate)
+	err = validateAdmin(adminValidate)
 	if err != nil {
 		log.Errorf("error occrus when trying to change admin password: %s\n", err)
 		return fmt.Errorf("input invalid")
@@ -65,30 +71,20 @@ func (s *adminService) ChangePassword(admin *AdminWithConfirmPassword, usernameT
 		Password: admin.Password,
 	}
 
-	err = s.adminRepo.WriteAdminJSON(entityAdmin)
+	err = s.adminRepo.UpdatePassword(entityAdmin)
 	if err != nil {
 		log.Errorf("error occrus when trying to change admin password: %s\n", err)
 		return fmt.Errorf("internal server error")
 	}
-
-	newAdmin, err := s.adminRepo.ReadAdminJSON()
-	if err != nil {
-		log.Errorf("error occrus when trying to change admin password: %s\n", err)
-		err := s.adminRepo.WriteAdminJSON(&repoAdmin)
-		if err != nil {
-			log.Errorf("error occurs: %s", err)
-			return fmt.Errorf("internal server error")
-		}
-		return fmt.Errorf("internal server error")
-	}
-
-	s.adminRepo.SetAdmin(newAdmin)
 
 	return nil
 }
 
 func (s *adminService) CheckAdminUsernameToken(username string) error {
-	repoAdmin := s.adminRepo.GetAdmin()
+	repoAdmin, err := s.adminRepo.Get(username)
+	if err != nil {
+		return err
+	}
 	if repoAdmin.Username != username {
 		log.Errorf("Detect a strange token string: token username: %s\n", username)
 		return fmt.Errorf("username input different from admin username")
@@ -97,14 +93,17 @@ func (s *adminService) CheckAdminUsernameToken(username string) error {
 }
 
 func (s *adminService) Login(admin *Admin) (string, error) {
-	repoAdmin := s.adminRepo.GetAdmin()
-	err := validateAdmin(admin)
+	repoAdmin, err := s.adminRepo.Get(admin.Username)
+	if err != nil {
+		return "",err
+	}
+	err = validateAdmin(admin)
 	if err != nil {
 		log.Errorf("error occrus when a anonymous user try to login admin: %s\n", err)
 		return "", fmt.Errorf("input invalid")
 	}
 
-	err = checkIsAdminCorrect(admin, repoAdmin)
+	err = checkIsAdminCorrect(admin, *repoAdmin)
 	if err != nil {
 		log.Errorf("error occrus when a anonymous user try to login admin: %s\n", err)
 		return "", fmt.Errorf("username or password is incorrect")
