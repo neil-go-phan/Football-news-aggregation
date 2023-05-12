@@ -63,7 +63,7 @@ var SUBSTITUTION_EVENT = []string{
 	"thay-nguoi",
 	"thay_nguoi",
 }
-var TIME_OUT = 10 * time.Second
+var TIME_OUT = 5 * time.Second
 
 func CrawlMatchDetail(matchUrl string, xPath entities.XPathMatchDetail) (entities.MatchDetail, error) {
 	var matchDetail entities.MatchDetail

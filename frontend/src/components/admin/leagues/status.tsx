@@ -7,12 +7,18 @@ import { toast } from 'react-toastify';
 type Props = {
   active: boolean;
   leagueName: string;
-  handleSwitch:  () => void
+  // eslint-disable-next-line no-unused-vars
+  setIsLoading: (loading: boolean) => void;
+  handleSwitch:  () => void;
 };
 
 const Status: React.FC<Props> = (props: Props) => {
   const onSwitchAction = () => {
+    props.setIsLoading(true)
     requestChangeLeagueActive();
+    // setTimeout(() => {
+    //   props.setIsLoading(false);
+    // }, 6000);
   };
 
   const requestChangeLeagueActive = async () => {

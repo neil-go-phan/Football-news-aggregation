@@ -142,7 +142,7 @@ func checkMatchsEnd(matchDetails []*pb.MatchDetail) bool {
 }
 
 func (schedulesHandler *ScheduleHandler) SignalToCrawlerToDay() {
-	date := time.Now().AddDate(0, 0, 0)
+	date := time.Now()
 	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
 	matchUrls := schedulesHandler.handler.GetAllMatchURLs()
 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
