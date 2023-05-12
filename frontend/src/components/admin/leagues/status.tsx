@@ -16,9 +16,9 @@ const Status: React.FC<Props> = (props: Props) => {
   const onSwitchAction = () => {
     props.setIsLoading(true)
     requestChangeLeagueActive();
-    // setTimeout(() => {
-    //   props.setIsLoading(false);
-    // }, 6000);
+    setTimeout(() => {
+      props.setIsLoading(false);
+    }, 1000);
   };
 
   const requestChangeLeagueActive = async () => {
