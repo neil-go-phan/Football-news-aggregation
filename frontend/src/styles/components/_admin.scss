@@ -23,6 +23,11 @@
   }
   &__list {
     padding: 20px 0;
+    &--loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     &--title {
       text-align: center;
       font-size: 1.2rem;

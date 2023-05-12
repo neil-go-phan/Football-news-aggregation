@@ -7,6 +7,7 @@ import { Column, useGlobalFilter, usePagination, useTable } from 'react-table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
+import { ThreeDots } from 'react-loader-spinner';
 export type Leagues = {
   leagues: Array<League>;
 };
@@ -26,6 +27,7 @@ const TIN_TUC_BONG_DA = 'Tin tức bóng đá';
 
 export default function AdminLeagues() {
   const [leagues, setLeagues] = useState<Leagues>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const getActiveLeagues = (): number => {
     let count = 0;
@@ -56,6 +58,7 @@ export default function AdminLeagues() {
             active={row.values.active}
             leagueName={row.values.leagueName}
             handleSwitch={handleSwitch}
+            setIsLoading={setIsLoading}
           />
         ),
       },
@@ -64,8 +67,8 @@ export default function AdminLeagues() {
   );
 
   const handleSwitch = () => {
-    requestListLeagues()
-  }
+    requestListLeagues();
+  };
 
   const removeDefaultLeague = (leagues: Leagues | undefined) => {
     if (leagues) {
@@ -177,47 +180,63 @@ export default function AdminLeagues() {
             </InputGroup>
           </div>
           <div className="adminLeagues__list--table">
-            <Table bordered hover {...getTableProps()}>
-              <thead>
-                {headerGroups.map((headerGroup, index) => (
-                  <tr
-                    {...headerGroup.getHeaderGroupProps()}
-                    key={`league-admin-collum-${index}`}
-                  >
-                    {headerGroup.headers.map((column) => (
-                      <th
-                        {...column.getHeaderProps()}
-                        key={`league-admin-collum-${column.render('header')}}`}
-                      >
-                        {column.render('header')}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody {...getTableBodyProps()}>
-                {page.map((row) => {
-                  prepareRow(row);
-                  return (
+            {isLoading ? (
+              <div className="adminLeagues__list--loading">
+                <ThreeDots
+                  height="50"
+                  width="50"
+                  radius="9"
+                  color="#4fa94d"
+                  ariaLabel="three-dots-loading"
+                  visible={true}
+                />
+              </div>
+            ) : (
+              <Table bordered hover {...getTableProps()}>
+                <thead>
+                  {headerGroups.map((headerGroup, index) => (
                     <tr
-                      {...row.getRowProps()}
-                      key={`league-admin-row-${row.index}`}
+                      {...headerGroup.getHeaderGroupProps()}
+                      key={`league-admin-collum-${index}`}
                     >
-                      {row.cells.map((cell, index) => {
-                        return (
-                          <td
-                            {...cell.getCellProps()}
-                            key={`league-admin-row-item-${index}`}
-                          >
-                            {cell.render('Cell')}
-                          </td>
-                        );
-                      })}
+                      {headerGroup.headers.map((column) => (
+                        <th
+                          {...column.getHeaderProps()}
+                          key={`league-admin-collum-${column.render(
+                            'header'
+                          )}}`}
+                        >
+                          {column.render('header')}
+                        </th>
+                      ))}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </Table>
+                  ))}
+                </thead>
+                <tbody {...getTableBodyProps()}>
+                  {page.map((row) => {
+                    prepareRow(row);
+                    return (
+                      <tr
+                        {...row.getRowProps()}
+                        key={`league-admin-row-${row.index}`}
+                      >
+                        {row.cells.map((cell, index) => {
+                          return (
+                            <td
+                              {...cell.getCellProps()}
+                              key={`league-admin-row-item-${index}`}
+                            >
+                              {cell.render('Cell')}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </Table>
+            )}
+
             <div className="btnPaging">
               <Button
                 onClick={() => previousPage()}

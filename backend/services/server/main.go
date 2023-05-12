@@ -372,7 +372,7 @@ func seedData(articleService services.ArticleServices, schedulesService services
 		log.Error(err)
 	}
 	now := time.Now()
-	var DAYOFWEEK = 1
+	var DAYOFWEEK = 3
 
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
 		date := now.AddDate(0, 0, i)
