@@ -420,8 +420,8 @@ func TestDeleteArticleFromElasticSearch(t *testing.T) {
 
 	id := uint(1)
 
-	deleteArticleFromElasticSearch(id, es)
-
+	err = deleteArticleFromElasticSearch(id, es)
+	assert.Nil(err)
 	res, err := server.Client().Get(server.URL)
 	assert.Nil(err)
 	defer res.Body.Close()
