@@ -29,7 +29,7 @@ func NewSchedulesHandler(handler services.SchedulesServices) *ScheduleHandler {
 }
 
 func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.Cron) {
-	_, err := cronjob.AddFunc("00 23 * * *", func() {
+	_, err := cronjob.AddFunc("0 23 * * *", func() {
 		var wg sync.WaitGroup
 		now := time.Now()
 		var DAYOFWEEK = 7

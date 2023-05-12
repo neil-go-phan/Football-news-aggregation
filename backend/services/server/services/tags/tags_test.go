@@ -1,49 +1,87 @@
 package tagsservices
 
-// import (
-// 	"testing"
+import (
+	"testing"
 
-// 	"server/entities"
-// 	mock "server/services/tags/mock"
+	"server/entities"
+	mock "server/services/tags/mock"
 
-// 	"github.com/stretchr/testify/assert"
-// )
+	"github.com/stretchr/testify/assert"
+)
 
-// func TestAddTag(t *testing.T) {
-// 	mockRepoTags := new(mock.MockTagRepository)
-// 	service := NewTagsService(mockRepoTags)
-// 	assert := assert.New(t)
+func TestAddTag(t *testing.T) {
+	mockRepoTags := new(mock.MockTagRepository)
+	service := NewTagsService(mockRepoTags)
+	assert := assert.New(t)
 
-// 	mockRepoTags.On("AddTag", "tag1").Return(nil)
+	newTag := &entities.Tag{
+		TagName: "tag1",
+	}
 
-// 	err := service.AddTag("tag1")
+	mockRepoTags.On("Create", newTag).Return(nil)
 
-// 	assert.Nil(err, "no error")
-// }
+	err := service.AddTag("tag1")
 
-// func TestDeleteTag(t *testing.T) {
-// 	mockRepoTags := new(mock.MockTagRepository)
-// 	service := NewTagsService(mockRepoTags)
-// 	assert := assert.New(t)
+	assert.Nil(err, "no error")
+}
 
-// 	mockRepoTags.On("DeleteTag", "tag1").Return(nil)
+func TestDeleteTag(t *testing.T) {
+	mockRepoTags := new(mock.MockTagRepository)
+	service := NewTagsService(mockRepoTags)
+	assert := assert.New(t)
 
-// 	err := service.DeleteTag("tag1")
+	mockRepoTags.On("Delete", "tag1").Return(nil)
 
-// 	assert.Nil(err, "no error")
-// }
+	err := service.DeleteTag("tag1")
 
-// func TestListTag(t *testing.T) {
-// 	mockRepoTags := new(mock.MockTagRepository)
-// 	service := NewTagsService(mockRepoTags)
-// 	assert := assert.New(t)
+	assert.Nil(err, "no error")
+}
 
-// 	want := entities.Tags{
-// 		Tags: []string{"tag1", "tag2", "tag3"},
-// 	}
-// 	mockRepoTags.On("ListTags").Return(want)
+func TestGetTag(t *testing.T) {
+	mockRepoTags := new(mock.MockTagRepository)
+	service := NewTagsService(mockRepoTags)
+	assert := assert.New(t)
+	tag := &entities.Tag{
+		TagName: "tag1",
+	}
+	mockRepoTags.On("Get", "tag1").Return(tag, nil)
 
-// 	got := service.ListTags()
+	got, err := service.Get("tag1")
 
-// 	assert.Equal(want, got)
-// }
+	assert.Nil(err, "no error")
+	assert.Equal(tag, got)
+}
+
+func TestGetTagsByTagNames(t *testing.T) {
+	mockRepoTags := new(mock.MockTagRepository)
+	service := NewTagsService(mockRepoTags)
+	assert := assert.New(t)
+	tagNames := []string{"tag1", "tag2"}
+	tag := &[]entities.Tag{
+		{TagName: "tag1"},
+		{TagName: "tag2"},
+	}
+	mockRepoTags.On("GetTagsByTagNames", tagNames).Return(tag, nil)
+
+	got, err := service.GetTagsByTagNames(tagNames)
+
+	assert.Nil(err, "no error")
+	assert.Equal(tag, got)
+}
+
+func TestListTagsName(t *testing.T) {
+	mockRepoTags := new(mock.MockTagRepository)
+	service := NewTagsService(mockRepoTags)
+	assert := assert.New(t)
+	tagNames := []string{"tag1", "tag2"}
+	tag := &[]entities.Tag{
+		{TagName: "tag1"},
+		{TagName: "tag2"},
+	}
+	mockRepoTags.On("List").Return(tag, nil)
+
+	got, err := service.ListTagsName()
+
+	assert.Nil(err, "no error")
+	assert.Equal(tagNames, got)
+}

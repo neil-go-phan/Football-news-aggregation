@@ -356,24 +356,23 @@ func seedData(articleService services.ArticleServices, schedulesService services
 		Active: true,
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	err = tagRepo.Create(&entities.Tag{
 		TagName: "tin tuc bong da",
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	err = adminRepo.Create(&entities.Admin{
 		Username: "admin2023",
 		Password: "fa585d89c851dd338a70dcf535aa2a92fee7836dd6aff1226583e88e0996293f16bc009c652826e0fc5c706695a03cddce372f139eff4d13959da6f1f5d3eabe",
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
-	// crawl data on previous 7 days and the following 7 days
 	now := time.Now()
-	var DAYOFWEEK = 7
+	var DAYOFWEEK = 1
 
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
 		date := now.AddDate(0, 0, i)
