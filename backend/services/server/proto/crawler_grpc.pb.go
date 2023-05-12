@@ -27,6 +27,7 @@ const (
 // CrawlerServiceClient is the client API for CrawlerService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//go:generate mockery --name CrawlerServiceClient
 type CrawlerServiceClient interface {
 	GetArticles(ctx context.Context, in *KeywordToSearch, opts ...grpc.CallOption) (CrawlerService_GetArticlesClient, error)
 	GetSchedulesOnDay(ctx context.Context, in *Date, opts ...grpc.CallOption) (*SchedulesReponse, error)

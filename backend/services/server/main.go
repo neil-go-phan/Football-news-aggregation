@@ -371,9 +371,8 @@ func seedData(articleService services.ArticleServices, schedulesService services
 	if err != nil {
 		log.Error(err)
 	}
-	// crawl data on previous 7 days and the following 7 days
 	now := time.Now()
-	var DAYOFWEEK = 7
+	var DAYOFWEEK = 1
 
 	for i := -DAYOFWEEK; i <= DAYOFWEEK; i++ {
 		date := now.AddDate(0, 0, i)
