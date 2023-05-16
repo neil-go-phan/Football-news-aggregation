@@ -6,17 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type leaguesRepo struct {
+type LeaguesRepo struct {
 	DB *gorm.DB
 }
 
-func NewLeaguesRepo(db *gorm.DB) *leaguesRepo {
-	return &leaguesRepo{
+func NewLeaguesRepo(db *gorm.DB) *LeaguesRepo {
+	return &LeaguesRepo{
 		DB: db,
 	}
 }
 
-func (repo *leaguesRepo) Create(league *entities.League) error {
+func (repo *LeaguesRepo) Create(league *entities.League) error {
 	err := repo.DB.Create(league).Error
 	if err != nil {
 		return err
@@ -24,7 +24,7 @@ func (repo *leaguesRepo) Create(league *entities.League) error {
 	return nil
 }
 
-func (repo *leaguesRepo) GetLeaguesName() (*[]entities.League, error) {
+func (repo *LeaguesRepo) GetLeaguesName() (*[]entities.League, error) {
 	leagues := make([]entities.League, 10)
 	err := repo.DB.Select("league_name", "id").Find(&leagues).Error
 	if err != nil {
@@ -33,7 +33,7 @@ func (repo *leaguesRepo) GetLeaguesName() (*[]entities.League, error) {
 	return &leagues, nil
 }
 
-func (repo *leaguesRepo) GetLeaguesNameActive() (*[]entities.League, error) {
+func (repo *LeaguesRepo) GetLeaguesNameActive() (*[]entities.League, error) {
 	leagues := make([]entities.League, 0)
 	err := repo.DB.Where(map[string]interface{}{"active": true}).Find(&leagues).Error
 	if err != nil {
@@ -42,7 +42,7 @@ func (repo *leaguesRepo) GetLeaguesNameActive() (*[]entities.League, error) {
 	return &leagues, nil
 }
 
-func (repo *leaguesRepo) List() (*[]entities.League, error) {
+func (repo *LeaguesRepo) List() (*[]entities.League, error) {
 	leagues := make([]entities.League, 0)
 	err := repo.DB.Order("active desc").Find(&leagues).Error
 	if err != nil {
@@ -51,7 +51,7 @@ func (repo *leaguesRepo) List() (*[]entities.League, error) {
 	return &leagues, nil
 }
 
-func (repo *leaguesRepo) GetByName(leagueName string) (*entities.League, error) {
+func (repo *LeaguesRepo) GetByName(leagueName string) (*entities.League, error) {
 	league := new(entities.League)
 	err := repo.DB.Where(map[string]interface{}{"league_name": leagueName}).Find(&league).Error
 	if err != nil {
@@ -60,7 +60,7 @@ func (repo *leaguesRepo) GetByName(leagueName string) (*entities.League, error) 
 	return league, nil
 }
 
-func (repo *leaguesRepo) Update(league *entities.League) error {
+func (repo *LeaguesRepo) Update(league *entities.League) error {
 	err := repo.DB.Model(&league).Where("id = ?", league.ID).Updates(map[string]interface{}{"active": league.Active}).Error
 	if err != nil {
 		return err

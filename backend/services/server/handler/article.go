@@ -135,6 +135,14 @@ func (articleHandler *ArticleHandler) RefreshCacheAfter5Min(cronjob *cron.Cron) 
 	}
 }
 
+func (articleHandler *ArticleHandler) RefreshCache() {
+	articleHandler.handler.RefreshCache()
+}
+
+func (articleHandler *ArticleHandler) GetArticleSeed() {
+	articleHandler.handler.GetArticles(make([]string, 0))
+}
+
 func (articleHandler *ArticleHandler) APIGetArticleCount(c *gin.Context) {
 	total, today, err := articleHandler.handler.GetArticleCount()
 	if err != nil {

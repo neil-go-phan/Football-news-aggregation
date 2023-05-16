@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type matchService struct {
+type MatchService struct {
 	grpcClient          pb.CrawlerServiceClient
 	repo                repository.MatchRepository
 	clubService         services.ClubServices
@@ -27,8 +27,8 @@ type matchService struct {
 
 var DEFAULT_LEAGUE_NAME = "Tin tức bóng đá"
 
-func NewMatchService(grpcClient pb.CrawlerServiceClient, repo repository.MatchRepository, clubService services.ClubServices, statsItemService services.StatsItemServices, eventService services.EventServices, overviewItemService services.OverviewItemServices, lineupService services.LineUpServices, playerService services.PlayerServices) *matchService {
-	matchService := &matchService{
+func NewMatchService(grpcClient pb.CrawlerServiceClient, repo repository.MatchRepository, clubService services.ClubServices, statsItemService services.StatsItemServices, eventService services.EventServices, overviewItemService services.OverviewItemServices, lineupService services.LineUpServices, playerService services.PlayerServices) *MatchService {
+	matchService := &MatchService{
 		grpcClient:          grpcClient,
 		repo:                repo,
 		clubService:         clubService,
@@ -41,7 +41,7 @@ func NewMatchService(grpcClient pb.CrawlerServiceClient, repo repository.MatchRe
 	return matchService
 }
 
-func (s *matchService) GetMatchDetailsOnDayFromCrawler(matchURLs repository.AllMatchURLsOnDay) []*pb.MatchDetail {
+func (s *MatchService) GetMatchDetailsOnDayFromCrawler(matchURLs repository.AllMatchURLsOnDay) []*pb.MatchDetail {
 	in := &pb.MatchURLs{
 		Url: matchURLs.Urls,
 	}
@@ -86,7 +86,7 @@ func (s *matchService) GetMatchDetailsOnDayFromCrawler(matchURLs repository.AllM
 	return matches
 }
 
-func (s *matchService) StoreMatch_MatchDetailCrawl(resp *pb.MatchDetail, date time.Time) error {
+func (s *MatchService) StoreMatch_MatchDetailCrawl(resp *pb.MatchDetail, date time.Time) error {
 	// get match
 	if resp.MatchDetailTitle.Club_1.Name == "" && resp.MatchDetailTitle.Club_2.Name == "" {
 		return fmt.Errorf("crawler return a empty match (timeout)")
@@ -247,7 +247,7 @@ func (s *matchService) StoreMatch_MatchDetailCrawl(resp *pb.MatchDetail, date ti
 	return nil
 }
 
-func (s *matchService) GetMatch(date time.Time, club1Name string, club2Name string) (*entities.Match, error) {
+func (s *MatchService) GetMatch(date time.Time, club1Name string, club2Name string) (*entities.Match, error) {
 	// get match
 	match, err := s.repo.GetIDWithDateAndClubName(date, club1Name, club2Name)
 	if err != nil {
@@ -262,11 +262,11 @@ func (s *matchService) GetMatch(date time.Time, club1Name string, club2Name stri
 	return match, nil
 }
 
-func (s *matchService)GetLineUps(id1 uint, id2 uint) (*entities.MatchLineUp, *entities.MatchLineUp, error) {
+func (s *MatchService)GetLineUps(id1 uint, id2 uint) (*entities.MatchLineUp, *entities.MatchLineUp, error) {
 	return s.lineupService.GetLineUps(id1, id2)
 }
 
-func (s *matchService) StoreMatch_ScheduleCrawl(match entities.Match, ID uint, date time.Time) error {
+func (s *MatchService) StoreMatch_ScheduleCrawl(match entities.Match, ID uint, date time.Time) error {
 	// check if match exist
 	timeStart, err := readTimeStart(match, date)
 	if err != nil {
@@ -294,7 +294,7 @@ func (s *matchService) StoreMatch_ScheduleCrawl(match entities.Match, ID uint, d
 	return nil
 }
 
-func (s *matchService) createMatch(match *entities.Match) error {
+func (s *MatchService) createMatch(match *entities.Match) error {
 	club1, err := s.clubService.GetOrCreate(match.Club1.Name, match.Club1.Logo)
 	if err != nil {
 		log.Error(err)

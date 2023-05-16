@@ -7,22 +7,22 @@ import (
 	"server/services"
 )
 
-type leaguesService struct {
+type LeaguesService struct {
 	leaguesRepo repository.LeaguesRepository
 	tagService  services.TagsServices
 }
 
 var DEFAULT_LEAGUE_NAME = "Tin tức bóng đá"
 
-func NewleaguesService(leaguesRepo repository.LeaguesRepository, tagService services.TagsServices) *leaguesService {
-	leaguesService := &leaguesService{
+func NewleaguesService(leaguesRepo repository.LeaguesRepository, tagService services.TagsServices) *LeaguesService {
+	leaguesService := &LeaguesService{
 		leaguesRepo: leaguesRepo,
 		tagService:     tagService,
 	}
 	return leaguesService
 }
 
-func (s *leaguesService) CreateLeague(newLeaguesName string) error {
+func (s *LeaguesService) CreateLeague(newLeaguesName string) error {
 	newLeague := &entities.League{
 		LeagueName: newLeaguesName,
 		Active:     false,
@@ -30,11 +30,11 @@ func (s *leaguesService) CreateLeague(newLeaguesName string) error {
 	return s.leaguesRepo.Create(newLeague)
 }
 
-func (s *leaguesService) ListLeagues() (*[]entities.League, error) {
+func (s *LeaguesService) ListLeagues() (*[]entities.League, error) {
 	return s.leaguesRepo.List()
 }
 
-func (s *leaguesService) GetLeaguesNameActive() ([]string, error) {
+func (s *LeaguesService) GetLeaguesNameActive() ([]string, error) {
 	leagueName := []string{}
 	leagues, err := s.leaguesRepo.GetLeaguesNameActive()
 	if err != nil {
@@ -47,7 +47,7 @@ func (s *leaguesService) GetLeaguesNameActive() ([]string, error) {
 	return leagueName, nil
 }
 
-func (s *leaguesService) GetLeaguesName() ([]string, error) {
+func (s *LeaguesService) GetLeaguesName() ([]string, error) {
 	leagueName := []string{}
 	leagues, err := s.leaguesRepo.GetLeaguesName()
 	if err != nil {
@@ -61,7 +61,7 @@ func (s *leaguesService) GetLeaguesName() ([]string, error) {
 }
 
 // ChangeStatus: change league.active
-func (s *leaguesService) ChangeStatus(leagueName string) (bool, error) {
+func (s *LeaguesService) ChangeStatus(leagueName string) (bool, error) {
 	tagFromLeague := serverhelper.FormatVietnamese(leagueName)
 	league, err := s.leaguesRepo.GetByName(leagueName)
 	if err != nil {

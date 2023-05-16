@@ -37,6 +37,7 @@ const AdminArticlePagination: React.FC<Props> = ({
   }, [noOfPages, currentPage]);
   useEffect(() => {
     pageChangeHandler(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
   useEffect(() => {
     setCurrentPage(1)

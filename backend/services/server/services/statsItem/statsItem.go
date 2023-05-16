@@ -5,17 +5,17 @@ import (
 	"server/repository"
 )
 
-type statsItemService struct {
+type StatsItemService struct {
 	repo repository.StatsItemlRepository
 }
 
-func NewStatsItemService(repo repository.StatsItemlRepository) *statsItemService {
-	statsItemService := &statsItemService{
+func NewStatsItemService(repo repository.StatsItemlRepository) *StatsItemService {
+	statsItemService := &StatsItemService{
 		repo: repo,
 	}
 	return statsItemService
 }
 
-func (s *statsItemService) FirstOrCreate(statsItem *entities.StatisticsItem) (error) {
+func (s *StatsItemService) FirstOrCreate(statsItem *entities.StatisticsItem) (error) {
 	return s.repo.FirstOrCreate(statsItem) 
 }

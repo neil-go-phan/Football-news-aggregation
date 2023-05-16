@@ -63,9 +63,8 @@ func storeArticleToElasticsearch(article entities.Article, es *elasticsearch.Cli
 		return
 	}
 	defer res.Body.Close()
-
 	if res.IsError() {
-		log.Errorf("[%s] Error indexing article document with id='%s'", res.Status(), strings.ToLower(article.Title))
+		log.Errorf("[%s] Error indexing article document with id='%s'", res.Status(), docID)
 	} else {
 		log.Printf("[%s] Indexed document with index: %s", res.Status(), ARTICLES_INDEX_NAME)
 	}
@@ -471,7 +470,7 @@ func workerAddTagBulkRequest(jobs <-chan *work, results chan<- *result, newTag s
 }
 
 // analyzer collect result done by worker
-func analyzedResult(results <-chan *result, s *articleService , wg2 *sync.WaitGroup, entityTag *entities.Tag) {
+func analyzedResult(results <-chan *result, s *ArticleService , wg2 *sync.WaitGroup, entityTag *entities.Tag) {
 	defer wg2.Done()
 	bulkRequestBody := []byte{}
 	ids := []uint{}

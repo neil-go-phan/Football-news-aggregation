@@ -131,3 +131,12 @@
   }
 }
 
+.adminCrawler {
+  &__iFrame {
+    &--embed {
+      height: 500px;
+      overflow: auto;
+    }
+  }
+
+}

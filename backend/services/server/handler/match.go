@@ -72,12 +72,12 @@ func castToPresenterMatch(matchDetail entities.Match, lineup1 entities.MatchLine
 	// cast overview
 	club1Overview := make([]presenter.OverviewItem, 0)
 	for _, item := range matchDetail.Club1Overview {
-		overviewItem := presenter.OverviewItem{
-			Time:      item.TimeString,
-			Info:      item.Info,
-			ImageType: item.ImageType,
-		}
-		club1Overview = append(club1Overview, overviewItem)
+			overviewItem := presenter.OverviewItem{
+				Time:      item.TimeString,
+				Info:      item.Info,
+				ImageType: item.ImageType,
+			}
+			club1Overview = append(club1Overview, overviewItem)
 	}
 	club2Overview := make([]presenter.OverviewItem, 0)
 	for _, item := range matchDetail.Club2Overview {
@@ -87,6 +87,7 @@ func castToPresenterMatch(matchDetail entities.Match, lineup1 entities.MatchLine
 			ImageType: item.ImageType,
 		}
 		club2Overview = append(club2Overview, overviewItem)
+
 	}
 	if len(club1Overview) != 0 {
 		respMatchDetail.MatchOverview.Club1Overview = club1Overview

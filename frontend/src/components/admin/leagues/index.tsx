@@ -63,6 +63,7 @@ export default function AdminLeagues() {
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"net/url"
 	"server/entities"
 	pb "server/proto"
 	"server/repository"
@@ -14,9 +15,6 @@ type ArticleCache struct {
 	Description string   `json:"description"`
 	Link        string   `json:"link"`
 	Tags        []string `json:"tags"`
-}
-
-type HtmlClassesServices interface {
 }
 
 //go:generate mockery --name AdminServices
@@ -107,4 +105,9 @@ type PlayerServices interface {
 type LineUpServices interface {
 	GetOrCreate(lineup *entities.MatchLineUp) (*entities.MatchLineUp, error)
 	GetLineUps(id1 uint, id2 uint) (*entities.MatchLineUp, *entities.MatchLineUp, error) 
+}
+
+//go:generate mockery --name ConfigCrawlerServices
+type ConfigCrawlerServices interface {
+	GetHtmlPage(url *url.URL) (error)
 }

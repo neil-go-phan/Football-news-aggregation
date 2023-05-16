@@ -5,18 +5,18 @@ import (
 	"gorm.io/gorm"
 )
 
-type statsItemRepo struct {
+type StatsItemRepo struct {
 	DB *gorm.DB
 }
 
-func NewStatsItemRepo(db *gorm.DB) *statsItemRepo {
-	statsItemRepo := &statsItemRepo{
+func NewStatsItemRepo(db *gorm.DB) *StatsItemRepo {
+	StatsItemRepo := &StatsItemRepo{
 		DB: db,
 	}
-	return statsItemRepo
+	return StatsItemRepo
 }
 
-func (repo *statsItemRepo) FirstOrCreate(statsItem *entities.StatisticsItem) error {
+func (repo *StatsItemRepo) FirstOrCreate(statsItem *entities.StatisticsItem) error {
 	err := repo.DB.FirstOrCreate(statsItem, entities.StatisticsItem{MatchID: statsItem.MatchID, StatContent: statsItem.StatContent}).Error
 	if err != nil {
 		return err
