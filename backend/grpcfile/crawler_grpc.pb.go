@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	CrawlerService_GetArticles_FullMethodName       = "/crawlerproto.CrawlerService/GetArticles"
-	CrawlerService_GetSchedulesOnDay_FullMethodName = "/crawlerproto.CrawlerService/GetSchedulesOnDay"
-	CrawlerService_GetMatchDetail_FullMethodName    = "/crawlerproto.CrawlerService/GetMatchDetail"
+	CrawlerService_GetArticles_FullMethodName                 = "/crawlerproto.CrawlerService/GetArticles"
+	CrawlerService_GetArticlesFromAddedCrawler_FullMethodName = "/crawlerproto.CrawlerService/GetArticlesFromAddedCrawler"
+	CrawlerService_GetSchedulesOnDay_FullMethodName           = "/crawlerproto.CrawlerService/GetSchedulesOnDay"
+	CrawlerService_GetMatchDetail_FullMethodName              = "/crawlerproto.CrawlerService/GetMatchDetail"
 )
 
 // CrawlerServiceClient is the client API for CrawlerService service.
@@ -29,6 +30,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CrawlerServiceClient interface {
 	GetArticles(ctx context.Context, in *KeywordToSearch, opts ...grpc.CallOption) (CrawlerService_GetArticlesClient, error)
+	GetArticlesFromAddedCrawler(ctx context.Context, in *ConfigCrawler, opts ...grpc.CallOption) (*ArticleAddedCrawler, error)
 	GetSchedulesOnDay(ctx context.Context, in *Date, opts ...grpc.CallOption) (*SchedulesReponse, error)
 	GetMatchDetail(ctx context.Context, in *MatchURLs, opts ...grpc.CallOption) (CrawlerService_GetMatchDetailClient, error)
 }
@@ -71,6 +73,15 @@ func (x *crawlerServiceGetArticlesClient) Recv() (*ArticlesReponse, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *crawlerServiceClient) GetArticlesFromAddedCrawler(ctx context.Context, in *ConfigCrawler, opts ...grpc.CallOption) (*ArticleAddedCrawler, error) {
+	out := new(ArticleAddedCrawler)
+	err := c.cc.Invoke(ctx, CrawlerService_GetArticlesFromAddedCrawler_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *crawlerServiceClient) GetSchedulesOnDay(ctx context.Context, in *Date, opts ...grpc.CallOption) (*SchedulesReponse, error) {
@@ -119,6 +130,7 @@ func (x *crawlerServiceGetMatchDetailClient) Recv() (*MatchDetail, error) {
 // for forward compatibility
 type CrawlerServiceServer interface {
 	GetArticles(*KeywordToSearch, CrawlerService_GetArticlesServer) error
+	GetArticlesFromAddedCrawler(context.Context, *ConfigCrawler) (*ArticleAddedCrawler, error)
 	GetSchedulesOnDay(context.Context, *Date) (*SchedulesReponse, error)
 	GetMatchDetail(*MatchURLs, CrawlerService_GetMatchDetailServer) error
 	mustEmbedUnimplementedCrawlerServiceServer()
@@ -130,6 +142,9 @@ type UnimplementedCrawlerServiceServer struct {
 
 func (UnimplementedCrawlerServiceServer) GetArticles(*KeywordToSearch, CrawlerService_GetArticlesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetArticles not implemented")
+}
+func (UnimplementedCrawlerServiceServer) GetArticlesFromAddedCrawler(context.Context, *ConfigCrawler) (*ArticleAddedCrawler, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetArticlesFromAddedCrawler not implemented")
 }
 func (UnimplementedCrawlerServiceServer) GetSchedulesOnDay(context.Context, *Date) (*SchedulesReponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSchedulesOnDay not implemented")
@@ -169,6 +184,24 @@ type crawlerServiceGetArticlesServer struct {
 
 func (x *crawlerServiceGetArticlesServer) Send(m *ArticlesReponse) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _CrawlerService_GetArticlesFromAddedCrawler_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfigCrawler)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CrawlerServiceServer).GetArticlesFromAddedCrawler(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CrawlerService_GetArticlesFromAddedCrawler_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CrawlerServiceServer).GetArticlesFromAddedCrawler(ctx, req.(*ConfigCrawler))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _CrawlerService_GetSchedulesOnDay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -217,6 +250,10 @@ var CrawlerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "crawlerproto.CrawlerService",
 	HandlerType: (*CrawlerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetArticlesFromAddedCrawler",
+			Handler:    _CrawlerService_GetArticlesFromAddedCrawler_Handler,
+		},
 		{
 			MethodName: "GetSchedulesOnDay",
 			Handler:    _CrawlerService_GetSchedulesOnDay_Handler,

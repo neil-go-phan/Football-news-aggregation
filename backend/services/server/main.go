@@ -6,8 +6,6 @@ import (
 	"os"
 	"server/connects"
 	"server/db/migrations"
-	configcrawler "server/services/configCrawler"
-
 	// "server/db/seed"
 	"server/handler"
 	serverhelper "server/helper"
@@ -18,7 +16,7 @@ import (
 	"server/infras"
 	"server/routes"
 	"time"
-
+	configcrawler "server/services/configCrawler"
 	"github.com/evalphobia/logrus_sentry"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
@@ -105,10 +103,11 @@ func main() {
 	matchDetailHandler := infras.InitializeMatch(db, grpcClient)
 	matchDetailRoute := routes.NewMatchDetailRoutes(matchDetailHandler)
 
-	a := configcrawler.NewConfigCrawlerService()
-	b := handler.NewConfigCrawlerHandler(a)
-	c := routes.NewConfigCrawlerRoutes(b)
+	a := repository.NewConfigCrawlerRepo(db)
+	b := 	configcrawler.NewConfigCrawlerService(a, grpcClient)
 
+	configCrawlerHandler := handler.NewConfigCrawlerHandler(b)
+	configCrawlerRoute := routes.NewConfigCrawlerRoutes(configCrawlerHandler)
 
 	// seed.SeedData(articleHandler, schedulesHandler)
 
@@ -140,7 +139,7 @@ func main() {
 	schedulesRoute.Setup(r)
 	matchDetailRoute.Setup(r)
 	adminRoute.Setup(r)
-	c.Setup(r)
+	configCrawlerRoute.Setup(r)
 
 	err = r.Run(env.Port)
 	if err != nil {

@@ -15,6 +15,7 @@ import (
 	"server/services/admin"
 	"server/services/articles"
 	"server/services/club"
+	// "server/services/configCrawler"
 	"server/services/event"
 	"server/services/leagues"
 	"server/services/lineup"
@@ -41,6 +42,13 @@ func InitializeTag(db *gorm.DB) *handler.TagsHandler {
 	tagsHandler := handler.NewTagsHandler(tagsService)
 	return tagsHandler
 }
+
+// func InitializeConfigCrawler(db *gorm.DB) *handler.ConfigCrawlerHandler {
+// 	configCrawlerRepo := repository.NewConfigCrawlerRepo(db)
+// 	configCrawlerService := configcrawler.NewConfigCrawlerService(configCrawlerRepo)
+// 	configCrawlerHandler := handler.NewConfigCrawlerHandler(configCrawlerService)
+// 	return configCrawlerHandler
+// }
 
 func InitializeLeague(db *gorm.DB) *handler.LeaguesHandler {
 	leaguesRepo := repository.NewLeaguesRepo(db)

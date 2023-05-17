@@ -285,6 +285,10 @@ func (s *MatchService) StoreMatch_ScheduleCrawl(match entities.Match, ID uint, d
 	} else {
 		// match already exist, then we will update some collumn
 		log.Println("Match update id =", existMatch.ID)
+		existMatch.Time = match.Time
+		existMatch.Round = match.Round
+		existMatch.Scores = match.Scores
+		existMatch.MatchDetailLink = match.MatchDetailLink
 		err = s.repo.UpdateWhenScheduleCrawl(existMatch)
 		if err != nil {
 			return err
@@ -307,7 +311,6 @@ func (s *MatchService) createMatch(match *entities.Match) error {
 		log.Error(err)
 	}
 	match.Club2 = *club2
-
 	err = s.repo.Create(match)
 	if err != nil {
 		return err

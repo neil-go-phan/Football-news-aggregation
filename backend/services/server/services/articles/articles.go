@@ -102,7 +102,7 @@ func (s *ArticleService) GetArticles(keywords []string) {
 			league := resp.GetLeague()
 
 			respArticles := resp.GetArticles()
-			s.storeArticles(respArticles, league)
+			s.StoreArticles(respArticles, league)
 
 			saveToMapSearchResult(respArticles, mapSearchResult)
 		}
@@ -113,7 +113,7 @@ func (s *ArticleService) GetArticles(keywords []string) {
 	log.Printf("finished.")
 }
 
-func (s *ArticleService) storeArticles(respArticles []*pb.Article, league string) {
+func (s *ArticleService) StoreArticles(respArticles []*pb.Article, league string) {
 	tags, err := s.tagsService.ListTagsName()
 	if err != nil {
 		log.Error(err)

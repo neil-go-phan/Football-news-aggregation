@@ -17,7 +17,7 @@ type Match struct {
 	Scores          string `json:"scores"`
 	MatchDetailLink string `json:"match_detail_link"`
 	ScheduleID      uint   `json:"schedule_id"`
-	TimeStart       time.Time
+	TimeStart       time.Time `gorm:"column:time_start"`
 	MatchStatus     string
 	Club1Overview   []OverviewItem   `gorm:"foreignKey:MatchID"`
 	Club2Overview   []OverviewItem   `gorm:"foreignKey:MatchID"`

@@ -5,14 +5,16 @@ import { _ROUTES } from '@/helpers/constants';
 import AdminLeagues from './leagues';
 import AdminTags from './tags';
 import Crawler from './crawler';
+import AddCrawler from './crawler/addCrawler';
 
 function AdminComponent() {
   const router = useRouter();
   const [path, setpath] = useState<string>();
   useEffect(() => {
-    setpath(router.asPath);
+    const path = router.asPath;
+    const beforeQuestionMark = path.split('?')[0];
+    setpath(beforeQuestionMark);
   }, [router.asPath]);
-
   const render = () => {
     switch (path) {
       case _ROUTES.ADMIN_LEAGUES:
@@ -21,6 +23,8 @@ function AdminComponent() {
         return <AdminTags />;
       case _ROUTES.ADMIN_CRAWLER:
         return <Crawler />;
+      case _ROUTES.ADD_CRAWLER:
+        return <AddCrawler />;
       default:
         return <ArticleAdmin />;
     }
