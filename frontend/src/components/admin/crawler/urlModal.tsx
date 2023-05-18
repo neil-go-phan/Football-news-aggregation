@@ -12,6 +12,7 @@ type UrlFormProperty = {
 };
 
 type Props = {
+  // eslint-disable-next-line no-unused-vars
   handleIsUrlModalClose: (url:string) => void;
 };
 

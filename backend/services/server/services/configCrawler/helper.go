@@ -6,7 +6,7 @@ import (
 	"server/entities"
 	pb "server/proto"
 	"strings"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/go-playground/validator"
 	"golang.org/x/net/html"
 )
@@ -118,6 +118,9 @@ func removeNode(n *html.Node) {
 
 func renderNode(n *html.Node) string {
 	var sb strings.Builder
-	html.Render(&sb, n)
+	err := html.Render(&sb, n)
+	if err != nil {
+		log.Error(err)
+	}
 	return sb.String()
 }

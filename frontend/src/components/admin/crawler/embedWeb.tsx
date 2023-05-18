@@ -57,7 +57,6 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     removeOnClickEvents()
     const iframe = iframeRef.current;
-    console.log(iframe)
     if (iframe) {
       const iframeDocument =
         iframe.contentDocument || iframe.contentWindow.document;
@@ -84,6 +83,7 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
         });
       };
     }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [htmlContent]);
 
   const handleMouseOver = (event:Event) => {
@@ -99,6 +99,7 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
   const handleClick = useCallback((event:Event) => {
     // Xử lý logic khi phần tử HTML được click
     props.handleClick(event)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const requestHtmlPage = async (url: string) => {
@@ -124,7 +125,7 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
       }
     } catch (error) {
       setIsError(true);
-      toast.error(`Error occurred`, {
+      toast.error('Error occurred', {
         position: 'top-right',
         autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,
@@ -136,7 +137,7 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
       });
     }
   };
-  console.log('render');
+
   useEffect(() => {
     setIsLoading(true);
     requestHtmlPage(props.url);

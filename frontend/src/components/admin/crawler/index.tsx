@@ -31,13 +31,13 @@ type Crawler = {
   next_page_type: string;
 };
 
-function Crawler() {
+function CrawlerComponent() {
   const [crawlers, setCrawlers] = useState<Array<Crawler>>();
   const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
   const router = useRouter()
   const handleIsUrlModalClose = (url: string) => {
     setIsUrlModalOpen(false);
-    router.push(_ROUTES.ADD_CRAWLER + "?url=" + url)
+    router.push(`${_ROUTES.ADD_CRAWLER}?url=${url}`)
   }
   
   const columns: Column<CrawlerRow>[] = React.useMemo(
@@ -158,9 +158,6 @@ function Crawler() {
     requestListCrawler();
   }, [router.asPath]);
 
-  if (crawlers) {
-  }
-
   return (
     <div className="adminCrawler">
       <h2 className="adminCrawler__list--title">Crawler list</h2>
@@ -247,4 +244,4 @@ function Crawler() {
   );
 }
 
-export default Crawler;
+export default CrawlerComponent;

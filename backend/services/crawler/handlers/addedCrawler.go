@@ -25,7 +25,7 @@ func (s *gRPCServer) GetArticlesFromAddedCrawler(ctx context.Context, configCraw
 }
 
 func crawlArticleAddedCrawlerAndParse(configCrawler *pb.ConfigCrawler) (*pb.ArticleAddedCrawler, error) {
-	articles := new(pb.ArticleAddedCrawler) 
+	var articles *pb.ArticleAddedCrawler
 	articlesCrawl, err := services.CrawlArticleAddedCrawler(configCrawler)
 	if err != nil {
 		log.Errorf("error occurred during crawl article with custom crawler, err: %v", err)

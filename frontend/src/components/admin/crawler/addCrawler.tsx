@@ -9,7 +9,6 @@ import {
   faHeading,
   faInfo,
   faLink,
-  faList,
   faScroll,
   faTag,
 } from '@fortawesome/free-solid-svg-icons';
@@ -484,7 +483,7 @@ const AddCrawler: React.FC = () => {
               </thead>
               <tbody>
                 {articles.map((article, index) => (
-                  <tr>
+                  <tr key={`article_crawler_test_${article.title}`}>
                     <td>{index}</td>
                     <td>{article.title}</td>
                     <td>{article.description}</td>

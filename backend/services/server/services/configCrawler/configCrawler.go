@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	// "github.com/chromedp/cdproto/cdp"
-	// "github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/chromedp"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"

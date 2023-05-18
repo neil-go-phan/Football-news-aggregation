@@ -4,8 +4,8 @@ import ArticleAdmin from './articles';
 import { _ROUTES } from '@/helpers/constants';
 import AdminLeagues from './leagues';
 import AdminTags from './tags';
-import Crawler from './crawler';
 import AddCrawler from './crawler/addCrawler';
+import CrawlerComponent from './crawler';
 
 function AdminComponent() {
   const router = useRouter();
@@ -22,7 +22,7 @@ function AdminComponent() {
       case _ROUTES.ADMIN_TAGS:
         return <AdminTags />;
       case _ROUTES.ADMIN_CRAWLER:
-        return <Crawler />;
+        return <CrawlerComponent />;
       case _ROUTES.ADD_CRAWLER:
         return <AddCrawler />;
       default:
