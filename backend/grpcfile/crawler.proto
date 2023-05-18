@@ -17,13 +17,12 @@ message KeywordToSearch {
 
 message ConfigCrawler {
   string url =1;
-  string list = 2;
-  string div = 3;
-  string title       =4;
-	string description =5;
-	string link        =6;
-  string next_page =7;
-  string netx_page_type =8;
+  string div = 2;
+  string title       =3;
+	string description =4;
+	string link        =5;
+  string next_page =6;
+  string netx_page_type =7;
 }
 
 message ArticleAddedCrawler {

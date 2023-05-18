@@ -139,8 +139,10 @@
     }
   }
   &__addCrawler {
+    &--embed{
+      border: 2px solid #f1af79;
+    }
     &--form {
-      height: 500px;
       overflow: auto;
       padding: 20px;
       .title {
@@ -157,6 +159,9 @@
 
   &__addModal {
     padding: 1rem;
+    .radioBtn {
+      font-size: 20px;
+    }
     &--title {
       font-size: 2rem;
       text-align: center;
@@ -168,10 +173,10 @@
     }
   }
 
-
   &__iFrame {
     &--embed {
       height: 500px;
+      width: 100%;
       overflow: auto;
     }
     &--loading{

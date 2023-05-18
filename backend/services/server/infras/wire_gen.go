@@ -15,7 +15,7 @@ import (
 	"server/services/admin"
 	"server/services/articles"
 	"server/services/club"
-	// "server/services/configCrawler"
+	"server/services/configCrawler"
 	"server/services/event"
 	"server/services/leagues"
 	"server/services/lineup"
@@ -43,12 +43,12 @@ func InitializeTag(db *gorm.DB) *handler.TagsHandler {
 	return tagsHandler
 }
 
-// func InitializeConfigCrawler(db *gorm.DB) *handler.ConfigCrawlerHandler {
-// 	configCrawlerRepo := repository.NewConfigCrawlerRepo(db)
-// 	configCrawlerService := configcrawler.NewConfigCrawlerService(configCrawlerRepo)
-// 	configCrawlerHandler := handler.NewConfigCrawlerHandler(configCrawlerService)
-// 	return configCrawlerHandler
-// }
+func InitializeConfigCrawler(db *gorm.DB, grpcClient serverproto.CrawlerServiceClient) *handler.ConfigCrawlerHandler {
+	configCrawlerRepo := repository.NewConfigCrawlerRepo(db)
+	configCrawlerService := configcrawler.NewConfigCrawlerService(configCrawlerRepo, grpcClient)
+	configCrawlerHandler := handler.NewConfigCrawlerHandler(configCrawlerService)
+	return configCrawlerHandler
+}
 
 func InitializeLeague(db *gorm.DB) *handler.LeaguesHandler {
 	leaguesRepo := repository.NewLeaguesRepo(db)
@@ -65,7 +65,9 @@ func InitializeArticle(db *gorm.DB, es *elasticsearch.Client, grpcClient serverp
 	tagsService := tagsservices.NewTagsService(tagRepo)
 	leaguesService := leaguesservices.NewleaguesService(leaguesRepo, tagsService)
 	articleRepo := repository.NewArticleRepo(db)
-	articleService := articlesservices.NewArticleService(leaguesService, tagsService, grpcClient, es, articleRepo)
+	configCrawlerRepo := repository.NewConfigCrawlerRepo(db)
+	configCrawlerService := configcrawler.NewConfigCrawlerService(configCrawlerRepo, grpcClient)
+	articleService := articlesservices.NewArticleService(leaguesService, tagsService, grpcClient, es, articleRepo, configCrawlerService)
 	articleHandler := handler.NewArticleHandler(articleService)
 	return articleHandler
 }

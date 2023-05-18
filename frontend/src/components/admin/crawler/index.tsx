@@ -12,7 +12,6 @@ import UrlModal from './urlModal';
 type CrawlerRow = {
   index: number;
   url: string;
-  article_list: string;
   article_div: string;
   article_title: string;
   article_description: string;
@@ -24,7 +23,6 @@ type CrawlerRow = {
 
 type Crawler = {
   url: string;
-  article_list: string;
   article_div: string;
   article_title: string;
   article_description: string;
@@ -51,10 +49,6 @@ function Crawler() {
       {
         Header: 'Url',
         accessor: 'url',
-      },
-      {
-        Header: 'Article list',
-        accessor: 'article_list',
       },
       {
         Header: 'Article div',
@@ -86,11 +80,6 @@ function Crawler() {
         Cell: ({ row }) => (
           <CrawlerAction
             url={row.values.url}
-            article_list={row.values.article_list}
-            article_div={row.values.article_div}
-            article_title={row.values.article_title}
-            article_description={row.values.article_description}
-            article_link={row.values.article_link}
             handleDelete={handleDelete}
             // handleUpdate={handleUpdate}
           />
@@ -109,7 +98,6 @@ function Crawler() {
       return crawlerRow.map((crawler, index) => ({
         index: index + 1,
         url: crawler.url,
-        article_list: crawler.article_list,
         article_div: crawler.article_div,
         article_title: crawler.article_title,
         article_description: crawler.article_description,

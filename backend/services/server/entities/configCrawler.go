@@ -5,7 +5,6 @@ import "gorm.io/gorm"
 type ConfigCrawler struct {
 	gorm.Model
 	Url string
-	ArticleList string
 	ArticleDiv string
 	ArticleTitle string
 	ArticleDescription string

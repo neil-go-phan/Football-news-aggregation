@@ -1,6 +1,6 @@
 import axiosProtectedAPI from '@/helpers/axiosProtectedAPI';
 import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ThreeDots } from 'react-loader-spinner';
 import { toast } from 'react-toastify';
 
@@ -14,16 +14,6 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
   const [htmlContent, setHtmlContent] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
-
-  const handleMouseOver = (event: Event) => {
-    const target = event.target as HTMLElement;
-    target.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
-  };
-
-  const handleMouseOut = (event: Event) => {
-    const target = event.target as HTMLElement;
-    target.style.backgroundColor = '';
-  };
 
   const removeOnClickEvents = () => {
     const tempContainer = document.createElement('div');
@@ -40,26 +30,76 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
     // Gỡ bỏ sự kiện onclick mạc định của tất cả thẻ khác
     elements.forEach((element) => {
       element.removeAttribute('onclick');
+      element.removeAttribute('onmouseover');
+      element.removeAttribute('onmouseout');
     });
     const sanitizedHtml = tempContainer.innerHTML;
     setHtmlContent(sanitizedHtml);
   };
-  const addClickEventToContainer = () => {
-    const container = document.getElementById('container');
-    if (container) {
-      container.addEventListener('click', props.handleClick);
-      const elements = container.querySelectorAll('*');
+  // const addClickEventToContainer = () => {
+  //   const container = document.getElementById('embedContainer');
+  //   if (container) {
+  //     container.addEventListener('click', props.handleClick);
+  //     const elements = container.querySelectorAll('*');
 
-      elements.forEach((element) => {
+  //     elements.forEach((element) => {
+  //       element.addEventListener('mouseover', handleMouseOver);
+  //       element.addEventListener('mouseout', handleMouseOut);
+  //     });
+  //   }
+  // };
+  // useEffect(() => {
+  //   removeOnClickEvents();
+  // }, [htmlContent]);
+
+  const iframeRef = useRef<any>(null);
+
+  useEffect(() => {
+    removeOnClickEvents()
+    const iframe = iframeRef.current;
+    console.log(iframe)
+    if (iframe) {
+      const iframeDocument =
+        iframe.contentDocument || iframe.contentWindow.document;
+
+      // Gắn HTML content vào iframe
+      iframeDocument.open();
+      iframeDocument.write(htmlContent);
+      iframeDocument.close();
+
+      // Gắn sự kiện onMouseOver vào các phần tử HTML
+      const elements = iframeDocument.querySelectorAll('*');
+      elements.forEach((element: any) => {
         element.addEventListener('mouseover', handleMouseOver);
         element.addEventListener('mouseout', handleMouseOut);
+        element.addEventListener('click', handleClick);
       });
+
+      return () => {
+        // Hủy bỏ sự kiện khi component unmount
+        elements.forEach((element: any) => {
+          element.removeEventListener('mouseover', handleMouseOver);
+          element.removeEventListener('mouseout', handleMouseOut);
+          element.removeEventListener('click', handleClick);
+        });
+      };
     }
-  };
-  useEffect(() => {
-    removeOnClickEvents();
-    addClickEventToContainer();
   }, [htmlContent]);
+
+  const handleMouseOver = (event:Event) => {
+    const target = event.target  as HTMLElement; 
+    target.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+  };
+
+  const handleMouseOut = (event:Event) => {
+    const target = event.target as HTMLElement;
+    target.style.backgroundColor = '';
+  }
+
+  const handleClick = useCallback((event:Event) => {
+    // Xử lý logic khi phần tử HTML được click
+    props.handleClick(event)
+  }, []);
 
   const requestHtmlPage = async (url: string) => {
     try {
@@ -96,7 +136,7 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
       });
     }
   };
-
+  console.log('render');
   useEffect(() => {
     setIsLoading(true);
     requestHtmlPage(props.url);
@@ -124,11 +164,15 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
             />
           </div>
         ) : (
-          <div
+          <iframe
             className="adminCrawler__iFrame--embed"
-            id="container"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
-          ></div>
+            ref={iframeRef}
+          ></iframe>
+          // <div
+          //   className="adminCrawler__iFrame--embed"
+          //   id="embedContainer"
+          //   dangerouslySetInnerHTML={{ __html: htmlContent }}
+          // ></div>
         )}
       </div>
     );

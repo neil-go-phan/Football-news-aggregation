@@ -29,6 +29,15 @@ func newEntitiesArticle(respArticle *pb.Article, tags []entities.Tag) entities.A
 	return article
 }
 
+func newPbArticle(respArticle entities.Article) *pb.Article{
+	article := &pb.Article{
+		Title:       respArticle.Title,
+		Description: respArticle.Description,
+		Link:        respArticle.Link,
+	}
+	return article
+}
+
 func storeArticleToElasticsearch(article entities.Article, es *elasticsearch.Client) {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 

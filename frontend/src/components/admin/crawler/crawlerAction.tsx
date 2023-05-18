@@ -6,11 +6,6 @@ import { toast } from 'react-toastify';
 
 type Props = {
   url: string;
-  article_list: string;
-  article_div: string;
-  article_title: string;
-  article_description: string;
-  article_link: string;
   handleDelete: () => void
 };
 

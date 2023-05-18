@@ -139,7 +139,6 @@ CREATE TABLE config_crawlers (
   updated_at timestamp with time zone,
   deleted_at timestamp with time zone,
   url text UNIQUE,
-  article_list text,
   article_div text,
   article_title text,
   article_description text,

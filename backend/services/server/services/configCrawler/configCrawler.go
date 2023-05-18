@@ -11,8 +11,11 @@ import (
 	"strings"
 	"time"
 
+	// "github.com/chromedp/cdproto/cdp"
+	// "github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/chromedp"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/html"
 )
 
 type ConfigCrawlerService struct {
@@ -36,6 +39,7 @@ func (s *ConfigCrawlerService) GetHtmlPage(url *url.URL) error {
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url.String()),
+		chromedp.Sleep(3 * time.Second),
 	)
 	if err != nil {
 		return err
@@ -44,14 +48,22 @@ func (s *ConfigCrawlerService) GetHtmlPage(url *url.URL) error {
 
 	err = chromedp.Run(ctx,
 		chromedp.OuterHTML("html", &htmlContent),
+		chromedp.Sleep(3 * time.Second),
 	)
 	if err != nil {
 		return err
 	}
 
 	hostname := strings.TrimPrefix(url.Hostname(), "www.")
+	doc, err := html.Parse(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	err = os.WriteFile(fmt.Sprintf("page%s.html", hostname), []byte(htmlContent), 0644)
+	removeScriptTags(doc)
+
+	htmlWithoutScript := renderNode(doc)
+	err = os.WriteFile(fmt.Sprintf("page%s.html", hostname), []byte(htmlWithoutScript), 0644)
 	if err != nil {
 		return err
 	}
@@ -60,6 +72,7 @@ func (s *ConfigCrawlerService) GetHtmlPage(url *url.URL) error {
 }
 
 func (s *ConfigCrawlerService) Upsert(configCrawler *ConfigCrawler) error {
+	configCrawler = trimConfigCrawler(configCrawler)
 	err := validateConfigCrawler(configCrawler)
 	if err != nil {
 		return err
@@ -90,6 +103,7 @@ func (s *ConfigCrawlerService) Get(urlInput string) (ConfigCrawler, error) {
 	if err != nil {
 		return configCrawler, fmt.Errorf("url invalid")
 	}
+	
 	entity, err := s.repo.Get(urlInput)
 	if err != nil {
 		return configCrawler, err
@@ -112,6 +126,7 @@ func (s *ConfigCrawlerService) Delete(urlInput string) error {
 
 func (s *ConfigCrawlerService) TestCrawler(configCrawler *ConfigCrawler) ([]entities.Article, error) {
 	articles := []entities.Article{}
+	configCrawler = trimConfigCrawler(configCrawler)
 	err := validateConfigCrawler(configCrawler)
 	if err != nil {
 		return articles, err

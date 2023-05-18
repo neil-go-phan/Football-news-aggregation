@@ -1,34 +1,37 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import EmbedWeb from './embedWeb';
 import { useRouter } from 'next/router';
 import * as yup from 'yup';
 import { Button, Form, InputGroup, Table } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+  faArrowRight,
   faHeading,
   faInfo,
   faLink,
   faList,
+  faScroll,
   faTag,
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
 import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
 import axiosProtectedAPI from '@/helpers/axiosProtectedAPI';
 import { ArticleType } from '@/components/matchDetail/relatedNews/article';
+import { ThreeDots } from 'react-loader-spinner';
 
 const AddCrawler: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState({
     trigger: false,
     message: '',
   });
-  const [htmlArticleList, setHtmlArticleList] = useState<string>();
-  const [htmlArticleDiv, setHtmlArticleDiv] = useState<string>();
-  const [htmlArticleTitle, setHtmlArticleTitle] = useState<string>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [htmlArticleDiv, setHtmlArticleDiv] = useState<string>('');
+  const [htmlArticleTitle, setHtmlArticleTitle] = useState<string>('');
   const [htmlArticleDescription, setHtmlArticleDescription] =
-    useState<string>();
-  const [htmlArticleLink, setHtmlArticleLink] = useState<string>();
-  const [htmlNextPage, setHtmlNextPage] = useState<string>();
-  const [nextPageType, setNextPageType] = useState<string>('button next');
+    useState<string>('');
+  const [htmlArticleLink, setHtmlArticleLink] = useState<string>('');
+  const [htmlNextPage, setHtmlNextPage] = useState<string>('');
+  const [nextPageType, setNextPageType] = useState<string>('button');
 
   const [totalArticleCrawler, setTotalArticleCrawled] = useState<number>();
   const [isRenderResult, setIsRenderResult] = useState<boolean>(false);
@@ -41,13 +44,10 @@ const AddCrawler: React.FC = () => {
   };
 
   // JavaScript closure
-  const handleClick = (event : Event): void => {
+  const handleClick = useCallback((event: Event): void => {
     const target = event.target as HTMLElement;
-    const classname = target.className
+    const classname = target.className.trim();
     switch (fieldChooseRef.current) {
-      case 'list':
-        setHtmlArticleList(classname);
-        break;
       case 'div':
         setHtmlArticleDiv(classname);
         break;
@@ -59,26 +59,28 @@ const AddCrawler: React.FC = () => {
         break;
       case 'link':
         setHtmlArticleLink(classname);
+        break;
+      case 'next_page':
+        setHtmlNextPage(classname);
+        break;
       default:
         break;
     }
-    toast.success('Get class successsdads', {
-      position: 'top-right',
-      autoClose: ERROR_POPUP_ADMIN_TIME,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: 'light',
-    });
-    console.log("Helo")
-  };
+    // toast.success('Get class success', {
+    //   position: 'top-right',
+    //   autoClose: ERROR_POPUP_ADMIN_TIME,
+    //   hideProgressBar: false,
+    //   closeOnClick: true,
+    //   pauseOnHover: true,
+    //   draggable: true,
+    //   progress: undefined,
+    //   theme: 'light',
+    // });
+  }, []);
   const router = useRouter();
   const { url } = router.query;
 
   const schema = yup.object().shape({
-    article_list: yup.string().required('Article list is require'),
     article_div: yup.string().required('Article div is require'),
     article_title: yup.string().required('Article title is require'),
     article_description: yup.string().required('Article descrition is require'),
@@ -94,7 +96,6 @@ const AddCrawler: React.FC = () => {
     try {
       await schema.validate(
         {
-          article_list: htmlArticleList,
           article_div: htmlArticleDiv,
           article_title: htmlArticleTitle,
           article_description: htmlArticleDescription,
@@ -117,12 +118,12 @@ const AddCrawler: React.FC = () => {
   const handleTest = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
+    setIsLoading(true);
     e.preventDefault();
     // validate
     try {
       await schema.validate(
         {
-          article_list: htmlArticleList,
           article_div: htmlArticleDiv,
           article_title: htmlArticleTitle,
           article_description: htmlArticleDescription,
@@ -146,7 +147,6 @@ const AddCrawler: React.FC = () => {
     try {
       const { data } = await axiosProtectedAPI.post('crawler/upsert', {
         url: String(url),
-        article_list: htmlArticleList,
         article_div: htmlArticleDiv,
         article_title: htmlArticleTitle,
         article_description: htmlArticleDescription,
@@ -161,6 +161,11 @@ const AddCrawler: React.FC = () => {
         trigger: false,
         message: data.message,
       });
+      setHtmlArticleDiv('');
+      setHtmlArticleTitle('');
+      setHtmlArticleLink('');
+      setHtmlArticleDescription('');
+      setHtmlNextPage('');
       toast.success('Upsert success', {
         position: 'top-right',
         autoClose: ERROR_POPUP_ADMIN_TIME,
@@ -172,10 +177,6 @@ const AddCrawler: React.FC = () => {
         theme: 'light',
       });
     } catch (error: any) {
-      setErrorMessage({
-        trigger: true,
-        message: error.response.data.message,
-      });
       toast.error('Error occurred while upsert crawler', {
         position: 'top-right',
         autoClose: ERROR_POPUP_ADMIN_TIME,
@@ -193,7 +194,6 @@ const AddCrawler: React.FC = () => {
     try {
       const { data } = await axiosProtectedAPI.post('crawler/test', {
         url: String(url),
-        article_list: htmlArticleList,
         article_div: htmlArticleDiv,
         article_title: htmlArticleTitle,
         article_description: htmlArticleDescription,
@@ -211,6 +211,7 @@ const AddCrawler: React.FC = () => {
         trigger: false,
         message: data.message,
       });
+      setIsLoading(false);
       toast.success('Test success, result below', {
         position: 'top-right',
         autoClose: ERROR_POPUP_ADMIN_TIME,
@@ -222,10 +223,6 @@ const AddCrawler: React.FC = () => {
         theme: 'light',
       });
     } catch (error: any) {
-      setErrorMessage({
-        trigger: true,
-        message: error.response.data.message,
-      });
       setIsRenderResult(false);
       toast.error('Error occurred while test crawler', {
         position: 'top-right',
@@ -237,41 +234,21 @@ const AddCrawler: React.FC = () => {
         progress: undefined,
         theme: 'light',
       });
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="adminCrawler__addCrawler ">
-      <div className="adminCrawler__addCrawler--add d-flex">
-        <div className="adminCrawler__addCrawler--embed col-7">
+      <div className="adminCrawler__addCrawler--add">
+        <div className="adminCrawler__addCrawler--embed mb-3">
           <EmbedWeb url={String(url)} handleClick={handleClick} />
         </div>
-        <div className="adminCrawler__addCrawler--form col-5">
+        <div className="adminCrawler__addCrawler--form">
           <form>
+            <div className="line" />
             <h2 className="title">Input article class</h2>
             <div className="line" />
-            <label> Article list </label>
-            <InputGroup className="my-3">
-              <InputGroup.Text>
-                <FontAwesomeIcon icon={faList} fixedWidth />
-              </InputGroup.Text>
-              <Form.Control
-                placeholder="Type of choose article list classname"
-                type="text"
-                required
-                className="bg-white"
-                defaultValue={htmlArticleList} // Sử dụng defaultValue thay vì value
-                onChange={(e) => setHtmlArticleList(e.target.value)}
-              />
-              <Button
-                className="px-4"
-                variant="primary"
-                onClick={() => handleChoose('list')}
-              >
-                Choose
-              </Button>
-            </InputGroup>
-
             <label> Article div </label>
             <InputGroup className="my-3">
               <InputGroup.Text>
@@ -283,6 +260,7 @@ const AddCrawler: React.FC = () => {
                 required
                 className="bg-white"
                 value={htmlArticleDiv}
+                onChange={(event) => setHtmlArticleDiv(event.target.value)}
               />
               <Button
                 className="px-4"
@@ -304,6 +282,7 @@ const AddCrawler: React.FC = () => {
                 required
                 className="bg-white"
                 value={htmlArticleTitle}
+                onChange={(event) => setHtmlArticleTitle(event.target.value)}
               />
               <Button
                 className="px-4"
@@ -325,6 +304,9 @@ const AddCrawler: React.FC = () => {
                 required
                 className="bg-white"
                 value={htmlArticleDescription}
+                onChange={(event) =>
+                  setHtmlArticleDescription(event.target.value)
+                }
               />
               <Button
                 className="px-4"
@@ -346,6 +328,7 @@ const AddCrawler: React.FC = () => {
                 type="text"
                 required
                 value={htmlArticleLink}
+                onChange={(event) => setHtmlArticleLink(event.target.value)}
               />
               <Button
                 className="px-4"
@@ -356,15 +339,101 @@ const AddCrawler: React.FC = () => {
               </Button>
             </InputGroup>
 
+            <label> Next page type </label>
+            <div className="radioGroup d-flex justify-content-around mt-4">
+              <Form.Check
+                value="button"
+                type="radio"
+                aria-label="radio 1"
+                label="Button"
+                onChange={(event) => setNextPageType(event.target.value)}
+                checked={nextPageType === 'button'}
+                style={{ fontSize: '20px' }}
+              />
+              {/* <Form.Check
+                value="scroll"
+                type="radio"
+                aria-label="radio 2"
+                label="Scroll"
+                onChange={(event) => {
+                  setNextPageType(event.target.value);
+                  setHtmlNextPage('');
+                }}
+                checked={nextPageType === 'scroll'}
+                style={{ fontSize: '20px' }}
+              /> */}
+              <Form.Check
+                value="none"
+                type="radio"
+                aria-label="radio 1"
+                label="None"
+                onChange={(event) => setNextPageType(event.target.value)}
+                checked={nextPageType === 'none'}
+                style={{ fontSize: '20px' }}
+              />
+            </div>
+
+            {nextPageType === 'button' ? (
+              <>
+                <label> Next page button</label>
+                <InputGroup className="my-3">
+                  <InputGroup.Text>
+                    <FontAwesomeIcon icon={faArrowRight} fixedWidth />
+                  </InputGroup.Text>
+                  <Form.Control
+                    className="bg-white"
+                    placeholder="Type of choose article link classname"
+                    type="text"
+                    required
+                    value={htmlNextPage}
+                    onChange={(event) => setHtmlNextPage(event.target.value)}
+                  />
+                  <Button
+                    className="px-4"
+                    variant="primary"
+                    onClick={() => handleChoose('next_page')}
+                  >
+                    Choose
+                  </Button>
+                </InputGroup>
+              </>
+            ) : nextPageType === 'scroll' ? (
+              <>
+                <label> Scroll into view </label>
+                <InputGroup className="my-3">
+                  <InputGroup.Text>
+                    <FontAwesomeIcon icon={faScroll} fixedWidth />
+                  </InputGroup.Text>
+                  <Form.Control
+                    className="bg-white"
+                    placeholder="Type of choose article link classname"
+                    type="text"
+                    required
+                    value={htmlNextPage}
+                    onChange={(event) => setHtmlNextPage(event.target.value)}
+                  />
+                  <Button
+                    className="px-4"
+                    variant="primary"
+                    onClick={() => handleChoose('next_page')}
+                  >
+                    Choose
+                  </Button>
+                </InputGroup>
+              </>
+            ) : (
+              <></>
+            )}
+
             {errorMessage.trigger && (
               <p className="errorMessage errorFromServer">
                 {errorMessage.message}
               </p>
             )}
 
-            <div className="btnGroup d-flex justify-content-between">
+            <div className="btnGroup d-flex justify-content-between my-4">
               <Button
-                className="w-30 px-4"
+                className="px-4 w-25"
                 variant="secondary"
                 onClick={(e) => handleTest(e)}
                 type="submit"
@@ -372,7 +441,7 @@ const AddCrawler: React.FC = () => {
                 Test
               </Button>
               <Button
-                className="w-30 px-4"
+                className="w-25 px-4"
                 variant="success"
                 onClick={(e) => handleSubmit(e)}
                 type="submit"
@@ -380,11 +449,23 @@ const AddCrawler: React.FC = () => {
                 Submit
               </Button>
             </div>
+            <div className="line" />
           </form>
         </div>
       </div>
 
-      {isRenderResult ? (
+      {isLoading ? (
+        <div className="adminCrawler__iFrame--loading">
+          <ThreeDots
+            height="50"
+            width="50"
+            radius="9"
+            color="#4fa94d"
+            ariaLabel="three-dots-loading"
+            visible={true}
+          />
+        </div>
+      ) : isRenderResult ? (
         <div className="adminCrawler__addCrawler--testResult">
           <div className="total">
             <p>

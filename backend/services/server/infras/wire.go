@@ -52,7 +52,7 @@ func InitTag(db *gorm.DB) *handler.TagsHandler {
 	return &handler.TagsHandler{}
 }
 
-func InitConfigCrawler(db *gorm.DB) *handler.ConfigCrawlerHandler {
+func InitConfigCrawler(db *gorm.DB, grpcClient pb.CrawlerServiceClient) *handler.ConfigCrawlerHandler {
 	wire.Build(
 		repository.NewConfigCrawlerRepo,
 		configcrawler.NewConfigCrawlerService,
@@ -94,6 +94,11 @@ func InitArticle(db *gorm.DB, es *elasticsearch.Client, grpcClient pb.CrawlerSer
 		wire.Bind(new(repository.LeaguesRepository), new(*repository.LeaguesRepo)),
 		leaguesservices.NewleaguesService,
 		wire.Bind(new(services.LeaguesServices), new(*leaguesservices.LeaguesService)),
+
+		repository.NewConfigCrawlerRepo,
+		wire.Bind(new(repository.ConfigCrawlerRepository), new(*repository.ConfigCrawlerRepo)),
+		configcrawler.NewConfigCrawlerService,
+		wire.Bind(new(services.ConfigCrawlerServices), new(*configcrawler.ConfigCrawlerService)),
 
 		articlesservices.NewArticleService,
 		wire.Bind(new(services.ArticleServices), new(*articlesservices.ArticleService)),

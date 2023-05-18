@@ -6,21 +6,17 @@ import (
 	"os"
 	"server/connects"
 	"server/db/migrations"
-	// "server/db/seed"
-	"server/handler"
 	serverhelper "server/helper"
 	"server/middlewares"
 	pb "server/proto"
+	"server/infras"
 	"server/repository"
 
-	"server/infras"
-	"server/routes"
 	"time"
-	configcrawler "server/services/configCrawler"
 	"github.com/evalphobia/logrus_sentry"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
+
 	log "github.com/sirupsen/logrus"
 	easy "github.com/t-tomalak/logrus-easy-formatter"
 	"gorm.io/gorm"
@@ -84,71 +80,17 @@ func main() {
 	}
 	connects.CreateElaticsearchIndex(es)
 
-	// declare services
-	adminHandler := infras.InitializeAdmin(db)
-	adminRoute := routes.NewAdminRoutes(adminHandler)
-
-	tagsHandler := infras.InitializeTag(db)
-	tagsRoutes := routes.NewTagsRoutes(tagsHandler)
-
-	leaguesHandler := infras.InitializeLeague(db)
-	leaguesRoutes := routes.NewLeaguesRoutes(leaguesHandler)
-
-	articleHandler := infras.InitializeArticle(db, es, grpcClient)
-	articleRoute := routes.NewArticleRoutes(articleHandler)
-
-	schedulesHandler := infras.InitializeSchedule(db, es, grpcClient)
-	schedulesRoute := routes.NewScheduleRoutes(schedulesHandler)
-
-	matchDetailHandler := infras.InitializeMatch(db, grpcClient)
-	matchDetailRoute := routes.NewMatchDetailRoutes(matchDetailHandler)
-
-	a := repository.NewConfigCrawlerRepo(db)
-	b := 	configcrawler.NewConfigCrawlerService(a, grpcClient)
-
-	configCrawlerHandler := handler.NewConfigCrawlerHandler(b)
-	configCrawlerRoute := routes.NewConfigCrawlerRoutes(configCrawlerHandler)
-
-	// seed.SeedData(articleHandler, schedulesHandler)
-
-	// createArticleCache(articleHandler)
-
-	// cronjob Setup
-	go func() {
-		cronjob := cron.New()
-
-		articleHandler.SignalToCrawlerAfter10Min(cronjob)
-		// articleHandler.RefreshCacheAfter5Min(cronjob)
-		go func() {
-			schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
-		}()
-
-		cronjob.Run()
-	}()
-
-	// schedulesHandler.SignalToCrawlerToDay()
-
 	// app routes
 	log.Infoln("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
 
-	tagsRoutes.Setup(r)
-	leaguesRoutes.Setup(r)
-	articleRoute.Setup(r)
-	schedulesRoute.Setup(r)
-	matchDetailRoute.Setup(r)
-	adminRoute.Setup(r)
-	configCrawlerRoute.Setup(r)
+	infras.SetupRoute(db, es, grpcClient, r)
 
 	err = r.Run(env.Port)
 	if err != nil {
 		log.Fatalln("error occurred when run server")
 	}
-}
-
-func createArticleCache(handler *handler.ArticleHandler) {
-	handler.RefreshCache()
 }
 
 func configSentry() {
