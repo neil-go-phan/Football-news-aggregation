@@ -5,22 +5,22 @@ import (
 	"server/repository"
 )
 
-type lineupService struct {
+type LineupService struct {
 	repo repository.LineupRepository
 }
 
-func NewLineupService(repo repository.LineupRepository) *lineupService {
-	lineupService := &lineupService{
+func NewLineupService(repo repository.LineupRepository) *LineupService {
+	lineupService := &LineupService{
 		repo: repo,
 	}
 	return lineupService
 }
 
-func (s *lineupService) GetOrCreate(lineup *entities.MatchLineUp) (*entities.MatchLineUp, error) {
+func (s *LineupService) GetOrCreate(lineup *entities.MatchLineUp) (*entities.MatchLineUp, error) {
 	return s.repo.FirstOrCreate(lineup) 
 }
 
-func (s *lineupService) GetLineUps(id1 uint, id2 uint) (*entities.MatchLineUp, *entities.MatchLineUp, error) {
+func (s *LineupService) GetLineUps(id1 uint, id2 uint) (*entities.MatchLineUp, *entities.MatchLineUp, error) {
 	lineup1 , err := s.repo.Get(id1)
 	if err != nil {
 		return nil,nil, err

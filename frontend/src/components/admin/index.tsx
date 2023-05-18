@@ -1,33 +1,36 @@
-import { useRouter } from 'next/router'
-import React, { useEffect, useState } from 'react'
-import ArticleAdmin from './articles'
-import { _ROUTES } from '@/helpers/constants'
-import AdminLeagues from './leagues'
-import AdminTags from './tags'
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import ArticleAdmin from './articles';
+import { _ROUTES } from '@/helpers/constants';
+import AdminLeagues from './leagues';
+import AdminTags from './tags';
+import AddCrawler from './crawler/addCrawler';
+import CrawlerComponent from './crawler';
 
 function AdminComponent() {
-  const router = useRouter()
-  const [path, setpath] = useState<string>()
+  const router = useRouter();
+  const [path, setpath] = useState<string>();
   useEffect(() => {
-    setpath(router.asPath)
-  }, [router.asPath])
-  
+    const path = router.asPath;
+    const beforeQuestionMark = path.split('?')[0];
+    setpath(beforeQuestionMark);
+  }, [router.asPath]);
   const render = () => {
     switch (path) {
       case _ROUTES.ADMIN_LEAGUES:
-        return <AdminLeagues />
-      case (_ROUTES.ADMIN_TAGS):
-        return <AdminTags />
+        return <AdminLeagues />;
+      case _ROUTES.ADMIN_TAGS:
+        return <AdminTags />;
+      case _ROUTES.ADMIN_CRAWLER:
+        return <CrawlerComponent />;
+      case _ROUTES.ADD_CRAWLER:
+        return <AddCrawler />;
       default:
-        return <ArticleAdmin />
+        return <ArticleAdmin />;
     }
-  }
+  };
 
-  return (
-    <>
-    {render()}
-    </>
-  )
+  return <>{render()}</>;
 }
 
-export default AdminComponent
+export default AdminComponent;

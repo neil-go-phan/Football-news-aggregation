@@ -5,13 +5,15 @@ import (
 	"crawler/helper"
 	pb "crawler/proto"
 	"crawler/services"
-	log "github.com/sirupsen/logrus"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	jsoniter "github.com/json-iterator/go"
 )
+
 // to slow down crawl match process (TODO: research about how to control amount of go routine suitable for server power)
-var AMOUNT_MATCH_PER_GOROUTINE = 10
+var AMOUNT_OF_GOROUTINE = 5
 
 func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerService_GetMatchDetailServer) error {
 	matchUrls := configs.GetUrl()
@@ -20,8 +22,8 @@ func (s *gRPCServer) GetMatchDetail(configs *pb.MatchURLs, stream pb.CrawlerServ
 	if err != nil {
 		log.Println("can not read file htmlSchedulesClass.json, err: ", err)
 	}
-
-	matchUrlsChunk := matchUrlsChunk(matchUrls, AMOUNT_MATCH_PER_GOROUTINE)
+	chunkSize := len(matchUrls) / AMOUNT_OF_GOROUTINE
+	matchUrlsChunk := matchUrlsChunk(matchUrls, chunkSize)
 	var wg sync.WaitGroup
 	log.Println("Start scrapt match detail")
 

@@ -5,19 +5,19 @@ import (
 	"server/entities"
 )
 
-type eventRepo struct {
+type EventRepo struct {
 	DB *gorm.DB
 }
 
-func NewEventRepo(db *gorm.DB) *eventRepo {
-	eventRepo := &eventRepo{
+func NewEventRepo(db *gorm.DB) *EventRepo {
+	EventRepo := &EventRepo{
 		DB: db,
 	}
-	return eventRepo
+	return EventRepo
 }
 
-func (repo *eventRepo) FirstOrCreate(eventRepo *entities.MatchEvent) error {
-	err := repo.DB.FirstOrCreate(eventRepo, entities.MatchEvent{MatchID: eventRepo.MatchID, Time: eventRepo.Time, Content: eventRepo.Content}).Error
+func (repo *EventRepo) FirstOrCreate(event *entities.MatchEvent) error {
+	err := repo.DB.FirstOrCreate(event, entities.MatchEvent{MatchID: event.MatchID, Time: event.Time, Content: event.Content}).Error
 	if err != nil {
 		return err
 	}

@@ -5,6 +5,7 @@ package crawlerproto;
 
 service CrawlerService {
   rpc GetArticles(KeywordToSearch) returns (stream ArticlesReponse) {}
+  rpc GetArticlesFromAddedCrawler(ConfigCrawler) returns (ArticleAddedCrawler) {}
   rpc GetSchedulesOnDay(Date) returns (SchedulesReponse) {}
   rpc GetMatchDetail(MatchURLs) returns (stream MatchDetail) {}
 }
@@ -12,6 +13,20 @@ service CrawlerService {
 // The request message containing leagues and html class
 message KeywordToSearch {
   repeated string keyword = 1;
+}
+
+message ConfigCrawler {
+  string url =1;
+  string div = 2;
+  string title       =3;
+	string description =4;
+	string link        =5;
+  string next_page =6;
+  string netx_page_type =7;
+}
+
+message ArticleAddedCrawler {
+  repeated Article articles = 1;
 }
 
 message Article {

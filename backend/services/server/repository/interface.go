@@ -44,7 +44,7 @@ type ArticleRepository interface {
 
 //go:generate mockery --name SchedulesRepository
 type SchedulesRepository interface {
-	FirstOrCreate(schedule *entities.Schedule) error 
+	FirstOrCreate(schedule *entities.Schedule) error
 
 	GetScheduleOnLeague(leagueName string, date time.Time) (*entities.Schedule, error) 
 	GetScheduleOnDay(date time.Time) (*[]entities.Schedule, error)
@@ -89,6 +89,14 @@ type PlayerRepository interface {
 type LineupRepository interface {
 	FirstOrCreate(lineup *entities.MatchLineUp) (*entities.MatchLineUp, error)
 	Get(id uint) (*entities.MatchLineUp, error) 
+}
+
+//go:generate mockery --name ConfigCrawlerRepository
+type ConfigCrawlerRepository interface {
+	Upsert(configCrawler *entities.ConfigCrawler) (error)
+	List() (*[]entities.ConfigCrawler, error) 
+	Get(url string) (*entities.ConfigCrawler,error) 
+	Delete(url string) error
 }
 
 type AllMatchURLsOnDay struct {

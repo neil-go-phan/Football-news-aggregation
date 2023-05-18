@@ -8,17 +8,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type matchRepo struct {
+type MatchRepo struct {
 	DB *gorm.DB
 }
 
-func NewMatchRepo(db *gorm.DB) *matchRepo {
-	return &matchRepo{
+func NewMatchRepo(db *gorm.DB) *MatchRepo {
+	return &MatchRepo{
 		DB: db,
 	}
 }
 
-func (repo *matchRepo) Create(match *entities.Match) error {
+func (repo *MatchRepo) Create(match *entities.Match) error {
 	err := repo.DB.Create(match).Error
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func (repo *matchRepo) Create(match *entities.Match) error {
 	return nil
 }
 
-func (repo *matchRepo) UpdateWhenScheduleCrawl(match *entities.Match) error {
+func (repo *MatchRepo) UpdateWhenScheduleCrawl(match *entities.Match) error {
 	err := repo.DB.Model(&match).
 		Updates(entities.Match{
 			Time:            match.Time,
@@ -43,7 +43,7 @@ func (repo *matchRepo) UpdateWhenScheduleCrawl(match *entities.Match) error {
 	return nil
 }
 
-func (repo *matchRepo) UpdateWhenMatchDetailCrawl(match *entities.Match) error {
+func (repo *MatchRepo) UpdateWhenMatchDetailCrawl(match *entities.Match) error {
 	err := repo.DB.Model(&match).
 		Updates(entities.Match{
 			MatchStatus: match.MatchStatus,
@@ -56,7 +56,7 @@ func (repo *matchRepo) UpdateWhenMatchDetailCrawl(match *entities.Match) error {
 	return nil
 }
 
-func (repo *matchRepo) GetIDWithDateAndClubName(date time.Time, clubName1 string, clubName2 string) (*entities.Match, error) {
+func (repo *MatchRepo) GetIDWithDateAndClubName(date time.Time, clubName1 string, clubName2 string) (*entities.Match, error) {
 	match := new(entities.Match)
 	dateString := date.Format("2006-01-02")
 	err := repo.DB.Where("time_start BETWEEN ? AND ?", dateString+" 00:00:00", dateString+" 23:59:59").
@@ -72,14 +72,14 @@ func (repo *matchRepo) GetIDWithDateAndClubName(date time.Time, clubName1 string
 	return match, nil
 }
 
-func (repo *matchRepo) GetMatch(match *entities.Match) (*entities.Match, error) {
+func (repo *MatchRepo) GetMatch(match *entities.Match) (*entities.Match, error) {
 	err := repo.DB.
 		Preload("Statistics").
 		Preload("Club1").
 		Preload("Club2").
 		Preload("Events").
-		Preload("Club1Overview").
-		Preload("Club2Overview").
+		Preload("Club1Overview", "club_id = ?", match.Club1ID).
+		Preload("Club2Overview", "club_id = ?", match.Club2ID).
 		First(&match).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

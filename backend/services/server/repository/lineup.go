@@ -5,18 +5,18 @@ import (
 	"server/entities"
 )
 
-type lineupRepo struct {
+type LineupRepo struct {
 	DB *gorm.DB
 }
 
-func NewLineupRepo(db *gorm.DB) *lineupRepo {
-	lineupRepo := &lineupRepo{
+func NewLineupRepo(db *gorm.DB) *LineupRepo {
+	LineupRepo := &LineupRepo{
 		DB: db,
 	}
-	return lineupRepo
+	return LineupRepo
 }
 
-func (repo *lineupRepo) FirstOrCreate(lineup *entities.MatchLineUp) (*entities.MatchLineUp, error) {
+func (repo *LineupRepo) FirstOrCreate(lineup *entities.MatchLineUp) (*entities.MatchLineUp, error) {
 	err := repo.DB.FirstOrCreate(lineup, entities.MatchLineUp{ClubName: lineup.ClubName, Formation: lineup.Formation, ShirtColor: lineup.ShirtColor}).Error
 	if err != nil {
 		return lineup, err
@@ -24,7 +24,7 @@ func (repo *lineupRepo) FirstOrCreate(lineup *entities.MatchLineUp) (*entities.M
 	return lineup, nil
 }
 
-func (repo *lineupRepo) Get(id uint) (*entities.MatchLineUp, error) {
+func (repo *LineupRepo) Get(id uint) (*entities.MatchLineUp, error) {
 	lineup := new(entities.MatchLineUp)
 	err := repo.DB.
 	Preload("Players").

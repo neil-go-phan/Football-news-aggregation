@@ -56,19 +56,28 @@ func readTime(match entities.Match, dayTime time.Time) (time.Time, error) {
 	if err != nil {
 		return exactTime, fmt.Errorf("can not parse hour to set cronjob err: %s", err)
 	}
-	mins, err := strconv.Atoi(strings.Trim(timeDetail[1], " "))
-	if err != nil {
-		return exactTime, fmt.Errorf("can not parse minute to set cronjob err: %s", err)
+	mins := 0;
+	if len(timeDetail) > 1 {
+		mins, err = strconv.Atoi(strings.Trim(timeDetail[1], " "))
+		if err != nil {
+			return exactTime, fmt.Errorf("can not parse minute to set cronjob err: %s", err)
+		}
 	}
+
 	dateDetail := strings.Split(timeStr[1], "/")
 	day, err := strconv.Atoi(strings.Trim(dateDetail[0], " "))
 	if err != nil {
 		return exactTime, fmt.Errorf("can not parse day to set cronjob err: %s", err)
 	}
-	month, err := strconv.Atoi(strings.Trim(dateDetail[1], " "))
-	if err != nil {
-		return exactTime, fmt.Errorf("can not parse month to set cronjob err: %s", err)
+
+	month := 0;
+	if len(dateDetail) > 0 {
+		month, err = strconv.Atoi(strings.Trim(dateDetail[1], " "))
+		if err != nil {
+			return exactTime, fmt.Errorf("can not parse month to set cronjob err: %s", err)
+		}
 	}
+
 	loc, err := time.LoadLocation("UTC")
 	if err != nil {
 		log.Error(err)

@@ -17,18 +17,18 @@ var NOTI_LOGIN_SUCCESS_TITLE = "Admin login success"
 var NOTI_LOGIN_SUCCESS_TYPE = "INFO"
 var NOTI_LOGIN_SUCCESS_MESSAGE = "Admin login sucess"
 
-type adminService struct {
+type AdminService struct {
 	adminRepo repository.AdminRepository
 }
 
-func NewAdminService(admin repository.AdminRepository) *adminService {
-	adminService := &adminService{
+func NewAdminService(admin repository.AdminRepository) *AdminService {
+	adminService := &AdminService{
 		adminRepo: admin,
 	}
 	return adminService
 }
 
-func (s *adminService) GetAdminUsername(username string) (string, error) {
+func (s *AdminService) GetAdminUsername(username string) (string, error) {
 	err := s.CheckAdminUsernameToken(username)
 	if err != nil {
 		return "", fmt.Errorf("unauthorized access")
@@ -40,7 +40,7 @@ func (s *adminService) GetAdminUsername(username string) (string, error) {
 	return repoAdmin.Username, nil
 }
 
-func (s *adminService) ChangePassword(admin *AdminWithConfirmPassword, usernameToken string) error {
+func (s *AdminService) ChangePassword(admin *AdminWithConfirmPassword, usernameToken string) error {
 	repoAdmin, err := s.adminRepo.Get(admin.Username)
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (s *adminService) ChangePassword(admin *AdminWithConfirmPassword, usernameT
 	return nil
 }
 
-func (s *adminService) CheckAdminUsernameToken(username string) error {
+func (s *AdminService) CheckAdminUsernameToken(username string) error {
 	repoAdmin, err := s.adminRepo.Get(username)
 	if err != nil {
 		return err
@@ -92,7 +92,7 @@ func (s *adminService) CheckAdminUsernameToken(username string) error {
 	return nil
 }
 
-func (s *adminService) Login(admin *Admin) (string, error) {
+func (s *AdminService) Login(admin *Admin) (string, error) {
 	repoAdmin, err := s.adminRepo.Get(admin.Username)
 	if err != nil {
 		return "",err

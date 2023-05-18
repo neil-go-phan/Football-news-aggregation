@@ -3,7 +3,7 @@ import {
   faNewspaper,
   IconDefinition,
 } from '@fortawesome/free-regular-svg-icons';
-import {faTag, faTrophy } from '@fortawesome/free-solid-svg-icons';
+import {faSpider, faTag, faTrophy } from '@fortawesome/free-solid-svg-icons';
 import React, { PropsWithChildren } from 'react';
 import { Nav } from 'react-bootstrap';
 import Link from 'next/link';
@@ -44,6 +44,9 @@ export default function SidebarNav() {
       </SidebarNavItem>
       <SidebarNavItem icon={faTag} href={_ROUTES.ADMIN_TAGS}>
         Tags
+      </SidebarNavItem>
+      <SidebarNavItem icon={faSpider} href={_ROUTES.ADMIN_CRAWLER}>
+        Crawler
       </SidebarNavItem>
     </ul>
   );

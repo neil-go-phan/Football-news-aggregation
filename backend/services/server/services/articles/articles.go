@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"server/entities"
 	serverhelper "server/helper"
 	"server/repository"
@@ -39,27 +40,29 @@ type result struct {
 	bulkRequestBody []byte
 }
 
-type articleService struct {
-	grpcClient      pb.CrawlerServiceClient
-	es              *elasticsearch.Client
-	leaguesService  services.LeaguesServices
-	tagsService     services.TagsServices
-	repo            repository.ArticleRepository
+type ArticleService struct {
+	grpcClient     pb.CrawlerServiceClient
+	es             *elasticsearch.Client
+	leaguesService services.LeaguesServices
+	tagsService    services.TagsServices
+	configCrawler  services.ConfigCrawlerServices
+	repo           repository.ArticleRepository
 }
 
-func NewArticleService(leaguesService services.LeaguesServices, tagsService services.TagsServices, grpcClient pb.CrawlerServiceClient, es *elasticsearch.Client, repo repository.ArticleRepository) *articleService {
-	articleService := &articleService{
-		grpcClient:      grpcClient,
-		es:              es,
-		leaguesService:  leaguesService,
-		tagsService:     tagsService,
-		repo:            repo,
+func NewArticleService(leaguesService services.LeaguesServices, tagsService services.TagsServices, grpcClient pb.CrawlerServiceClient, es *elasticsearch.Client, repo repository.ArticleRepository, configCrawler services.ConfigCrawlerServices) *ArticleService {
+	articleService := &ArticleService{
+		grpcClient:     grpcClient,
+		es:             es,
+		leaguesService: leaguesService,
+		tagsService:    tagsService,
+		configCrawler:  configCrawler,
+		repo:           repo,
 	}
 	return articleService
 }
 
 // GetArticles request crawler to scrapt data and sync elastic search
-func (s *articleService) GetArticles(keywords []string) {
+func (s *ArticleService) GetArticles(keywords []string) {
 
 	leagues, err := s.leaguesService.GetLeaguesNameActive()
 	if err != nil {
@@ -102,7 +105,7 @@ func (s *articleService) GetArticles(keywords []string) {
 			league := resp.GetLeague()
 
 			respArticles := resp.GetArticles()
-			s.storeArticles(respArticles, league)
+			s.StoreArticles(respArticles, league)
 
 			saveToMapSearchResult(respArticles, mapSearchResult)
 		}
@@ -110,10 +113,37 @@ func (s *articleService) GetArticles(keywords []string) {
 
 	<-done
 	PREV_ARTICLES = mapSearchResult
+
+	// configCrawler crawl
+	
+	crawlers, err := s.configCrawler.List()
+	if err != nil {
+		log.Error(err)
+	}
+
+	for _, crawler := range crawlers {
+		articles := make([]*pb.Article, 0)
+		entitiesArticle, err := s.configCrawler.GetArticles(&crawler)
+		if err != nil {
+			log.Error(err)
+		}
+		for _, entity := range entitiesArticle {
+			pbArticle := newPbArticle(entity)
+			articles = append(articles, pbArticle)
+		}
+		url, err := url.ParseRequestURI(crawler.Url)
+		if err != nil {
+			log.Error(err)
+		}
+		s.StoreArticles(articles, url.Hostname())
+	}
+
+		
+
 	log.Printf("finished.")
 }
 
-func (s *articleService) storeArticles(respArticles []*pb.Article, league string) {
+func (s *ArticleService) StoreArticles(respArticles []*pb.Article, league string) {
 	tags, err := s.tagsService.ListTagsName()
 	if err != nil {
 		log.Error(err)
@@ -143,7 +173,7 @@ func (s *articleService) storeArticles(respArticles []*pb.Article, league string
 	}
 }
 
-func (s *articleService) GetArticleCount() (total int64, today int64, err error) {
+func (s *ArticleService) GetArticleCount() (total int64, today int64, err error) {
 	today, err = s.repo.GetCrawledArticleToday()
 	if err != nil {
 		return total, today, err
@@ -155,10 +185,10 @@ func (s *articleService) GetArticleCount() (total int64, today int64, err error)
 	return total, today, nil
 }
 
-func (s *articleService) SearchArticles(keyword string, formatedTags []string, from int) ([]entities.Article, int64, error) {
+func (s *ArticleService) SearchArticles(keyword string, formatedTags []string, from int) ([]entities.Article, int64, error) {
 	articles := []entities.Article{}
 	var total int64
-	ids,total, err := s.SearchArticlesOnElasticSearch(keyword, formatedTags, from)
+	ids, total, err := s.SearchArticlesOnElasticSearch(keyword, formatedTags, from)
 	if err != nil {
 		return articles, total, err
 	}
@@ -170,7 +200,7 @@ func (s *articleService) SearchArticles(keyword string, formatedTags []string, f
 }
 
 // return IDs of articles that match the condition
-func (s *articleService) SearchArticlesOnElasticSearch(keyword string, formatedTags []string, from int) ([]uint, int64, error) {
+func (s *ArticleService) SearchArticlesOnElasticSearch(keyword string, formatedTags []string, from int) ([]uint, int64, error) {
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	ids := make([]uint, 0)
 	var buffer bytes.Buffer
@@ -205,7 +235,7 @@ func (s *articleService) SearchArticlesOnElasticSearch(keyword string, formatedT
 	return ids, int64(total), nil
 }
 
-func (s *articleService) GetFirstPageOfLeagueRelatedArticle(leagueName string) ([]services.ArticleCache, error) {
+func (s *ArticleService) GetFirstPageOfLeagueRelatedArticle(leagueName string) ([]services.ArticleCache, error) {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	articles := []services.ArticleCache{}
@@ -254,7 +284,7 @@ func (s *articleService) GetFirstPageOfLeagueRelatedArticle(leagueName string) (
 	return articleCaches, nil
 }
 
-func (s *articleService) RefreshCache() {
+func (s *ArticleService) RefreshCache() {
 	log.Printf("refresh cache...")
 	var wg sync.WaitGroup
 	leagues, err := s.leaguesService.GetLeaguesNameActive()
@@ -300,7 +330,7 @@ func (s *articleService) RefreshCache() {
 	log.Printf("refresh cache end.")
 }
 
-func (s *articleService) DeleteArticle(id uint) error {
+func (s *ArticleService) DeleteArticle(id uint) error {
 	err := deleteArticleFromElasticSearch(id, s.es)
 	if err != nil {
 		return err
@@ -316,7 +346,7 @@ func (s *articleService) DeleteArticle(id uint) error {
 
 // implement search_after query, // implement worker pool
 // Add tag for article in elasticsearch and database. find articles potentially tagged from elasticsearch. then check it. Then modify the database and elasticsearch. apply elasticsearch's search_query. Get 10 results each time
-func (s *articleService) AddTagForAllArticle(tag string) error {
+func (s *ArticleService) AddTagForAllArticle(tag string) error {
 	tagFormated := serverhelper.FormatVietnamese(tag)
 
 	entityTag, err := s.tagsService.Get(tagFormated)

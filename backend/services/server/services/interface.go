@@ -1,10 +1,12 @@
 package services
 
 import (
+	"net/url"
 	"server/entities"
 	pb "server/proto"
 	"server/repository"
-	"server/services/admin"
+	adminservices "server/services/admin"
+	configcrawler "server/services/configCrawler"
 	"time"
 )
 
@@ -14,9 +16,6 @@ type ArticleCache struct {
 	Description string   `json:"description"`
 	Link        string   `json:"link"`
 	Tags        []string `json:"tags"`
-}
-
-type HtmlClassesServices interface {
 }
 
 //go:generate mockery --name AdminServices
@@ -106,5 +105,16 @@ type PlayerServices interface {
 //go:generate mockery --name LineUpServices
 type LineUpServices interface {
 	GetOrCreate(lineup *entities.MatchLineUp) (*entities.MatchLineUp, error)
-	GetLineUps(id1 uint, id2 uint) (*entities.MatchLineUp, *entities.MatchLineUp, error) 
+	GetLineUps(id1 uint, id2 uint) (*entities.MatchLineUp, *entities.MatchLineUp, error)
+}
+
+//go:generate mockery --name ConfigCrawlerServices
+type ConfigCrawlerServices interface {
+	GetHtmlPage(url *url.URL) error
+	Upsert(configCrawler *configcrawler.ConfigCrawler) error
+	List() ([]configcrawler.ConfigCrawler, error)
+	Get(url string) (configcrawler.ConfigCrawler, error)
+	Delete(urlInput string) error
+	TestCrawler(configCrawler *configcrawler.ConfigCrawler) ([]entities.Article, error)
+	GetArticles(configCrawler *configcrawler.ConfigCrawler) ([]entities.Article, error)
 }

@@ -21,10 +21,14 @@ func readTimeStart(match entities.Match, dayTime time.Time) (time.Time, error) {
 	if err != nil {
 		return exactTime, fmt.Errorf("can not parse hour to set cronjob err: %s", err)
 	}
-	mins, err := strconv.Atoi(strings.Trim(timeDetail[1], " "))
-	if err != nil {
-		return exactTime, fmt.Errorf("can not parse minute to set cronjob err: %s", err)
+	mins := 0
+	if len(timeDetail) > 1 {
+		mins, err = strconv.Atoi(strings.Trim(timeDetail[1], " "))
+		if err != nil {
+			return exactTime, fmt.Errorf("can not parse minute to set cronjob err: %s", err)
+		}
 	}
+
 
 	exactTime = exactTime.Add(time.Hour*time.Duration(hours) + time.Minute*time.Duration(mins))
 

@@ -149,7 +149,7 @@ function ArticleAdmin() {
         </div>
         <div className="adminArticles__overview--item">
           <p>
-            Number of articles scratched in the previous 24 hours:{' '}
+            Number of articles scratched in the previous 24 hours:
             <span>{today}</span>
           </p>
         </div>

@@ -7,25 +7,25 @@ import (
 	"gorm.io/gorm"
 )
 
-type scheduleRepo struct {
+type ScheduleRepo struct {
 	DB *gorm.DB
 }
 
-func NewScheduleRepo(db *gorm.DB) *scheduleRepo {
-	return &scheduleRepo{
+func NewScheduleRepo(db *gorm.DB) *ScheduleRepo {
+	return &ScheduleRepo{
 		DB: db,
 	}
 }
 
-func (repo *scheduleRepo) FirstOrCreate(schedule *entities.Schedule) error {
-	err := repo.DB.Omit("Matches").FirstOrCreate(schedule, entities.Schedule{LeagueName: schedule.LeagueName, Date: schedule.Date}).Error
+func (repo *ScheduleRepo) FirstOrCreate(schedule *entities.Schedule) error {
+	err := repo.DB.Omit("Matches").Assign(schedule).FirstOrCreate(schedule, entities.Schedule{LeagueName: schedule.LeagueName, Date: schedule.Date}).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (repo *scheduleRepo) GetScheduleOnLeague(leagueName string, date time.Time) (*entities.Schedule, error) {
+func (repo *ScheduleRepo) GetScheduleOnLeague(leagueName string, date time.Time) (*entities.Schedule, error) {
 	schedule := new(entities.Schedule)
 	dateString := date.Format("2006-01-02")
 	err := repo.DB.Preload("Matches").
@@ -40,7 +40,7 @@ func (repo *scheduleRepo) GetScheduleOnLeague(leagueName string, date time.Time)
 	return schedule, nil
 }
 
-func (repo *scheduleRepo) GetScheduleOnDay(date time.Time) (*[]entities.Schedule, error) {
+func (repo *ScheduleRepo) GetScheduleOnDay(date time.Time) (*[]entities.Schedule, error) {
 	schedules := make([]entities.Schedule, 0)
 	dateString := date.Format("2006-01-02")
 	err := repo.DB.Preload("Matches").

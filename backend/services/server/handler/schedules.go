@@ -103,8 +103,7 @@ func MakeCronJobCrawlMatch(matchsToDay repository.MatchURLsWithTimeOnDay, schedu
 			var wg sync.WaitGroup
 			wg.Add(1)
 
-			go func() {
-				defer wg.Done()
+			go func(wg *sync.WaitGroup) {
 				for {
 					select {
 					case <-done:
@@ -119,11 +118,12 @@ func MakeCronJobCrawlMatch(matchsToDay repository.MatchURLsWithTimeOnDay, schedu
 							close(done)
 							// update schedules
 							schedulesHandler.handler.GetSchedules(time.Now().Format("02-01-2006"))
+							wg.Done()
 							return
 						}
 					}
 				}
-			}()
+			}(&wg)
 			wg.Wait()
 			log.Printf("Stop cronjob crawl match at: %s", time.Now())
 		}(matchsOnTime)
@@ -148,6 +148,15 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerToDay() {
 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
 	schedulesHandler.handler.ClearAllMatchURLs()
 	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
+	schedulesHandler.handler.ClearMatchURLsOnTime()
+}
+
+func (schedulesHandler *ScheduleHandler) SignalToCrawlerSeed(date time.Time) {
+	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
+	matchUrls := schedulesHandler.handler.GetAllMatchURLs()
+	log.Printf("seed for date: %v len: %v\n", matchUrls.Date, len(matchUrls.Urls))
+	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
+	schedulesHandler.handler.ClearAllMatchURLs()
 	schedulesHandler.handler.ClearMatchURLsOnTime()
 }
 

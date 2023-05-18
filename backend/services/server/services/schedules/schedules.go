@@ -18,7 +18,7 @@ var SCHEDULE_INDEX_NAME = "schedules"
 var NOTI_COMPLETE_CRAWL_TITLE = "Crawl schedule success"
 var NOTI_COMPLETE_CRAWL_TYPE = "INFO"
 
-type schedulesService struct {
+type SchedulesService struct {
 	grpcClient             pb.CrawlerServiceClient
 	es                     *elasticsearch.Client
 	leagueServices         services.LeaguesServices
@@ -29,8 +29,8 @@ type schedulesService struct {
 	allMatchURLsOnDay      repository.AllMatchURLsOnDay
 }
 
-func NewSchedulesService(leagueServices services.LeaguesServices, tagsServices services.TagsServices, grpcClient pb.CrawlerServiceClient, es *elasticsearch.Client, repo repository.SchedulesRepository, matchService services.MatchServices) *schedulesService {
-	schedulesService := &schedulesService{
+func NewSchedulesService(leagueServices services.LeaguesServices, tagsServices services.TagsServices, grpcClient pb.CrawlerServiceClient, es *elasticsearch.Client, repo repository.SchedulesRepository, matchService services.MatchServices) *SchedulesService {
+	schedulesService := &SchedulesService{
 		grpcClient:         grpcClient,
 		es:                 es,
 		leagueServices:     leagueServices,
@@ -41,7 +41,7 @@ func NewSchedulesService(leagueServices services.LeaguesServices, tagsServices s
 	return schedulesService
 }
 
-func (s *schedulesService) GetSchedules(dateString string) {
+func (s *SchedulesService) GetSchedules(dateString string) {
 	pbdate := &pb.Date{
 		Date: dateString,
 	}
@@ -65,7 +65,7 @@ func (s *schedulesService) GetSchedules(dateString string) {
 	}
 }
 
-func (s *schedulesService) storeSchedule(pbSchedule *pb.ScheduleOnLeague, dateCasted time.Time) entities.Schedule {
+func (s *SchedulesService) storeSchedule(pbSchedule *pb.ScheduleOnLeague, dateCasted time.Time) entities.Schedule {
 	schedule := newEntitiesSchedule(pbSchedule, dateCasted)
 	err := s.repo.FirstOrCreate(&schedule)
 	if err != nil {
@@ -83,7 +83,7 @@ func (s *schedulesService) storeSchedule(pbSchedule *pb.ScheduleOnLeague, dateCa
 }
 
 // get the link of the matches taking place during the day, used to crawl the match details
-func (s *schedulesService) createMatchUrl(schedule entities.Schedule, dateCasted time.Time) {
+func (s *SchedulesService) createMatchUrl(schedule entities.Schedule, dateCasted time.Time) {
 	for _, match := range schedule.Matches {
 		exactTime, err := readTime(match, schedule.Date)
 		if err != nil {
@@ -97,7 +97,7 @@ func (s *schedulesService) createMatchUrl(schedule entities.Schedule, dateCasted
 	s.allMatchURLsOnDay.Urls = append(s.allMatchURLsOnDay.Urls, allMatchUrl...)
 }
 
-func (s *schedulesService) autoStoreNewLeague(schedule entities.Schedule) {
+func (s *SchedulesService) autoStoreNewLeague(schedule entities.Schedule) {
 	leagues, err := s.leagueServices.ListLeagues()
 	if err != nil {
 		log.Error(err)
@@ -112,11 +112,11 @@ func (s *schedulesService) autoStoreNewLeague(schedule entities.Schedule) {
 	}
 }
 
-func (s *schedulesService) SignalMatchDetailServiceToCrawl(matchURLs repository.AllMatchURLsOnDay) []*pb.MatchDetail {
+func (s *SchedulesService) SignalMatchDetailServiceToCrawl(matchURLs repository.AllMatchURLsOnDay) []*pb.MatchDetail {
 	return s.matchService.GetMatchDetailsOnDayFromCrawler(matchURLs)
 }
 
-func (s *schedulesService) GetAllScheduleLeagueOnDay(date time.Time) (repository.ScheduleOnDay, error) {
+func (s *SchedulesService) GetAllScheduleLeagueOnDay(date time.Time) (repository.ScheduleOnDay, error) {
 	var scheduleOnDay repository.ScheduleOnDay
 
 	scheduleOnDay.Date = date
@@ -141,7 +141,7 @@ func (s *schedulesService) GetAllScheduleLeagueOnDay(date time.Time) (repository
 	return scheduleOnDay, nil
 }
 
-func (s *schedulesService) GetScheduleLeagueOnDay(date time.Time, league string) (repository.ScheduleOnDay, error) {
+func (s *SchedulesService) GetScheduleLeagueOnDay(date time.Time, league string) (repository.ScheduleOnDay, error) {
 	var scheduleOnDay repository.ScheduleOnDay
 
 	scheduleOnDay.Date = date
@@ -161,18 +161,18 @@ func (s *schedulesService) GetScheduleLeagueOnDay(date time.Time, league string)
 	return scheduleOnDay, nil
 }
 
-func (s *schedulesService) GetMatchURLsOnTime() repository.MatchURLsWithTimeOnDay {
+func (s *SchedulesService) GetMatchURLsOnTime() repository.MatchURLsWithTimeOnDay {
 	return s.matchURLsWithTimeOnDay
 }
 
-func (s *schedulesService) ClearMatchURLsOnTime() {
+func (s *SchedulesService) ClearMatchURLsOnTime() {
 	s.matchURLsWithTimeOnDay = repository.MatchURLsWithTimeOnDay{}
 }
 
-func (s *schedulesService) GetAllMatchURLs() repository.AllMatchURLsOnDay {
+func (s *SchedulesService) GetAllMatchURLs() repository.AllMatchURLsOnDay {
 	return s.allMatchURLsOnDay
 }
 
-func (s *schedulesService) ClearAllMatchURLs() {
+func (s *SchedulesService) ClearAllMatchURLs() {
 	s.allMatchURLsOnDay = repository.AllMatchURLsOnDay{}
 }

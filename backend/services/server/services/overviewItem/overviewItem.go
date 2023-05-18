@@ -5,17 +5,17 @@ import (
 	"server/repository"
 )
 
-type overviewItemService struct {
+type OverviewItemService struct {
 	repo repository.OverviewItemRepository
 }
 
-func NewOverviewItemService(repo repository.OverviewItemRepository) *overviewItemService {
-	overviewItemService := &overviewItemService{
+func NewOverviewItemService(repo repository.OverviewItemRepository) *OverviewItemService {
+	overviewItemService := &OverviewItemService{
 		repo: repo,
 	}
 	return overviewItemService
 }
 
-func (s *overviewItemService) FirstOrCreate(overviewItem *entities.OverviewItem) error {
+func (s *OverviewItemService) FirstOrCreate(overviewItem *entities.OverviewItem) error {
 	return s.repo.FirstOrCreate(overviewItem) 
 }
