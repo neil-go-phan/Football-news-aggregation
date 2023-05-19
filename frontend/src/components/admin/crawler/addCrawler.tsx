@@ -82,7 +82,6 @@ const AddCrawler: React.FC = () => {
   const schema = yup.object().shape({
     article_div: yup.string().required('Article div is require'),
     article_title: yup.string().required('Article title is require'),
-    article_description: yup.string().required('Article descrition is require'),
     article_link: yup.string().required('Article link is require'),
     next_page_type: yup.string().required('Next page type is require'),
   });
@@ -97,7 +96,6 @@ const AddCrawler: React.FC = () => {
         {
           article_div: htmlArticleDiv,
           article_title: htmlArticleTitle,
-          article_description: htmlArticleDescription,
           article_link: htmlArticleLink,
           next_page_type: nextPageType,
         },
@@ -125,7 +123,6 @@ const AddCrawler: React.FC = () => {
         {
           article_div: htmlArticleDiv,
           article_title: htmlArticleTitle,
-          article_description: htmlArticleDescription,
           article_link: htmlArticleLink,
           next_page_type: nextPageType,
         },
