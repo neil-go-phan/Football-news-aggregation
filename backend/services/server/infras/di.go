@@ -51,6 +51,7 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 	createArticleCache(articleHandler)
 
 	schedulesHandler.SignalToCrawlerToDay()
+
 	tagsRoutes.Setup(r)
 	leaguesRoutes.Setup(r)
 	articleRoute.Setup(r)
