@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/chromedp"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
@@ -30,26 +31,35 @@ func NewConfigCrawlerService(repo repository.ConfigCrawlerRepository, grpcClient
 }
 
 func (s *ConfigCrawlerService) GetHtmlPage(url *url.URL) error {
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-	ctx, cancel = context.WithTimeout(ctx, 300*time.Second)
-	defer cancel()
-
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(url.String()),
-		chromedp.Sleep(3 * time.Second),
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
 	)
-	if err != nil {
-		return err
-	}
+	// create context
+	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
+
+	ctx, cancel := chromedp.NewContext(
+		allocCtx,
+		chromedp.WithLogf(log.Printf),
+	)
+	defer cancel()
 	var htmlContent string
+	task := chromedp.Tasks{
+		chromedp.Navigate(url.String()),
+		chromedp.Sleep(6 * time.Second),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			node, err := dom.GetDocument().Do(ctx)
+			if err != nil {
+				return err
+			}
+			fmt.Print(node.NodeID)
+			htmlContent, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
 
-	err = chromedp.Run(ctx,
-		chromedp.OuterHTML("html", &htmlContent),
-		chromedp.Sleep(3 * time.Second),
-	)
-	if err != nil {
-		return err
+			return err
+		}),
+	}
+
+	if err := chromedp.Run(ctx, task); err != nil {
+		fmt.Println(err)
 	}
 
 	hostname := strings.TrimPrefix(url.Hostname(), "www.")
@@ -57,7 +67,6 @@ func (s *ConfigCrawlerService) GetHtmlPage(url *url.URL) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	removeScriptTags(doc)
 
 	htmlWithoutScript := renderNode(doc)
@@ -101,7 +110,7 @@ func (s *ConfigCrawlerService) Get(urlInput string) (ConfigCrawler, error) {
 	if err != nil {
 		return configCrawler, fmt.Errorf("url invalid")
 	}
-	
+
 	entity, err := s.repo.Get(urlInput)
 	if err != nil {
 		return configCrawler, err
