@@ -35,13 +35,11 @@ func CrawlArticleAddedCrawler(configCrawler *pb.ConfigCrawler) ([]entities.Artic
 	articles, err := crawlWithGoQuery(configCrawler, cacheCrawlerArticle)
 	if err != nil {
 		if err.Error() == "maybe this is a javascript render button" {
-			log.Println("err")
 			articlesDP, err := CrawlWithChromedp(configCrawler, cacheCrawlerArticle)
+			articles = articlesDP
 			if err != nil {
-				log.Println(err)
 				return articles, err
 			}
-			articles = articlesDP
 			return articles, nil
 		}
 		return articles, err
@@ -52,7 +50,6 @@ func CrawlArticleAddedCrawler(configCrawler *pb.ConfigCrawler) ([]entities.Artic
 		articlesDP, err := CrawlWithChromedp(configCrawler, cacheCrawlerArticle)
 		articles = articlesDP
 		if err != nil {
-			log.Println(err)
 			return articles, err
 		}
 
@@ -74,23 +71,18 @@ func checkIfEmpty(articles []entities.Article) bool {
 func CrawlWithChromedp(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[string]bool) ([]entities.Article, error) {
 	var articles []entities.Article
 	var nextPageCount int
-	// configCrawler = &pb.ConfigCrawler{
-	// 	Url:          "https://www.football365.com/",
-	// 	Div:          "flex-1 h-full sm:mt-1 sm:pb-1.5 flex-shrink flex flex-col justify-between overflow-hidden",
-	// 	Title:        "my-1 sm:mb-0 text-sm sm:text-[15px] text-title font-semibold leading-snug sm:leading-5 line-clamp-3 sm:line-clamp-2",
-	// 	Description:  "hidden sm:line-clamp-2 mt-1 text-[13px] font-light leading-4 sm:!opacity-75 text-primary",
-	// 	Link:         "my-1 sm:mb-0 text-sm sm:text-[15px] text-title font-semibold leading-snug sm:leading-5 line-clamp-3 sm:line-clamp-2",
-	// 	NetxPageType: "none",
-	// }
+
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
 	ctx, cancel = context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
-	err := chromedp.Run(ctx,
+	acessTask := chromedp.Tasks{
 		chromedp.Navigate(configCrawler.Url),
 		chromedp.Sleep(3*time.Second),
-	)
+	}
+
+	err := chromedp.Run(ctx, acessTask)
 	if err != nil {
 		return articles, err
 	}
@@ -100,26 +92,16 @@ func CrawlWithChromedp(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[
 		if err != nil {
 			return articles, err
 		}
-		log.Println("articles",  len(articleList) ) 
-		articles = append(articles, articleList...)
 
-		var articleNodes []*cdp.Node
+		articles = append(articles, articleList...)
 
 		if configCrawler.NetxPageType == "none" {
 			return articles, nil
 		}
 
-		err = chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf(`//*[@class='%s']`, configCrawler.NextPage), &articleNodes))
+		err = clickNextPage(ctx, configCrawler)
 		if err != nil {
-			return articles, err
-		}
-		nodeIDs := []cdp.NodeID{articleNodes[0].NodeID}
-		err = chromedp.Run(ctx,
-			chromedp.Click(nodeIDs, chromedp.ByNodeID),
-			chromedp.Sleep(3*time.Second),
-		)
-		if err != nil {
-			return articles, err
+			return articles, fmt.Errorf("next page button not work")
 		}
 		nextPageCount++
 	}
@@ -127,27 +109,28 @@ func CrawlWithChromedp(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[
 	return articles, nil
 }
 
+func clickNextPage(ctx context.Context, configCrawler *pb.ConfigCrawler) error {
+	var articleNodes []*cdp.Node
+	err := chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf(`//*[@class='%s']`, configCrawler.NextPage), &articleNodes))
+	if err != nil {
+		return err
+	}
+	nodeIDs := []cdp.NodeID{articleNodes[0].NodeID}
+	err = chromedp.Run(ctx,
+		chromedp.Click(nodeIDs, chromedp.ByNodeID),
+		chromedp.Sleep(3*time.Second),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func getArticleList(ctx context.Context, configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[string]bool) ([]entities.Article, error) {
 	var articleNodes []*cdp.Node
 	var articles []entities.Article
 
-	// task := chromedp.Tasks{
-	// 	chromedp.Navigate(url.String()),
-	// 	chromedp.Sleep(6 * time.Second),
-	// 	chromedp.ActionFunc(func(ctx context.Context) error {
-	// 		node, err := dom.GetDocument().Do(ctx)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		fmt.Print(node.NodeID)
-	// 		htmlContent, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
-
-	// 		return err
-	// 	}),
-	// }
 	err := chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf(`//*[@class='%s']`, configCrawler.Div), &articleNodes))
-	log.Println("abc", err)
-	log.Println("nodes",  len(articleNodes) ) 
 	if err != nil {
 		return articles, err
 	}
@@ -159,13 +142,13 @@ func getArticleList(ctx context.Context, configCrawler *pb.ConfigCrawler, cacheC
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println("title", article.Title)
+
 		// Description
 		err = chromedp.Run(ctx, chromedp.Text(fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Description), &article.Description))
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println("description", article.Description)
+
 		// there are only one node
 		var linkNodes []*cdp.Node
 		err = chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Link), &linkNodes))
@@ -192,8 +175,6 @@ func getArticleList(ctx context.Context, configCrawler *pb.ConfigCrawler, cacheC
 				}
 			}
 		}
-
-		log.Println("Link", article.Link)
 
 		mapKey := fmt.Sprintf("%s-%s", article.Title, article.Link)
 		_, ok := cacheCrawlerArticle[mapKey]
@@ -275,6 +256,11 @@ func crawlWithGoQuery(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[s
 		if nextPageLink == "" {
 			return []entities.Article{}, fmt.Errorf("maybe this is a javascript render button")
 		}
+
+		if nextPageLink == "not found" {
+			return articles, fmt.Errorf("next page button not work")
+		}
+
 		nextPageDoc, err = getGoqueryDoc(nextPageLink)
 		if err != nil {
 			return articles, err
@@ -353,6 +339,12 @@ func crawlOnePageWithGoQuery(doc *goquery.Document, configCrawler *pb.ConfigCraw
 			}
 		})
 	}
+	
+	// next page not working
+	if nextPage == "" {
+		return articles, "not found"
+	}
+
 	return articles, formatLink(nextPage, configCrawler.Url)
 }
 

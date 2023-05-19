@@ -26,7 +26,8 @@ message ConfigCrawler {
 }
 
 message ArticleAddedCrawler {
-  repeated Article articles = 1;
+  bool isNextButtonWork = 1;
+  repeated Article articles = 2;
 }
 
 message Article {

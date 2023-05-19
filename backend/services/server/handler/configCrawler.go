@@ -126,11 +126,11 @@ func (configCrawlerHandler *ConfigCrawlerHandler) APITestCrawler(c *gin.Context)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "bad request"})
 		return
 	}
-	articles,err := configCrawlerHandler.handler.TestCrawler(&input)
+	var message string
+	articles,err, isNextBtnWork := configCrawlerHandler.handler.TestCrawler(&input)
 	if err != nil {
-		log.Printf("error occrus: %s", err)
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "input invalid"})
-		return
+			c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "input invalid"})
+			return
 	}
 		// parse to presenter
 		resposeArticles := make([]presenter.Article, 0)
@@ -149,6 +149,8 @@ func (configCrawlerHandler *ConfigCrawlerHandler) APITestCrawler(c *gin.Context)
 			}
 			resposeArticles = append(resposeArticles, presenterArticle)
 		}
-		
-	c.JSON(http.StatusOK, gin.H{"success": true, "articles": resposeArticles, "amount": len(resposeArticles)})
+		if !isNextBtnWork {
+			message = "next page button not work"
+		} 
+	c.JSON(http.StatusOK, gin.H{"success": true, "articles": resposeArticles, "amount": len(resposeArticles), "message" : message})
 }

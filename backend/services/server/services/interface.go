@@ -115,6 +115,6 @@ type ConfigCrawlerServices interface {
 	List() ([]configcrawler.ConfigCrawler, error)
 	Get(url string) (configcrawler.ConfigCrawler, error)
 	Delete(urlInput string) error
-	TestCrawler(configCrawler *configcrawler.ConfigCrawler) ([]entities.Article, error)
-	GetArticles(configCrawler *configcrawler.ConfigCrawler) ([]entities.Article, error)
+	TestCrawler(configCrawler *configcrawler.ConfigCrawler) ([]entities.Article, error, bool)
+	GetArticles(configCrawler *configcrawler.ConfigCrawler) ([]entities.Article, error, bool) 
 }

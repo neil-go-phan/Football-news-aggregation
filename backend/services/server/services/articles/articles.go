@@ -123,7 +123,7 @@ func (s *ArticleService) GetArticles(keywords []string) {
 
 	for _, crawler := range crawlers {
 		articles := make([]*pb.Article, 0)
-		entitiesArticle, err := s.configCrawler.GetArticles(&crawler)
+		entitiesArticle, err, _ := s.configCrawler.GetArticles(&crawler)
 		if err != nil {
 			log.Error(err)
 		}

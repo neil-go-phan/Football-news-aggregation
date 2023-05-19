@@ -14,33 +14,43 @@ func (s *gRPCServer) GetArticlesFromAddedCrawler(ctx context.Context, configCraw
 
 	log.Println("Start scrapt article")
 
-	schedules, err := crawlArticleAddedCrawlerAndParse(configCrawler)
+	articles, err := crawlArticleAddedCrawlerAndParse(configCrawler)
 
 	if err != nil {
-		log.Println(err)
+		log.Println("Finish scrapt article from custom crawler")
+		return articles, err
 	}
 
 	log.Println("Finish scrapt article from custom crawler")
-	return schedules, nil
+	return articles, nil
 }
 
 func crawlArticleAddedCrawlerAndParse(configCrawler *pb.ConfigCrawler) (*pb.ArticleAddedCrawler, error) {
 	var articles *pb.ArticleAddedCrawler
+	isNextButtonWork := true
 	articlesCrawl, err := services.CrawlArticleAddedCrawler(configCrawler)
 	if err != nil {
-		log.Errorf("error occurred during crawl article with custom crawler, err: %v", err)
+		if err.Error() == "next page button not work" {
+			isNextButtonWork = false
+			err = nil
+		} else {
+			return articles, err
+		}
 	}
-	articles = crawledArticlesToPbActiclesAddedCrawler(articlesCrawl, configCrawler.Url)
+
+	articles = crawledArticlesToPbActiclesAddedCrawler(articlesCrawl, configCrawler.Url, isNextButtonWork)
 	if err != nil {
-		return articles, fmt.Errorf("error occurred while sending response to client: %v", err)
+		return articles, fmt.Errorf("error occurred while parse response to client: %v", err)
 	}
 
 	log.Println("crawl article with custom crawler successfully")
 	return articles, nil
 }
 
-func crawledArticlesToPbActiclesAddedCrawler(crawlArticles []entities.Article, url string) *pb.ArticleAddedCrawler {
-	pbArticles := &pb.ArticleAddedCrawler{}
+func crawledArticlesToPbActiclesAddedCrawler(crawlArticles []entities.Article, url string, isNextButtonWork bool) *pb.ArticleAddedCrawler {
+	pbArticles := &pb.ArticleAddedCrawler{
+		IsNextButtonWork: isNextButtonWork,
+	}
 	for _, article := range crawlArticles {
 
 		pbArticle := &pb.Article{
@@ -50,5 +60,6 @@ func crawledArticlesToPbActiclesAddedCrawler(crawlArticles []entities.Article, u
 		}
 		pbArticles.Articles = append(pbArticles.Articles, pbArticle)
 	}
+	
 	return pbArticles
 }

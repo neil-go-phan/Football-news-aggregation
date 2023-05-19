@@ -61,47 +61,12 @@ func (s *ConfigCrawlerService) GetHtmlPage(url *url.URL) error {
 	if err := chromedp.Run(ctx, task); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Print("htmlContent", htmlContent)
-	// opts := append(chromedp.DefaultExecAllocatorOptions[:],
-	// 	chromedp.Flag("headless", true),
-	// 	chromedp.Flag("disable-gpu", false),
-	// 	chromedp.Flag("enable-automation", false),
-	// 	chromedp.Flag("disable-extensions", false),
-	// )
-
-	// allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	// defer cancel()
-
-	// // create context
-	// ctx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(log.Printf))
-	// defer cancel()
-	// ctx, cancel = context.WithTimeout(ctx, 35*time.Second)
-	// defer cancel()
-	// var htmlContent string
-	// err := chromedp.Run(ctx,
-	// 	chromedp.Navigate(url.String()),
-	// 	chromedp.Sleep(3*time.Second),
-	// 	chromedp.OuterHTML("html", &htmlContent),
-	// 	chromedp.Sleep(3*time.Second),
-	// )
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println(htmlContent)
-	// err = chromedp.Run(ctx)
-	// if err != nil {
-	// 	return err
-	// }
 
 	hostname := strings.TrimPrefix(url.Hostname(), "www.")
 	doc, err := html.Parse(strings.NewReader(htmlContent))
 	if err != nil {
 		log.Fatal(err)
 	}
-	// err = os.WriteFile(fmt.Sprintf("test%s.html", hostname), []byte(htmlContent), 0644)
-	// if err != nil {
-	// 	return err
-	// }
 	removeScriptTags(doc)
 
 	htmlWithoutScript := renderNode(doc)
@@ -166,32 +131,31 @@ func (s *ConfigCrawlerService) Delete(urlInput string) error {
 	return nil
 }
 
-func (s *ConfigCrawlerService) TestCrawler(configCrawler *ConfigCrawler) ([]entities.Article, error) {
+func (s *ConfigCrawlerService) TestCrawler(configCrawler *ConfigCrawler) ([]entities.Article, error, bool) {
 	articles := []entities.Article{}
 	configCrawler = trimConfigCrawler(configCrawler)
 	err := validateConfigCrawler(configCrawler)
 	if err != nil {
-		return articles, err
+		return articles, err, true
 	}
-	articles, err = s.GetArticles(configCrawler)
+	articles, err, isNextButtonWork := s.GetArticles(configCrawler)
 	if err != nil {
-		return articles, err
+		return articles, err, isNextButtonWork
 	}
-	return articles, nil
+	return articles, nil, isNextButtonWork
 }
 
-func (s *ConfigCrawlerService) GetArticles(configCrawler *ConfigCrawler) ([]entities.Article, error) {
+func (s *ConfigCrawlerService) GetArticles(configCrawler *ConfigCrawler) ([]entities.Article, error, bool) {
 	articles := []entities.Article{}
 	in := newPbConfigCrawler(configCrawler)
 	pbAllarticles, err := s.grpcClient.GetArticlesFromAddedCrawler(context.Background(), in)
 	if err != nil {
-		log.Errorf("error occurred while get schedule on day from crawler error %v \n", err)
-		return articles, err
+		return articles, err, pbAllarticles.GetIsNextButtonWork()
 	}
 	pbArticles := pbAllarticles.Articles
 	for _, pbArticle := range pbArticles {
 		article := newEntitiesArticle(pbArticle)
 		articles = append(articles, article)
 	}
-	return articles, nil
+	return articles, nil, pbAllarticles.GetIsNextButtonWork()
 }
