@@ -119,8 +119,9 @@ CREATE TABLE clubs (
 );
 
 CREATE TABLE article_tag (
-  article_id SERIAL PRIMARY KEY,
-  tag_id SERIAL
+  article_id SERIAL,
+  tag_id SERIAL,
+  PRIMARY KEY (article_id, tag_id)
 );
 
 CREATE TABLE match_line_ups (

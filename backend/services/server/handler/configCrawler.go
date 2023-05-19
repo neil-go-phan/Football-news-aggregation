@@ -47,6 +47,7 @@ func (configCrawlerHandler *ConfigCrawlerHandler) APIGetHtmlPage(c *gin.Context)
 
 	file, err := os.Open(filePath)
 	if err != nil {
+		log.Println(err)
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -55,6 +56,7 @@ func (configCrawlerHandler *ConfigCrawlerHandler) APIGetHtmlPage(c *gin.Context)
 	c.Header("Content-Type", "text/html")
 	_, err = io.Copy(c.Writer, file)
 	if err != nil {
+		log.Println(err)
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}

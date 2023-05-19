@@ -12,9 +12,19 @@ EXPOSE 8080
 FROM alpine:3.16
 
 ENV TZ=Asia/Ho_Chi_Minh
-
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+        chromium \
+        nss \
+        freetype \
+        freetype-dev \
+        harfbuzz \
+        ca-certificates \
+        ttf-freefont
+       
 WORKDIR /app
 COPY .env .
+COPY db/migrations ./db/migrations
 COPY --from=builder /app/main .
 
 RUN apk add --no-cache tzdata && \
