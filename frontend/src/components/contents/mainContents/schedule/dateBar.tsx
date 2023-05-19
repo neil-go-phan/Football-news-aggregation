@@ -48,15 +48,16 @@ const CustomInput = React.forwardRef<HTMLButtonElement, CustomInputProps>(
 const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
   const route = useRouter();
   const [date, setDate] = useState<Date>();
+  const [todayClient, setTodayClient] = useState<Date>(new Date);
 
   const getFollowingDays = (day: number): string => {
-    let today = new Date();
+    let today = todayClient
     today.setDate(today.getDate() + day);
     return formatVietnameseDate(today);
   };
 
   const getWeeksDay = (day: number): string => {
-    let today = new Date();
+    let today = todayClient
     today.setDate(today.getDate() + day);
     return WEEKDAYS[today.getDay()];
   };
@@ -124,6 +125,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
 
   useEffect(() => {
     const today = new Date();
+    setTodayClient(today)
     handleOnClickChooseDay(today);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -139,7 +141,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
               : 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2'
           }
           onClick={() => {
-            let today = new Date();
+            let today = todayClient
             today.setDate(today.getDate() + 0);
             handleOnClickChooseDay(today);
           }}
@@ -154,7 +156,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
               : 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2'
           }
           onClick={() => {
-            let today = new Date();
+            let today = todayClient
             today.setDate(today.getDate() + 1);
             handleOnClickChooseDay(today);
           }}
@@ -169,7 +171,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
               : 'weekdays--item col-4 col-sm-3 col-lg-2 col-md-2'
           }
           onClick={() => {
-            let today = new Date();
+            let today = todayClient
             today.setDate(today.getDate() + 2);
             handleOnClickChooseDay(today);
           }}
@@ -184,7 +186,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
               : 'weekdays--item col-lg-2 col-sm-3 col-md-2 d-none d-sm-block '
           }
           onClick={() => {
-            let today = new Date();
+            let today =  todayClient
             today.setDate(today.getDate() + 3);
             handleOnClickChooseDay(today);
           }}
@@ -199,7 +201,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
               : 'weekdays--item col-lg-2 col-md-2 d-none d-md-block '
           }
           onClick={() => {
-            let today = new Date();
+            let today = todayClient
             today.setDate(today.getDate() + 4);
             handleOnClickChooseDay(today);
           }}
@@ -214,7 +216,7 @@ const DateBar: FunctionComponent<Props> = ({ handleSchedule }) => {
               : 'weekdays--item col-lg-2 col-md-2 d-none d-md-block '
           }
           onClick={() => {
-            let today = new Date();
+            let today = todayClient
             today.setDate(today.getDate() + 5);
             handleOnClickChooseDay(today);
           }}

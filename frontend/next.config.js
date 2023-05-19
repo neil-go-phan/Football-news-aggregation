@@ -4,7 +4,6 @@ const nextConfig = {
   images: {
     domains: ['static.bongda24h.vn'],
   },
-  swcMinify: false,
 }
 
 module.exports = nextConfig
