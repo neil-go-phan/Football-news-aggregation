@@ -145,6 +145,14 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerToDay() {
 	date := time.Now()
 	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
 	matchUrls := schedulesHandler.handler.GetAllMatchURLs()
+	// chunks := serverhelper.MatchUrlsChunk(matchUrls.Urls, 60) 
+	// for _, chunk := range chunks {
+	// 	matchUrl := repository.AllMatchURLsOnDay{
+	// 		Date: matchUrls.Date,
+	// 		Urls: chunk,
+	// 	}
+	// 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrl)
+	// }
 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
 	schedulesHandler.handler.ClearAllMatchURLs()
 	MakeCronJobCrawlMatch(schedulesHandler.handler.GetMatchURLsOnTime(), schedulesHandler)
@@ -155,6 +163,14 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerSeed(date time.Time) {
 	schedulesHandler.handler.GetSchedules(date.Format("02-01-2006"))
 	matchUrls := schedulesHandler.handler.GetAllMatchURLs()
 	log.Printf("seed for date: %v len: %v\n", matchUrls.Date, len(matchUrls.Urls))
+	// chunks := serverhelper.MatchUrlsChunk(matchUrls.Urls, 60) 
+	// for _, chunk := range chunks {
+	// 	matchUrl := repository.AllMatchURLsOnDay{
+	// 		Date: matchUrls.Date,
+	// 		Urls: chunk,
+	// 	}
+	// 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrl)
+	// }
 	schedulesHandler.handler.SignalMatchDetailServiceToCrawl(matchUrls)
 	schedulesHandler.handler.ClearAllMatchURLs()
 	schedulesHandler.handler.ClearMatchURLsOnTime()

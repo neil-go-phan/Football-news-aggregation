@@ -14,6 +14,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	log "github.com/sirupsen/logrus"
 )
@@ -72,17 +73,110 @@ func checkIfEmpty(articles []entities.Article) bool {
 func CrawlWithChromedp(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[string]bool) ([]entities.Article, error) {
 	var articles []entities.Article
 	var nextPageCount int
-
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-	ctx, cancel = context.WithTimeout(ctx, 1*time.Minute)
-	defer cancel()
-
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(configCrawler.Url),
-		chromedp.Sleep(3*time.Second),
+	const script = `(function(w, n, wn) {
+		// Pass the Webdriver Test.
+		Object.defineProperty(n, 'webdriver', {
+			get: () => false,
+		});
+	
+		// Pass the Plugins Length Test.
+		// Overwrite the plugins property to use a custom getter.
+		Object.defineProperty(n, 'plugins', {
+			// This just needs to have length > 0 for the current test,
+			// but we could mock the plugins too if necessary.
+			get: () => [1, 2, 3, 4, 5],
+		});
+	
+		// Pass the Languages Test.
+		// Overwrite the plugins property to use a custom getter.
+		Object.defineProperty(n, 'languages', {
+			get: () => ['en-US', 'en'],
+		});
+	
+		// Pass the Chrome Test.
+		// We can mock this in as much depth as we need for the test.
+		w.chrome = {
+			app: {
+				isInstalled: false,
+			},
+			webstore: {
+				onInstallStageChanged: {},
+				onDownloadProgress: {},
+			},
+			runtime: {
+				PlatformOs: {
+					MAC: 'mac',
+					WIN: 'win',
+					ANDROID: 'android',
+					CROS: 'cros',
+					LINUX: 'linux',
+					OPENBSD: 'openbsd',
+				},
+				PlatformArch: {
+					ARM: 'arm',
+					X86_32: 'x86-32',
+					X86_64: 'x86-64',
+				},
+				PlatformNaclArch: {
+					ARM: 'arm',
+					X86_32: 'x86-32',
+					X86_64: 'x86-64',
+				},
+				RequestUpdateCheckStatus: {
+					THROTTLED: 'throttled',
+					NO_UPDATE: 'no_update',
+					UPDATE_AVAILABLE: 'update_available',
+				},
+				OnInstalledReason: {
+					INSTALL: 'install',
+					UPDATE: 'update',
+					CHROME_UPDATE: 'chrome_update',
+					SHARED_MODULE_UPDATE: 'shared_module_update',
+				},
+				OnRestartRequiredReason: {
+					APP_UPDATE: 'app_update',
+					OS_UPDATE: 'os_update',
+					PERIODIC: 'periodic',
+				},
+			},
+		};
+	
+		// Pass the Permissions Test.
+		const originalQuery = wn.permissions.query;
+		return wn.permissions.query = (parameters) => (
+			parameters.name === 'notifications' ?
+				Promise.resolve({ state: Notification.permission }) :
+				originalQuery(parameters)
+		);
+	
+	})(window, navigator, window.navigator);`
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36"),
 	)
-	if err != nil {
+	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
+
+	ctx, cancel := chromedp.NewContext(
+		allocCtx,
+		chromedp.WithLogf(log.Printf),
+	)
+	defer cancel()
+	ctx, cancel = context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
+	task := chromedp.Tasks{
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			var err error
+			_, err = page.AddScriptToEvaluateOnNewDocument(script).Do(ctx)
+			if err != nil {
+				return err
+			}
+			return nil
+		}),
+		chromedp.Navigate(configCrawler.Url),
+		chromedp.Sleep(6 * time.Second),
+	}
+
+	if err := chromedp.Run(ctx, task); err != nil {
 		return articles, err
 	}
 
@@ -130,20 +224,32 @@ func getArticleList(ctx context.Context, configCrawler *pb.ConfigCrawler, cacheC
 	for _, node := range articleNodes {
 		var article entities.Article
 		// title
-		err = chromedp.Run(ctx, chromedp.Text(fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Title), &article.Title))
+		titleCtx, cancelTitle := context.WithTimeout(ctx, 3*time.Second)
+		defer cancelTitle()
+
+		titleQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Title)
+		err = chromedp.Run(titleCtx,
+			chromedp.Text(titleQuery, &article.Title))
 		if err != nil {
 			log.Println(err)
 		}
 
 		// Description
-		err = chromedp.Run(ctx, chromedp.Text(fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Description), &article.Description))
+		descriptionCtx, cancelDescription := context.WithTimeout(ctx, 3*time.Second)
+		defer cancelDescription()
+		descriptionQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Description)
+		err = chromedp.Run(descriptionCtx, chromedp.Text(descriptionQuery, &article.Description))
 		if err != nil {
 			log.Println(err)
 		}
 
+		// link
+		linkCtx, cancelLink := context.WithTimeout(ctx, 3*time.Second)
+		defer cancelLink()
 		// there are only one node
 		var linkNodes []*cdp.Node
-		err = chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Link), &linkNodes))
+		linkNodesQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Link)
+		err = chromedp.Run(linkCtx, chromedp.Nodes(linkNodesQuery, &linkNodes))
 		if err != nil {
 			log.Println(err)
 		}
@@ -154,7 +260,7 @@ func getArticleList(ctx context.Context, configCrawler *pb.ConfigCrawler, cacheC
 				article.Link = formatLink(link, configCrawler.Url)
 			} else {
 				var linkChilds []*cdp.Node
-				err = chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf(`%s//*`, linkNode.FullXPath()), &linkChilds))
+				err = chromedp.Run(linkCtx, chromedp.Nodes(fmt.Sprintf(`%s//*`, linkNode.FullXPath()), &linkChilds))
 				if err != nil {
 					continue
 				}
@@ -260,14 +366,18 @@ func crawlWithGoQuery(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[s
 }
 
 func getGoqueryDoc(url string) (*goquery.Document, error) {
-	client := http.Client{}
+	client := http.Client{
+		Timeout: 45 * time.Second,
+	}
 	doc := new(goquery.Document)
 	log.Println(" url", url)
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Errorln("can not create when crawl HTTP:", err)
 		return doc, err
 	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36")
 
 	resp, err := client.Do(req)
 	if err != nil {
