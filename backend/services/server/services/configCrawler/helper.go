@@ -6,8 +6,9 @@ import (
 	"server/entities"
 	pb "server/proto"
 	"strings"
-	log "github.com/sirupsen/logrus"
+
 	"github.com/go-playground/validator"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 )
 
@@ -15,7 +16,7 @@ type ConfigCrawler struct {
 	Url                string `json:"url" validate:"required"`
 	ArticleDiv         string `json:"article_div" validate:"required"`
 	ArticleTitle       string `json:"article_title" validate:"required"`
-	ArticleDescription string `json:"article_description" validate:"required"`
+	ArticleDescription string `json:"article_description"`
 	ArticleLink        string `json:"article_link" validate:"required"`
 	NextPage           string `json:"next_page"`
 	NetxPageType       string `json:"next_page_type" validate:"required"`
@@ -34,7 +35,7 @@ func validateConfigCrawler(configCrawler *ConfigCrawler) error {
 	return nil
 }
 
-func trimConfigCrawler(configCrawler *ConfigCrawler) *ConfigCrawler{
+func trimConfigCrawler(configCrawler *ConfigCrawler) *ConfigCrawler {
 	configCrawler.ArticleDescription = strings.TrimSpace(configCrawler.ArticleDescription)
 	configCrawler.ArticleDiv = strings.TrimSpace(configCrawler.ArticleDiv)
 	configCrawler.ArticleLink = strings.TrimSpace(configCrawler.ArticleLink)

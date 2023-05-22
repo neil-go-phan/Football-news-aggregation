@@ -21,7 +21,7 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 
 	leaguesHandler := InitializeLeague(db)
 	leaguesRoutes := routes.NewLeaguesRoutes(leaguesHandler)
-
+		
 	articleHandler := InitializeArticle(db, es, grpcClient)
 	articleRoute := routes.NewArticleRoutes(articleHandler)
 
@@ -33,19 +33,6 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 
 	configCrawlerHandler := InitializeConfigCrawler(db, grpcClient)
 	configCrawlerRoute := routes.NewConfigCrawlerRoutes(configCrawlerHandler)
-
-	// cronjob Setup
-	go func() {
-		cronjob := cron.New()
-
-		articleHandler.SignalToCrawlerAfter10Min(cronjob)
-		articleHandler.RefreshCacheAfter5Min(cronjob)
-		go func() {
-			schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
-		}()
-
-		cronjob.Run()
-	}()
 
 	seed.SeedData(articleHandler, schedulesHandler)
 	createArticleCache(articleHandler)
@@ -59,6 +46,19 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 	matchDetailRoute.Setup(r)
 	adminRoute.Setup(r)
 	configCrawlerRoute.Setup(r)
+
+	// cronjob Setup
+	go func() {
+		cronjob := cron.New()
+
+		articleHandler.SignalToCrawlerAfter10Min(cronjob)
+		articleHandler.RefreshCacheAfter5Min(cronjob)
+		go func() {
+			schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
+		}()
+
+		cronjob.Run()
+	}()
 }
 
 func createArticleCache(handler *handler.ArticleHandler) {

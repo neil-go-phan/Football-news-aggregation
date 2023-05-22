@@ -69,3 +69,19 @@ func FormatCacheKey(tags string) string {
 	pharse5 := strings.Replace(pharse4, " ", "_", -1)
 	return pharse5
 }
+
+func MatchUrlsChunk(matchUrls []string, chunkSize int) [][]string {
+	var chunks [][]string
+	for {
+		if len(matchUrls) == 0 {
+			break
+		}
+		if len(matchUrls) < chunkSize {
+			chunkSize = len(matchUrls)
+		}
+		chunks = append(chunks, matchUrls[0:chunkSize])
+		matchUrls = matchUrls[chunkSize:]
+	}
+
+	return chunks
+}
