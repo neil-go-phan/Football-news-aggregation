@@ -24,7 +24,7 @@ RUN apk update && apk upgrade && \
 WORKDIR /app
 COPY configs/*.json /app/configs/
 COPY .env .
-COPY db/migrations ./db/migrations
+
 COPY --from=builder /app/main .
 
 RUN apk add --no-cache tzdata && \
