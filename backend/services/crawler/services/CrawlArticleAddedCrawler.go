@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"crawler/entities"
+	"sync"
 
 	crawlerhelpers "crawler/helper"
 	pb "crawler/proto"
@@ -224,56 +225,45 @@ func getArticleList(ctx context.Context, configCrawler *pb.ConfigCrawler, cacheC
 	for _, node := range articleNodes {
 		var article entities.Article
 		// title
-		titleCtx, cancelTitle := context.WithTimeout(ctx, 3*time.Second)
-		defer cancelTitle()
+		crawlErr := make(chan error, 3)
+		var wg sync.WaitGroup
 
-		titleQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Title)
-		err = chromedp.Run(titleCtx,
-			chromedp.Text(titleQuery, &article.Title))
-		if err != nil {
-			log.Println(err)
-		}
+		wg.Add(1)
+		go func(article *entities.Article) {
+			crawlErr <- crawlTitle(article, ctx, configCrawler, node)
+			wg.Done()
+		}(&article)
 
 		// Description
-		descriptionCtx, cancelDescription := context.WithTimeout(ctx, 3*time.Second)
-		defer cancelDescription()
-		descriptionQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Description)
-		err = chromedp.Run(descriptionCtx, chromedp.Text(descriptionQuery, &article.Description))
-		if err != nil {
-			log.Println(err)
-		}
+
+		wg.Add(1)
+		go func(article *entities.Article) {
+			crawlErr <- crawlDescription(article, ctx, configCrawler, node)
+			defer wg.Done()
+		}(&article)
 
 		// link
-		linkCtx, cancelLink := context.WithTimeout(ctx, 3*time.Second)
-		defer cancelLink()
 		// there are only one node
-		var linkNodes []*cdp.Node
-		linkNodesQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Link)
-		err = chromedp.Run(linkCtx, chromedp.Nodes(linkNodesQuery, &linkNodes))
-		if err != nil {
-			log.Println(err)
-		}
+		wg.Add(1)
+		go func(article *entities.Article) {
+			defer wg.Done()
+			crawlErr <- crawlLink(article, ctx, configCrawler, node)
+		}(&article)
 
-		for _, linkNode := range linkNodes {
-			link, ok := linkNode.Attribute("href")
-			if ok {
-				article.Link = formatLink(link, configCrawler.Url)
-			} else {
-				var linkChilds []*cdp.Node
-				err = chromedp.Run(linkCtx, chromedp.Nodes(fmt.Sprintf(`%s//*`, linkNode.FullXPath()), &linkChilds))
+		done := make(chan bool)
+		go func(done chan bool) {
+			for err := range crawlErr {
 				if err != nil {
-					continue
-				}
-				for _, child := range linkChilds {
-					linkChild, ok := child.Attribute("href")
-					if ok {
-						article.Link = formatLink(linkChild, configCrawler.Url)
-						break
-					}
+					log.Printf("error occurs while crawl: %s", <-crawlErr)
 				}
 			}
-		}
+			done <- true
+		}(done)
 
+		wg.Wait()
+		close(crawlErr)
+		<-done
+		close(done)
 		mapKey := fmt.Sprintf("%s-%s", article.Title, article.Link)
 		_, ok := cacheCrawlerArticle[mapKey]
 		if !ok {
@@ -284,6 +274,64 @@ func getArticleList(ctx context.Context, configCrawler *pb.ConfigCrawler, cacheC
 	}
 
 	return articles, nil
+}
+
+func crawlTitle(article *entities.Article, ctx context.Context, configCrawler *pb.ConfigCrawler, node *cdp.Node) error {
+	titleCtx, cancelTitle := context.WithTimeout(ctx, 1*time.Second)
+	defer cancelTitle()
+	titleQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Title)
+	err := chromedp.Run(titleCtx,
+		chromedp.Text(titleQuery, &article.Title))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func crawlDescription(article *entities.Article, ctx context.Context, configCrawler *pb.ConfigCrawler, node *cdp.Node) error {
+	descriptionCtx, cancelDescription := context.WithTimeout(ctx, 1*time.Second)
+	defer cancelDescription()
+	descriptionQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Description)
+	err := chromedp.Run(descriptionCtx, chromedp.Text(descriptionQuery, &article.Description))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func crawlLink(article *entities.Article, ctx context.Context, configCrawler *pb.ConfigCrawler, node *cdp.Node) error {
+	linkCtx, cancelLink := context.WithTimeout(ctx, 1*time.Second)
+	defer cancelLink()
+	var linkNodes []*cdp.Node
+	linkNodesQuery := fmt.Sprintf(`%s//*[@class='%s']`, node.FullXPath(), configCrawler.Link)
+	err := chromedp.Run(linkCtx, chromedp.Nodes(linkNodesQuery, &linkNodes))
+	if err != nil {
+		return err
+	}
+
+	for _, linkNode := range linkNodes {
+		link, ok := linkNode.Attribute("href")
+		if ok {
+			article.Link = formatLink(link, configCrawler.Url)
+		} else {
+			var linkChilds []*cdp.Node
+			err = chromedp.Run(linkCtx, chromedp.Nodes(fmt.Sprintf(`%s//*`, linkNode.FullXPath()), &linkChilds))
+			if err != nil {
+				continue
+			}
+			for _, child := range linkChilds {
+				linkChild, ok := child.Attribute("href")
+				if ok {
+					article.Link = formatLink(linkChild, configCrawler.Url)
+					break
+				}
+			}
+		}
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func crawlWithChromedpScroll(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[string]bool) ([]entities.Article, error) {

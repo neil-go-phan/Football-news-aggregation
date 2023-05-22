@@ -114,11 +114,11 @@ func MakeCronJobCrawlMatch(matchsToDay repository.MatchURLsWithTimeOnDay, schedu
 						if checkMatchsEnd(matchDetails) {
 							// stop go routine
 							ticker.Stop()
-							done <- true
-							close(done)
 							// update schedules
 							schedulesHandler.handler.GetSchedules(time.Now().Format("02-01-2006"))
 							wg.Done()
+							done <- true
+							close(done)
 							return
 						}
 					}
