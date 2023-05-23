@@ -17,6 +17,7 @@ import { IsLoggedContext } from '@/common/contexts/isLoggedContext';
 import Head from 'next/head';
 import Link from 'next/link';
 import { getGoogleUrl } from '@/helpers/getGoogleUrl';
+import Image from 'next/image';
 
 interface SignInFormProperty {
   username: string;
@@ -30,7 +31,7 @@ const SignIn: NextPage = () => {
     trigger: false,
     message: '',
   });
-  const from = "/admin"
+  const from = '/admin'
 
   const schema = yup.object().shape({
     username: yup.string().required('Username or email must not be empty'),
@@ -156,7 +157,7 @@ const SignIn: NextPage = () => {
                         data-mdb-ripple="true"
                         data-mdb-ripple-color="light"
                       >
-                        <img
+                        <Image
                           src="/images/google.svg"
                           alt="google logo"
                           style={{ height: '1.5rem' }}

@@ -32,7 +32,7 @@ const SignUp: NextPage = () => {
     email: yup
       .string()
       .required('Email name must not be empty')
-      .email("Email wrong format"),
+      .email('Email wrong format'),
     username: yup
       .string()
       .required('Username must not be empty')
