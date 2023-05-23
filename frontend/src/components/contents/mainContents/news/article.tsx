@@ -14,8 +14,11 @@ export type ArticleType = {
 
 const Article: FunctionComponent<ArticleProps> = (props: ArticleProps) => {
   const getDomainName = (url: string): string => {
-    let domain = (new URL(url));
-    return domain.hostname.replace('www.','');
+    if (url === '') {
+      return ''
+    }
+    let domain = new URL(url);
+    return domain.hostname.replace('www.', '');
   };
   const { article } = props;
   return (
