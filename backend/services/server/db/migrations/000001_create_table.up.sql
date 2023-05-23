@@ -14,7 +14,7 @@ CREATE TABLE admins (
   updated_at timestamp with time zone,
   deleted_at timestamp with time zone,
   username text UNIQUE,
-  password text
+  password text,
   email text UNIQUE
 );
 
