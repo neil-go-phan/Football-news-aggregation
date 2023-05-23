@@ -7,8 +7,9 @@ import (
 
 type Admin struct {
 	gorm.Model
-	Username string `gorm:"uniqueIndex"`
+	Username string 
 	Password string 
+	Email    string
 }
 
 type JWTClaim struct {
@@ -16,3 +17,13 @@ type JWTClaim struct {
 	RandomString []byte `json:"random_string"`
 	jwt.RegisteredClaims
 }
+
+// type User struct {
+// 	gorm.Model
+// 	Username     string    `gorm:"type:varchar(100);not null"`
+
+// 	Password string    `gorm:"not null"`
+
+// 	Verified  bool      `gorm:"default:false;"`
+// 	Provider  string    `gorm:"default:'local';"`
+// }

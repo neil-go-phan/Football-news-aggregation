@@ -22,6 +22,8 @@ func (adminRoute *AdminRoutes)Setup(r *gin.Engine) {
 	routes := r.Group("admin")
 	{
 		routes.POST("login", adminRoute.adminHandler.Login)
+		routes.POST("register", adminRoute.adminHandler.Register)
+		routes.GET("oauth/google", adminRoute.adminHandler.GoogleOAuth)
 		routes.GET("check-auth", middlewares.CheckToken(), adminRoute.adminHandler.CheckAuth)
 		routes.GET("get", middlewares.CheckToken(), adminRoute.adminHandler.Get)
 		routes.POST("change-password", middlewares.CheckToken(), adminRoute.adminHandler.ChangePassword)

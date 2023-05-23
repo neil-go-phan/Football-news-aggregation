@@ -15,6 +15,9 @@ import { _REGEX, _ROUTES } from '@/helpers/constants';
 import axiosClient from '@/helpers/axiosClient';
 import { IsLoggedContext } from '@/common/contexts/isLoggedContext';
 import Head from 'next/head';
+import Link from 'next/link';
+import { getGoogleUrl } from '@/helpers/getGoogleUrl';
+import Image from 'next/image';
 
 interface SignInFormProperty {
   username: string;
@@ -28,17 +31,10 @@ const SignIn: NextPage = () => {
     trigger: false,
     message: '',
   });
+  const from = '/admin'
 
   const schema = yup.object().shape({
-    username: yup
-      .string()
-      .required('Username must not be empty')
-      .min(8, 'Username must have 8-16 character')
-      .max(16, 'Username must have 8-16 character')
-      .matches(
-        _REGEX.REGEX_USENAME_PASSWORD,
-        'Username must not contain special character like @#$^...'
-      ),
+    username: yup.string().required('Username or email must not be empty'),
     password: yup
       .string()
       .required('Password must not be empty')
@@ -106,7 +102,7 @@ const SignIn: NextPage = () => {
                         </InputGroup.Text>
                         <Form.Control
                           {...register('username')}
-                          placeholder="Type your username"
+                          placeholder="Type your username or email"
                           type="text"
                           required
                         />
@@ -141,19 +137,33 @@ const SignIn: NextPage = () => {
                           {errorMessage.message}
                         </p>
                       )}
-
-                      <Row>
-                        <Col xs={6}>
-                          <Button
-                            className="px-4"
-                            variant="primary"
-                            type="submit"
-                          >
-                            Login
-                          </Button>
-                        </Col>
-                        <Col xs={6} className="text-end"></Col>
-                      </Row>
+                      <Button
+                        className="px-4 w-100"
+                        variant="primary"
+                        type="submit"
+                      >
+                        Login
+                      </Button>
+                      <div className="flex items-center my-2 before:flex-1 before:border-t before:border-gray-300 before:mt-0.5 after:flex-1 after:border-t after:border-gray-300 after:mt-0.5">
+                        <p className="text-center font-semibold mx-4 mb-0">
+                          OR
+                        </p>
+                      </div>
+                      <Button
+                        className="px-4 py-2 text-white font-medium text-sm leading-snug uppercase rounded shadow-md hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg transition duration-150 ease-in-out w-full flex justify-center items-center mb-3 w-100"
+                        style={{ backgroundColor: '#3b5998' }}
+                        href={getGoogleUrl(from)}
+                        role="button"
+                        data-mdb-ripple="true"
+                        data-mdb-ripple-color="light"
+                      >
+                        <Image
+                          src="/images/google.svg"
+                          alt="google logo"
+                          style={{ height: '1.5rem' }}
+                        />
+                        Continue with Google
+                      </Button>
                     </form>
                   </div>
                 </Col>
@@ -161,9 +171,19 @@ const SignIn: NextPage = () => {
                   md={5}
                   className="bg-primary text-white d-flex align-items-center justify-content-center p-5"
                 >
-                  <div className="text-center">
-                    <h2>Admin page</h2>
-                    <p>Sign in to process to admin page</p>
+                  <div>
+                    <div className="text-center">
+                      <h2>Register</h2>
+                      <p>Register to experience all of our great features !</p>
+                      <Link href={_ROUTES.REGISTER_PAGE}>
+                        <Button
+                          className="btn btn-lg btn-outline-light mt-3"
+                          type="button"
+                        >
+                          Register Now!
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </Col>
               </Row>

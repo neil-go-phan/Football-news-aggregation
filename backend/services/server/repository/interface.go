@@ -10,6 +10,8 @@ type AdminRepository interface {
 	UpdatePassword(admin *entities.Admin) error 
 	Get(username string) (*entities.Admin, error)
 	Create(admin *entities.Admin) (error) 
+	GetWithEmail(email string) (*entities.Admin, error)
+	Upsert(admin *entities.Admin) (error)
 }
 
 //go:generate mockery --name LeaguesRepository

@@ -23,7 +23,10 @@ type AdminServices interface {
 	GetAdminUsername(username string) (string, error)
 	CheckAdminUsernameToken(username string) error
 	ChangePassword(admin *adminservices.AdminWithConfirmPassword, usernameToken string) error
-	Login(admin *adminservices.Admin) (string, error)
+	LoginWithUsername(admin *adminservices.Admin) (string, error)
+	LoginWithEmail(admin *adminservices.Admin) (string, error)
+	Register(admin *adminservices.RegisterUserInput) (error) 
+	GoogleOAuth(googleUser *adminservices.GoogleUserResult) (string, error)
 }
 
 //go:generate mockery --name LeaguesServices
