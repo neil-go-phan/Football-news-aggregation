@@ -26,14 +26,6 @@ func CrawlArticleAddedCrawler(configCrawler *pb.ConfigCrawler) ([]entities.Artic
 	var articles []entities.Article
 	var cacheCrawlerArticle = make(map[string]bool)
 
-	if configCrawler.NetxPageType == "scroll" {
-		articles, err := crawlWithChromedpScroll(configCrawler, cacheCrawlerArticle)
-		if err != nil {
-			return articles, err
-		}
-		return articles, nil
-	}
-
 	articles, err := crawlWithGoQuery(configCrawler, cacheCrawlerArticle)
 	if err != nil {
 		if err.Error() == "maybe this is a javascript render button" {
@@ -194,6 +186,9 @@ func CrawlWithChromedp(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[
 			return articles, nil
 		}
 
+		// nextPageCtx, cancelNextPage:= context.WithTimeout(ctx, 2*time.Second)
+		// defer cancelNextPage()
+
 		err = chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf(`//*[@class='%s']`, configCrawler.NextPage), &articleNodes))
 		if err != nil {
 			return articles, err
@@ -334,50 +329,6 @@ func crawlLink(article *entities.Article, ctx context.Context, configCrawler *pb
 	return nil
 }
 
-func crawlWithChromedpScroll(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[string]bool) ([]entities.Article, error) {
-	var articles []entities.Article
-	var nextPageCount int
-
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-	ctx, cancel = context.WithTimeout(ctx, 1*time.Minute)
-	defer cancel()
-
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(configCrawler.Url),
-		chromedp.Sleep(3*time.Second),
-	)
-	if err != nil {
-		return articles, err
-	}
-
-	for nextPageCount < AMOUNT_PAGE_CRAWL {
-		articleList, err := getArticleList(ctx, configCrawler, cacheCrawlerArticle)
-		if err != nil {
-			return articles, err
-		}
-
-		articles = append(articles, articleList...)
-
-		var articleNodes []*cdp.Node
-		err = chromedp.Run(ctx, chromedp.Nodes(fmt.Sprintf(`//*[@class='%s']`, configCrawler.NextPage), &articleNodes))
-		if err != nil {
-			return articles, err
-		}
-		nodeIDs := []cdp.NodeID{articleNodes[0].NodeID}
-		err = chromedp.Run(ctx,
-			chromedp.ScrollIntoView(nodeIDs, chromedp.ByNodeID),
-			chromedp.Sleep(3*time.Second),
-		)
-		if err != nil {
-			return articles, err
-		}
-		nextPageCount++
-	}
-
-	return articles, nil
-}
-
 // use goquery, only apply with web with next page type is button and
 func crawlWithGoQuery(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[string]bool) ([]entities.Article, error) {
 	var articles []entities.Article
@@ -414,9 +365,7 @@ func crawlWithGoQuery(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[s
 }
 
 func getGoqueryDoc(url string) (*goquery.Document, error) {
-	client := http.Client{
-		Timeout: 45 * time.Second,
-	}
+	client := http.Client{}
 	doc := new(goquery.Document)
 	log.Println(" url", url)
 
@@ -483,6 +432,7 @@ func crawlOnePageWithGoQuery(doc *goquery.Document, configCrawler *pb.ConfigCraw
 				return
 			}
 		})
+
 	}
 	return articles, formatLink(nextPage, configCrawler.Url)
 }

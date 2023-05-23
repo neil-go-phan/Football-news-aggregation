@@ -11,4 +11,5 @@ type ConfigCrawler struct {
 	ArticleLink string
 	NextPage string
   NetxPageType string
+	
 }

@@ -50,7 +50,6 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 	// cronjob Setup
 	go func() {
 		cronjob := cron.New()
-
 		articleHandler.SignalToCrawlerAfter10Min(cronjob)
 		articleHandler.RefreshCacheAfter5Min(cronjob)
 		go func() {
