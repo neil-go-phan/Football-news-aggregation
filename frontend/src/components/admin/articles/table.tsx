@@ -62,6 +62,9 @@ const ArticleTable: React.FC<Props> = (props: Props) => {
   );
 
   const getDomainName = (url: string): string => {
+    if (url === '') {
+      return ''
+    }
     let domain = new URL(url);
     return domain.hostname.replace('www.', '');
   };
