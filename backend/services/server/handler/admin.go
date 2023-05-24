@@ -79,6 +79,8 @@ func (adminHandler *AdminHandler) GoogleOAuth(c *gin.Context) {
 
 	config, _ := serverhelper.LoadEnv(".")
 
+	fmt.Println("google_user", google_user)
+
 	token, err := adminHandler.handler.GoogleOAuth(google_user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
