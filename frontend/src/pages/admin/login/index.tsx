@@ -31,7 +31,7 @@ const SignIn: NextPage = () => {
     trigger: false,
     message: '',
   });
-  const from = '/'
+  const from = '/admin/token'
 
   const schema = yup.object().shape({
     username: yup.string().required('Username or email must not be empty'),
