@@ -160,7 +160,8 @@ const SignIn: NextPage = () => {
                         <Image
                           src="/images/google.svg"
                           alt="google logo"
-                          style={{ height: '1.5rem' }}
+                          width={20}
+                          height={20}
                         />
                         Continue with Google
                       </Button>

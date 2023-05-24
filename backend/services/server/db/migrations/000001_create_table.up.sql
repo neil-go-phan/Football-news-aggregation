@@ -268,21 +268,20 @@ CREATE UNIQUE INDEX idx_tags_tag_name ON public.tags USING btree (tag_name);
 CREATE UNIQUE INDEX idx_tags_pkey ON public.tags USING btree (id);
 
 INSERT INTO
-  admins(id, created_at, username, password)
+  admins(created_at, username, password)
 values
   (
-    1,
     current_timestamp,
     'admin2023',
     'fa585d89c851dd338a70dcf535aa2a92fee7836dd6aff1226583e88e0996293f16bc009c652826e0fc5c706695a03cddce372f139eff4d13959da6f1f5d3eabe'
   );
 
 INSERT INTO
-  tags(id, created_at, tag_name)
+  tags(created_at, tag_name)
 values
-  (1, current_timestamp, 'tin tuc bong da');
+  (current_timestamp, 'tin tuc bong da');
 
 INSERT INTO
-  leagues(id, created_at, league_name, active)
+  leagues(created_at, league_name, active)
 values
-  (1, current_timestamp, 'Tin tức bóng đá', true);
+  (current_timestamp, 'Tin tức bóng đá', true);
