@@ -79,16 +79,14 @@ func (adminHandler *AdminHandler) GoogleOAuth(c *gin.Context) {
 
 	config, _ := serverhelper.LoadEnv(".")
 
-	fmt.Println("google_user", google_user)
-
 	token, err := adminHandler.handler.GoogleOAuth(google_user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
 		return
 	}
 
-	c.SetCookie("token", token, 24*60*60, "/", c.Request.Header.Get("Origin"), false, false)
-	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprint(config.FrontEndOrigin, pathUrl))
+	// c.SetCookie("token", token, 24*60*60, "/", c.Request.Header.Get("Origin"), false, false)
+	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s?token=%s",config.FrontEndOrigin, pathUrl, token))
 }
 
 func (adminHandler *AdminHandler) Login(c *gin.Context) {
