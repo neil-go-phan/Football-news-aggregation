@@ -149,12 +149,12 @@ func CrawlWithChromedp(configCrawler *pb.ConfigCrawler, cacheCrawlerArticle map[
 	)
 	allocCtx, _ := chromedp.NewExecAllocator(context.Background(), opts...)
 
-	ctx, cancel := chromedp.NewContext(
+	ctx, cancelch := chromedp.NewContext(
 		allocCtx,
 		chromedp.WithLogf(log.Printf),
 	)
-	defer cancel()
-	ctx, cancel = context.WithTimeout(ctx, 2*time.Minute)
+	defer cancelch()
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 	task := chromedp.Tasks{
 		chromedp.ActionFunc(func(ctx context.Context) error {

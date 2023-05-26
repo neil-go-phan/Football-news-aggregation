@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/url"
 	"server/entities"
 	serverhelper "server/helper"
 	"server/repository"
@@ -45,17 +44,15 @@ type ArticleService struct {
 	es             *elasticsearch.Client
 	leaguesService services.LeaguesServices
 	tagsService    services.TagsServices
-	configCrawler  services.ConfigCrawlerServices
 	repo           repository.ArticleRepository
 }
 
-func NewArticleService(leaguesService services.LeaguesServices, tagsService services.TagsServices, grpcClient pb.CrawlerServiceClient, es *elasticsearch.Client, repo repository.ArticleRepository, configCrawler services.ConfigCrawlerServices) *ArticleService {
+func NewArticleService(leaguesService services.LeaguesServices, tagsService services.TagsServices, grpcClient pb.CrawlerServiceClient, es *elasticsearch.Client, repo repository.ArticleRepository) *ArticleService {
 	articleService := &ArticleService{
 		grpcClient:     grpcClient,
 		es:             es,
 		leaguesService: leaguesService,
 		tagsService:    tagsService,
-		configCrawler:  configCrawler,
 		repo:           repo,
 	}
 	return articleService
@@ -116,27 +113,27 @@ func (s *ArticleService) GetArticles(keywords []string) {
 
 	// configCrawler crawl
 	
-	crawlers, err := s.configCrawler.List()
-	if err != nil {
-		log.Error(err)
-	}
+	// crawlers, err := s.configCrawler.List()
+	// if err != nil {
+	// 	log.Error(err)
+	// }
 
-	for _, crawler := range crawlers {
-		articles := make([]*pb.Article, 0)
-		entitiesArticle, err := s.configCrawler.GetArticles(&crawler)
-		if err != nil {
-			log.Error(err)
-		}
-		for _, entity := range entitiesArticle {
-			pbArticle := newPbArticle(entity)
-			articles = append(articles, pbArticle)
-		}
-		url, err := url.ParseRequestURI(crawler.Url)
-		if err != nil {
-			log.Error(err)
-		}
-		s.StoreArticles(articles, url.Hostname())
-	}
+	// for _, crawler := range crawlers {
+	// 	articles := make([]*pb.Article, 0)
+	// 	entitiesArticle, err := s.configCrawler.GetArticles(&crawler)
+	// 	if err != nil {
+	// 		log.Error(err)
+	// 	}
+	// 	for _, entity := range entitiesArticle {
+	// 		pbArticle := newPbArticle(entity)
+	// 		articles = append(articles, pbArticle)
+	// 	}
+	// 	url, err := url.ParseRequestURI(crawler.Url)
+	// 	if err != nil {
+	// 		log.Error(err)
+	// 	}
+	// 	s.StoreArticles(articles, url.Hostname())
+	// }
 
 		
 

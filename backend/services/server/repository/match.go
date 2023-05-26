@@ -46,10 +46,10 @@ func (repo *MatchRepo) UpdateWhenScheduleCrawl(match *entities.Match) error {
 func (repo *MatchRepo) UpdateWhenMatchDetailCrawl(match *entities.Match) error {
 	err := repo.DB.Model(&match).
 		Updates(entities.Match{
-			MatchStatus: match.MatchStatus,
-			Scores:      match.Scores,
+			MatchStatus:   match.MatchStatus,
+			Scores:        match.Scores,
 			LineupClub1ID: match.LineupClub1ID,
-			LineupClub2ID: match.LineupClub2ID,}).Error
+			LineupClub2ID: match.LineupClub2ID}).Error
 	if err != nil {
 		return err
 	}

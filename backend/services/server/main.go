@@ -7,15 +7,17 @@ import (
 	"server/connects"
 	"server/db/migrations"
 	serverhelper "server/helper"
+	"server/infras"
 	"server/middlewares"
 	pb "server/proto"
-	"server/infras"
 	"server/repository"
 
 	"time"
+
 	"github.com/evalphobia/logrus_sentry"
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
 
 	log "github.com/sirupsen/logrus"
 	easy "github.com/t-tomalak/logrus-easy-formatter"
@@ -43,6 +45,7 @@ func init() {
 var (
 	DB  *gorm.DB
 	Gin *gin.Engine
+	jobIDMap = make(map[string]cron.EntryID)
 )
 
 func main() {
@@ -84,8 +87,8 @@ func main() {
 	log.Infoln("Setup routes")
 	r := gin.Default()
 	r.Use(middlewares.Cors())
-
-	infras.SetupRoute(db, es, grpcClient, r)
+	
+	infras.SetupRoute(db, es, grpcClient, r, jobIDMap)
 
 	err = r.Run(env.Port)
 	if err != nil {

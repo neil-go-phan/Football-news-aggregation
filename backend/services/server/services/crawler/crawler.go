@@ -1,4 +1,4 @@
-package configcrawler
+package crawler
 
 import (
 	"context"
@@ -8,30 +8,38 @@ import (
 	"server/entities"
 	pb "server/proto"
 	"server/repository"
+	"server/services"
 	"strings"
 	"time"
 
 	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
+	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html"
 )
 
-type ConfigCrawlerService struct {
-	repo       repository.ConfigCrawlerRepository
-	grpcClient pb.CrawlerServiceClient
+type CrawlerService struct {
+	repo           repository.CrawlerRepository
+	cronjobService services.CronjobServices
+	grpcClient     pb.CrawlerServiceClient
+	cron           *cron.Cron
+	jobIDMap       map[string]cron.EntryID
 }
 
-func NewConfigCrawlerService(repo repository.ConfigCrawlerRepository, grpcClient pb.CrawlerServiceClient) *ConfigCrawlerService {
-	configCrawlerService := &ConfigCrawlerService{
-		repo:       repo,
-		grpcClient: grpcClient,
+func NewCrawlerService(repo repository.CrawlerRepository, cronjobService services.CronjobServices, grpcClient pb.CrawlerServiceClient, cron *cron.Cron, jobIDMap map[string]cron.EntryID) *CrawlerService {
+	configCrawlerService := &CrawlerService{
+		repo:           repo,
+		cronjobService: cronjobService,
+		grpcClient:     grpcClient,
+		cron:           cron,
+		jobIDMap:       jobIDMap,
 	}
 	return configCrawlerService
 }
 
-func (s *ConfigCrawlerService) GetHtmlPage(url *url.URL) error {
+func (s *CrawlerService) GetHtmlPage(url *url.URL) error {
 	const script = `(function(w, n, wn) {
 		// Pass the Webdriver Test.
 		Object.defineProperty(n, 'webdriver', {
@@ -167,7 +175,7 @@ func (s *ConfigCrawlerService) GetHtmlPage(url *url.URL) error {
 	return nil
 }
 
-func (s *ConfigCrawlerService) Upsert(configCrawler *ConfigCrawler) error {
+func (s *CrawlerService) Upsert(configCrawler *services.Crawler) error {
 	configCrawler = trimConfigCrawler(configCrawler)
 	err := validateConfigCrawler(configCrawler)
 	if err != nil {
@@ -178,23 +186,35 @@ func (s *ConfigCrawlerService) Upsert(configCrawler *ConfigCrawler) error {
 	if err != nil {
 		return err
 	}
+	s.cronjobService.CreateCrawlerCronjob(newEntity)
 	return nil
 }
 
-func (s *ConfigCrawlerService) List() ([]ConfigCrawler, error) {
+func (s *CrawlerService) List() ([]services.Crawler, error) {
 	entites, err := s.repo.List()
 	if err != nil {
 		return nil, err
 	}
-	configCrawlers := []ConfigCrawler{}
+	configCrawlers := []services.Crawler{}
 	for _, entity := range *entites {
 		configCrawlers = append(configCrawlers, newConfigCrawler(&entity))
 	}
 	return configCrawlers, nil
 }
 
-func (s *ConfigCrawlerService) Get(urlInput string) (ConfigCrawler, error) {
-	configCrawler := ConfigCrawler{}
+func (s *CrawlerService) CreateCustomCrawlerCronjob() error {
+	crawlers, err := s.repo.List()
+	if err != nil {
+		return err
+	}
+	for _, crawler := range *crawlers {
+		s.cronjobService.CreateCrawlerCronjob(&crawler)
+	}
+	return nil
+}
+
+func (s *CrawlerService) Get(urlInput string) (*entities.Crawler, error) {
+	configCrawler := &entities.Crawler{}
 	_, err := url.ParseRequestURI(urlInput)
 	if err != nil {
 		return configCrawler, fmt.Errorf("url invalid")
@@ -204,11 +224,11 @@ func (s *ConfigCrawlerService) Get(urlInput string) (ConfigCrawler, error) {
 	if err != nil {
 		return configCrawler, err
 	}
-	configCrawler = newConfigCrawler(entity)
-	return configCrawler, nil
+	// configCrawler = newConfigCrawler(entity)
+	return entity, nil
 }
 
-func (s *ConfigCrawlerService) Delete(urlInput string) error {
+func (s *CrawlerService) Delete(urlInput string) error {
 	_, err := url.ParseRequestURI(urlInput)
 	if err != nil {
 		return fmt.Errorf("url invalid")
@@ -220,7 +240,11 @@ func (s *ConfigCrawlerService) Delete(urlInput string) error {
 	return nil
 }
 
-func (s *ConfigCrawlerService) TestCrawler(configCrawler *ConfigCrawler) ([]entities.Article, error) {
+func (s *CrawlerService) UpdateRunEveryTime(crawler *entities.Crawler) error {
+	return s.repo.UpdateRunEveryTime(crawler)
+}
+
+func (s *CrawlerService) TestCrawler(configCrawler *services.Crawler) ([]entities.Article, error) {
 	articles := []entities.Article{}
 	configCrawler = trimConfigCrawler(configCrawler)
 	err := validateConfigCrawler(configCrawler)
@@ -234,7 +258,7 @@ func (s *ConfigCrawlerService) TestCrawler(configCrawler *ConfigCrawler) ([]enti
 	return articles, nil
 }
 
-func (s *ConfigCrawlerService) GetArticles(configCrawler *ConfigCrawler) ([]entities.Article, error) {
+func (s *CrawlerService) GetArticles(configCrawler *services.Crawler) ([]entities.Article, error) {
 	articles := []entities.Article{}
 	in := newPbConfigCrawler(configCrawler)
 	pbAllarticles, err := s.grpcClient.GetArticlesFromAddedCrawler(context.Background(), in)
@@ -248,4 +272,30 @@ func (s *ConfigCrawlerService) GetArticles(configCrawler *ConfigCrawler) ([]enti
 		articles = append(articles, article)
 	}
 	return articles, nil
+}
+
+func (s *CrawlerService) ChangeScheduleCronjob(cronjobIn services.CronjobChangeTimeRequestPayload) error {
+	// search cronjob in map
+	mapKey := newMapKey(cronjobIn.Url, cronjobIn.RunEveryMinOld)
+	entryID, found := s.jobIDMap[mapKey]
+	if !found {
+		return fmt.Errorf("invalid request, not found cronjob")
+	}
+	// remove cronjob
+	log.Println("remove cronjob", cronjobIn.Name)
+	s.cron.Remove(entryID)
+	delete(s.jobIDMap, mapKey)
+	// add new cronjob
+	// query db to get crawler
+	crawler, err := s.Get(cronjobIn.Url)
+	if err != nil {
+		return err
+	}
+	crawler.RunEveryMin = cronjobIn.RunEveryMinNew
+	s.cronjobService.CreateCrawlerCronjob(crawler)
+	err = s.UpdateRunEveryTime(crawler)
+	if err != nil {
+		return err
+	}
+	return nil
 }

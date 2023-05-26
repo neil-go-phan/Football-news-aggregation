@@ -8,7 +8,8 @@ export const _ROUTES = {
   ADMIN_ARTICLES: '/admin/articles',
   ADMIN_CRAWLER: '/admin/crawler',
   ADD_CRAWLER :'/admin/crawler/add',
-  REGISTER_PAGE: '/admin/register'
+  REGISTER_PAGE: '/admin/register',
+  ADMIN_CRONJOB: '/admin/cronjob'
 }
 
 export const _REGEX = {

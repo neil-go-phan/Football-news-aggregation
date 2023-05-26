@@ -132,14 +132,14 @@
 }
 
 .adminCrawler {
-  &__list{
+  &__list {
     &--title {
       text-align: center;
       font-size: 1.5rem;
     }
   }
   &__addCrawler {
-    &--embed{
+    &--embed {
       border: 2px solid #f1af79;
     }
     &--form {
@@ -179,11 +179,51 @@
       width: 100%;
       overflow: auto;
     }
-    &--loading{
+    &--loading {
       display: flex;
       align-items: center;
       justify-content: center;
     }
   }
+}
 
+.adminCronjob {
+  &__list {
+    padding: 20px 0;
+    &--title {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    &--table {
+      th {
+        text-align: center;
+      }
+      .btnPaging {
+        button {
+          margin: 0 20px;
+        }
+        p {
+          display: inline-block;
+        }
+        span {
+          margin-left: 2px;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  &__editTimeModal {
+    overflow: auto;
+    padding: 20px;
+    &--title {
+      font-size: 2rem;
+      text-align: center;
+      margin: 0;
+    }
+    &--line {
+      border-bottom: 2px solid #000;
+      margin: 1rem 0;
+    }
+  }
 }

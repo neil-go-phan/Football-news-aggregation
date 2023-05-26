@@ -8,7 +8,6 @@ import (
 	"os"
 	"server/handler/presenter"
 	"server/services"
-	configcrawler "server/services/configCrawler"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -17,10 +16,10 @@ import (
 )
 
 type ConfigCrawlerHandler struct {
-	handler services.ConfigCrawlerServices
+	handler services.CrawlerServices
 }
 
-func NewConfigCrawlerHandler(handler services.ConfigCrawlerServices) *ConfigCrawlerHandler {
+func NewCrawlerHandler(handler services.CrawlerServices) *ConfigCrawlerHandler {
 	configCrawler := &ConfigCrawlerHandler{
 		handler: handler,
 	}
@@ -68,7 +67,7 @@ func (configCrawlerHandler *ConfigCrawlerHandler) APIGetHtmlPage(c *gin.Context)
 }
 
 func (configCrawlerHandler *ConfigCrawlerHandler) APIUpsertConfigCrawler(c *gin.Context) {
-	var input configcrawler.ConfigCrawler
+	var input services.Crawler
 	err := c.BindJSON(&input)
 	if err != nil {
 		log.Printf("error occrus: %s", err)
@@ -119,7 +118,7 @@ func (configCrawlerHandler *ConfigCrawlerHandler) APIDeleteConfigCrawler(c *gin.
 }
 
 func (configCrawlerHandler *ConfigCrawlerHandler) APITestCrawler(c *gin.Context) {
-	var input configcrawler.ConfigCrawler
+	var input services.Crawler
 	err := c.BindJSON(&input)
 	if err != nil {
 		log.Printf("error occrus: %s", err)
@@ -151,4 +150,30 @@ func (configCrawlerHandler *ConfigCrawlerHandler) APITestCrawler(c *gin.Context)
 		}
 		
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": resposeArticles, "amount": len(resposeArticles)})
+}
+
+func (h *ConfigCrawlerHandler) CreateCustomCrawlerCronjob() {
+	log.Println("start create custom crawler cronjob")
+	err := h.handler.CreateCustomCrawlerCronjob()
+	if err != nil {
+		log.Error(err)
+	}
+	log.Println("end create custom crawler cronjob")
+}
+
+func (h *ConfigCrawlerHandler) APIChangeCronjobTime(c *gin.Context) {
+	var inputCronjob services.CronjobChangeTimeRequestPayload
+	err := c.BindJSON(&inputCronjob)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Change cronjob time failed"})
+		return
+	}
+	err = h.handler.ChangeScheduleCronjob(inputCronjob)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Change cronjob time failed"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Change cronjob time success"})
 }

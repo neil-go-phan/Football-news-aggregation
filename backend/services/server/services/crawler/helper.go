@@ -1,10 +1,11 @@
-package configcrawler
+package crawler
 
 import (
 	"fmt"
 	"net/url"
 	"server/entities"
 	pb "server/proto"
+	"server/services"
 	"strings"
 
 	"github.com/go-playground/validator"
@@ -12,17 +13,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-type ConfigCrawler struct {
-	Url                string `json:"url" validate:"required"`
-	ArticleDiv         string `json:"article_div" validate:"required"`
-	ArticleTitle       string `json:"article_title" validate:"required"`
-	ArticleDescription string `json:"article_description"`
-	ArticleLink        string `json:"article_link" validate:"required"`
-	NextPage           string `json:"next_page"`
-	NetxPageType       string `json:"next_page_type" validate:"required"`
-}
-
-func validateConfigCrawler(configCrawler *ConfigCrawler) error {
+func validateConfigCrawler(configCrawler *services.Crawler) error {
 	validate := validator.New()
 	err := validate.Struct(configCrawler)
 	if err != nil {
@@ -35,18 +26,19 @@ func validateConfigCrawler(configCrawler *ConfigCrawler) error {
 	return nil
 }
 
-func trimConfigCrawler(configCrawler *ConfigCrawler) *ConfigCrawler {
+func trimConfigCrawler(configCrawler *services.Crawler) *services.Crawler {
 	configCrawler.ArticleDescription = strings.TrimSpace(configCrawler.ArticleDescription)
 	configCrawler.ArticleDiv = strings.TrimSpace(configCrawler.ArticleDiv)
 	configCrawler.ArticleLink = strings.TrimSpace(configCrawler.ArticleLink)
 	configCrawler.ArticleTitle = strings.TrimSpace(configCrawler.ArticleTitle)
 	configCrawler.NextPage = strings.TrimSpace(configCrawler.NextPage)
 	configCrawler.Url = strings.TrimSpace(configCrawler.Url)
+
 	return configCrawler
 }
 
-func newEntityConfigCrawler(configCrawler *ConfigCrawler) *entities.ConfigCrawler {
-	return &entities.ConfigCrawler{
+func newEntityConfigCrawler(configCrawler *services.Crawler) *entities.Crawler {
+	return &entities.Crawler{
 		Url:                configCrawler.Url,
 		ArticleDiv:         configCrawler.ArticleDiv,
 		ArticleTitle:       configCrawler.ArticleTitle,
@@ -57,19 +49,19 @@ func newEntityConfigCrawler(configCrawler *ConfigCrawler) *entities.ConfigCrawle
 	}
 }
 
-func newConfigCrawler(configCrawler *entities.ConfigCrawler) ConfigCrawler {
-	return ConfigCrawler{
-		Url:                configCrawler.Url,
-		ArticleDiv:         configCrawler.ArticleDiv,
-		ArticleTitle:       configCrawler.ArticleTitle,
-		ArticleDescription: configCrawler.ArticleDescription,
-		ArticleLink:        configCrawler.ArticleLink,
-		NextPage:           configCrawler.NextPage,
-		NetxPageType:       configCrawler.NetxPageType,
+func newConfigCrawler(crawler *entities.Crawler) services.Crawler {
+	return services.Crawler{
+		Url:                crawler.Url,
+		ArticleDiv:         crawler.ArticleDiv,
+		ArticleTitle:       crawler.ArticleTitle,
+		ArticleDescription: crawler.ArticleDescription,
+		ArticleLink:        crawler.ArticleLink,
+		NextPage:           crawler.NextPage,
+		NetxPageType:       crawler.NetxPageType,
 	}
 }
 
-func newPbConfigCrawler(configCrawler *ConfigCrawler) *pb.ConfigCrawler {
+func newPbConfigCrawler(configCrawler *services.Crawler) *pb.ConfigCrawler {
 	return &pb.ConfigCrawler{
 		Url:          configCrawler.Url,
 		Div:          configCrawler.ArticleDiv,
@@ -124,4 +116,9 @@ func renderNode(n *html.Node) string {
 		log.Error(err)
 	}
 	return sb.String()
+}
+
+func newMapKey(url string, runEveryMin int) string {
+	cronjobName := fmt.Sprintf("Crawl url :%s, every %v min", url, runEveryMin)
+	return fmt.Sprintf("%s$%s$%v",cronjobName, url, runEveryMin)
 }

@@ -13,7 +13,7 @@ import {
   faTag,
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
-import { ERROR_POPUP_ADMIN_TIME } from '@/helpers/constants';
+import { ERROR_POPUP_ADMIN_TIME, _ROUTES } from '@/helpers/constants';
 import axiosProtectedAPI from '@/helpers/axiosProtectedAPI';
 import { ArticleType } from '@/components/matchDetail/relatedNews/article';
 import { ThreeDots } from 'react-loader-spinner';
@@ -37,7 +37,7 @@ const AddCrawler: React.FC = () => {
   const [articles, setArticles] = useState<Array<ArticleType>>([]);
 
   const fieldChooseRef = useRef('');
-
+const route = useRouter()
   const handleChoose = (fieldChoosed: string) => {
     fieldChooseRef.current = fieldChoosed;
   };
@@ -172,6 +172,7 @@ const AddCrawler: React.FC = () => {
         progress: undefined,
         theme: 'light',
       });
+      route.push(_ROUTES.ADMIN_CRAWLER)
     } catch (error: any) {
       toast.error('Error occurred while upsert crawler', {
         position: 'top-right',
