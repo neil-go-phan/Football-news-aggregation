@@ -132,6 +132,7 @@ type CronjobServices interface {
 	CronjobOnHour(timeString string) (*[]ChartHourResponse, error)
 	CreateCronjobGetArticleFromGoogle()
 	CreateCronjobRefreshCache()
+	CronjobOnDay(timeString string) (*[24]ChartDay, error)
 }
 
 type Crawler struct {
@@ -164,15 +165,10 @@ type ChartHourResponse struct {
 	Cronjobs []CronjobInChart `json:"cronjobs"`
 }
 
-type ChartDayResponse struct {
-	Time        time.Time `json:"time"`
-	AmountOfJob int       `json:"amount_of_jobs"`
-	Cronjobs []CronjobRunTimes `json:"cronjobs"`
-}
-
-type CronjobRunTimes struct {
-	Name  string `json:"name"`
-	Times int    `json:"times"`
+type ChartDay struct {
+	Hour        int            `json:"hour"`
+	AmountOfJob int            `json:"amount_of_jobs"`
+	Cronjobs    map[string]int // map[cronjob_name]runnng_times
 }
 
 type CronjobInChart struct {

@@ -36,21 +36,6 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
     const sanitizedHtml = tempContainer.innerHTML;
     setHtmlContent(sanitizedHtml);
   };
-  // const addClickEventToContainer = () => {
-  //   const container = document.getElementById('embedContainer');
-  //   if (container) {
-  //     container.addEventListener('click', props.handleClick);
-  //     const elements = container.querySelectorAll('*');
-
-  //     elements.forEach((element) => {
-  //       element.addEventListener('mouseover', handleMouseOver);
-  //       element.addEventListener('mouseout', handleMouseOut);
-  //     });
-  //   }
-  // };
-  // useEffect(() => {
-  //   removeOnClickEvents();
-  // }, [htmlContent]);
 
   const iframeRef = useRef<any>(null);
 
@@ -61,12 +46,10 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
       const iframeDocument =
         iframe.contentDocument || iframe.contentWindow.document;
 
-      // Gắn HTML content vào iframe
       iframeDocument.open();
       iframeDocument.write(htmlContent);
       iframeDocument.close();
 
-      // Gắn sự kiện onMouseOver vào các phần tử HTML
       const elements = iframeDocument.querySelectorAll('*');
       elements.forEach((element: any) => {
         element.addEventListener('mouseover', handleMouseOver);
@@ -75,7 +58,6 @@ const EmbedWeb: React.FC<Props> = (props: Props) => {
       });
 
       return () => {
-        // Hủy bỏ sự kiện khi component unmount
         elements.forEach((element: any) => {
           element.removeEventListener('mouseover', handleMouseOver);
           element.removeEventListener('mouseout', handleMouseOut);

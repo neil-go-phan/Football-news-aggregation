@@ -23,5 +23,6 @@ func (route *CronjobRoutes) Setup(r *gin.Engine) {
 	{
 		routes.GET("list-cronjob", middlewares.CheckToken(), route.chartHandler.APIListCrawlerCronjob)
 		routes.GET("cronjob-on-hour", middlewares.CheckToken(), route.chartHandler.APIGetCronjobOnHour)
+		routes.GET("cronjob-on-day", middlewares.CheckToken(), route.chartHandler.APIGetCronjobOnDay)
 	}
 }

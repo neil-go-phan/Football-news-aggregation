@@ -52,7 +52,7 @@ const labels = [
   '22h',
   '23h',
 ];
-const BarChartOnHour: React.FC<Props> = (props: Props) => {
+const BarChartOnDay: React.FC<Props> = (props: Props) => {
   const [amountOfJobs, setAmountOfJobs] = useState<Array<number>>([]);
   const chartRef = useRef<ChartJS<"bar">>();
   const options = {
@@ -113,7 +113,8 @@ const BarChartOnHour: React.FC<Props> = (props: Props) => {
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
     if (chartRef.current) {
-      console.log(getElementAtEvent(chartRef.current, event));
+      const {index} = getElementAtEvent(chartRef.current, event)[0]
+      console.log(index);
     }
     
   };
@@ -127,4 +128,4 @@ const BarChartOnHour: React.FC<Props> = (props: Props) => {
   );
 };
 
-export default BarChartOnHour;
+export default BarChartOnDay;

@@ -154,23 +154,30 @@ func (s *CronjobService) CronjobOnHour(timeString string) (*[]services.ChartHour
 	return &charts, nil
 }
 
-func (s *CronjobService) CronjobOnDay(timeString string) (*[]services.ChartHourResponse, error) {
-	charts := make([]services.ChartHourResponse, 0)
-	hour, err := time.Parse("2006-01-02 15", timeString)
+func (s *CronjobService) CronjobOnDay(timeString string) (*[24]services.ChartDay, error) {
+	charts := [24]services.ChartDay{}
+	for index := range charts {
+		charts[index].Hour = index
+	}
+	day, err := time.Parse("2006-01-02", timeString)
 	if err != nil {
 		return &charts, err
 	}
 
-	lastHour := hour.Add(time.Duration(-1) * time.Hour)
-
-	entities, err := s.repo.Get(lastHour, hour)
+	endOfDay := day.Add(time.Duration(23)*time.Hour + time.Duration(59)*time.Minute)
+	entities, err := s.repo.Get(day, endOfDay)
 	if err != nil {
 		return &charts, err
 	}
 
 	for _, entityChart := range *entities {
-		// charts = append(charts, newChartHourResponse(entityChart))
-		fmt.Println(entityChart.StartAt)
+		hour := entityChart.StartAt.Hour()
+		charts[hour].AmountOfJob += 1
+		if charts[hour].Cronjobs == nil {
+			charts[hour].Cronjobs = map[string]int{}
+		}
+		charts[hour].Cronjobs[entityChart.Name] += 1
 	}
+	fmt.Println("charts", charts[9])
 	return &charts, nil
 }
