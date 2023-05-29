@@ -107,6 +107,7 @@ type CronjobRepository interface {
 	Create(cronjob *entities.Cronjob) (*entities.Cronjob, error)
 	Get(lastTrack time.Time, now time.Time) (*[]entities.Cronjob, error)
 	UpdateEndAt(cronjob *entities.Cronjob) error
+	GetRuning() (*[]entities.Cronjob, error)
 }
 
 type AllMatchURLsOnDay struct {

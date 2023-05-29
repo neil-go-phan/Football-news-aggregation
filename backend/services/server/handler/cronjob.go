@@ -28,13 +28,13 @@ func (h *CronjobHandler) APIListCrawlerCronjob(c *gin.Context) {
 
 func (h *CronjobHandler) APIGetCronjobOnHour(c *gin.Context) {
 	time := c.Query("time")
-	Cronjobs, err := h.handler.CronjobOnHour(time)
+	cronjobs, err := h.handler.CronjobOnHour(time)
 	if err != nil {
 		log.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Get Cronjob failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Get cronjob failed"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"success": true, "Cronjobs": Cronjobs})
+	c.JSON(http.StatusOK, gin.H{"success": true, "cronjobs": cronjobs})
 }
 
 func (h *CronjobHandler) APIGetCronjobOnDay(c *gin.Context) {

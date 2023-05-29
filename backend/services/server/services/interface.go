@@ -129,7 +129,7 @@ type CrawlerServices interface {
 type CronjobServices interface {
 	CreateCrawlerCronjob(crawler *entities.Crawler)
 	GetCronjobRuntime() []CronjobResponse
-	CronjobOnHour(timeString string) (*[]ChartHourResponse, error)
+	CronjobOnHour(timeString string) (*[60]ChartHour, error)
 	CreateCronjobGetArticleFromGoogle()
 	CreateCronjobRefreshCache()
 	CronjobOnDay(timeString string) (*[24]ChartDay, error)
@@ -158,21 +158,20 @@ type CronjobChangeTimeRequestPayload struct {
 	RunEveryMinNew int    `json:"run_every_min_new"`
 }
 
-type ChartHourResponse struct {
-	Time        time.Time `json:"time"`
-	AmountOfJob int       `json:"amount_of_jobs"`
-	// MemoryUsage  int       `json:"memory_usage"`
-	Cronjobs []CronjobInChart `json:"cronjobs"`
+type ChartHour struct {
+	Minute      int              `json:"minute"`
+	AmountOfJob int              `json:"amount_of_jobs"`
+	Cronjobs    []CronjobInChart `json:"cronjobs"`
+}
+
+type CronjobInChart struct {
+	Name    string `json:"name"`
+	StartAt string `json:"start_at"` // ex: "16:01"
+	EndAt   string `json:"end_at"`   // ex: "16:02"
 }
 
 type ChartDay struct {
 	Hour        int            `json:"hour"`
 	AmountOfJob int            `json:"amount_of_jobs"`
 	Cronjobs    map[string]int // map[cronjob_name]runnng_times
-}
-
-type CronjobInChart struct {
-	Name    string    `json:"name"`
-	StartAt time.Time `json:"start_at"`
-	EndAt   time.Time `json:"end_at"`
 }

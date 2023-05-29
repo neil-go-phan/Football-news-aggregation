@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,8 +10,8 @@ import {
   ChartEvent,
   ActiveElement,
 } from 'chart.js';
-import { Bar, getElementAtEvent } from 'react-chartjs-2';
-import { ChartOnDayData } from '.';
+import { Bar } from 'react-chartjs-2';
+import { ChartOnHourData } from '.';
 
 ChartJS.register(
   CategoryScale,
@@ -24,52 +24,36 @@ ChartJS.register(
 
 type Props = {
   title: string;
-  chartData: ChartOnDayData[];
+  hour: number;
+  chartData: ChartOnHourData[];
 };
-const labels = [
-  '0h',
-  '1h',
-  '2h',
-  '3h',
-  '4h',
-  '5h',
-  '6h',
-  '7h',
-  '8h',
-  '9h',
-  '10h',
-  '11h',
-  '12h',
-  '13h',
-  '14h',
-  '15h',
-  '16h',
-  '17h',
-  '18h',
-  '19h',
-  '20h',
-  '21h',
-  '22h',
-  '23h',
-];
+
 const BarChartOnHour: React.FC<Props> = (props: Props) => {
   const [amountOfJobs, setAmountOfJobs] = useState<Array<number>>([]);
-  const chartRef = useRef<ChartJS<"bar">>();
+  const [labels, setLabels] = useState<Array<string>>([]);
+
+  const addZeroWhenLowwerThanTen = (timeInt: number): string => {
+    if (timeInt < 10) {
+      return `0${timeInt}`
+    }
+    return `${timeInt}`
+  }
+  const createLabel = () => {
+    const temp :Array<string> = []
+    props.chartData.forEach((value) => {
+      temp.push(`${addZeroWhenLowwerThanTen(props.hour)}:${addZeroWhenLowwerThanTen(value.minute)}`)
+    })
+    setLabels([...temp])
+  }
   const options = {
     responsive: true,
-    onHover: (event: ChartEvent, elements: ActiveElement[]) => {
-      const target = event.native?.target as HTMLElement
-      if (target) {
-        target.style.cursor = elements[0] ? 'pointer' : 'default';
-      }
-    },
     plugins: {
       legend: {
         position: 'top' as const,
       },
       title: {
         display: true,
-        text: props.title,
+        text: `${props.title}h`,
       },
       tooltip: {
         callbacks: {
@@ -78,7 +62,7 @@ const BarChartOnHour: React.FC<Props> = (props: Props) => {
             const barData = props.chartData[context.dataIndex];
             labels.push('amount of cronjob run: ' + barData.amount_of_jobs);
             barData.cronjobs.forEach((value) => {
-              labels.push(`cronjob: ${value.name}, run: ${value.times} times`);
+              labels.push(`cronjob: ${value.name}, start at: ${value.start_at}, end at: ${value.end_at}`);
             });
             return labels;
           },
@@ -96,6 +80,7 @@ const BarChartOnHour: React.FC<Props> = (props: Props) => {
   };
   useEffect(() => {
     getAmountOfJobs();
+    createLabel()
   }, [props.chartData]);
 
   const data = {
@@ -109,20 +94,10 @@ const BarChartOnHour: React.FC<Props> = (props: Props) => {
     ],
   };
 
-  const handleOnClick = (
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
-  ) => {
-    if (chartRef.current) {
-      console.log(getElementAtEvent(chartRef.current, event));
-    }
-    
-  };
   return (
     <Bar
       options={options}
       data={data}
-      ref={chartRef}
-      onClick={(event) => handleOnClick(event)}
     />
   );
 };

@@ -56,15 +56,29 @@ func newMapKey(url string, runEveryMin int) string {
 	return fmt.Sprintf("%s$%s$%v",cronjobName, url, runEveryMin)
 }
 
-// func newChartHourResponse(entityChart entities.Cronjob) services.ChartHourResponse {
-// 	cronjobName := make([]string, 0)
-// 	for _, cronjob := range entityChart.Cronjobs {
-// 		cronjobName = append(cronjobName, cronjob.Name)
-// 	}
-// 	return services.ChartHourResponse{
-// 		Time: entityChart.Time,
-// 		AmountOfJob: entityChart.AmountOfJob,
-// 		MemoryUsage: entityChart.MemoryUsage,
-// 		CronjobNames: cronjobName,
-// 	}
-// }
+func newCronjobInChart(cronjob entities.Cronjob) services.CronjobInChart {
+	hour := cronjob.StartAt.Hour()
+	min := cronjob.StartAt.Minute()
+	startAt := fmt.Sprintf("%v:%v", addZeroWhenLowwerThanTen(hour), addZeroWhenLowwerThanTen(min))
+	var endAt string
+	if (cronjob.EndAt.Year() != 1) {
+		hour = cronjob.EndAt.Hour()
+		min = cronjob.EndAt.Minute()
+		endAt = fmt.Sprintf("%v:%v", addZeroWhenLowwerThanTen(hour), addZeroWhenLowwerThanTen(min))
+	} else {
+		endAt = "runing"
+	}
+
+	return services.CronjobInChart{
+		Name: cronjob.Name,
+		StartAt: startAt,
+		EndAt: endAt,
+	}
+} 
+
+func addZeroWhenLowwerThanTen(time int) string {
+	if time < 10 {
+		return fmt.Sprintf("0%v", time)
+	}
+	return fmt.Sprintf("%v", time)
+}

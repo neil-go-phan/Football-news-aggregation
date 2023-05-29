@@ -227,3 +227,42 @@
     }
   }
 }
+
+.adminDashboard {
+  &__title {
+    font-size: 2rem;
+    text-align: center;
+    margin: 0;
+  }
+  &__chooseDate {
+    display: flex;
+    // width: 15%;
+    &--title {
+      width: fit-content;
+    }
+    .btnTriggerDate {
+      border: none;
+      font-weight: bold;
+      text-align: center;
+      // width: 100%;
+      height: 100%;
+      // height: 40px;
+      // padding: 12px 6px;
+      line-height: 1.6;
+    }
+  }
+  &__dayChart {
+    &--title {
+      font-size: 1rem;
+      text-align: center;
+      margin: 0;
+    }
+  }
+  &__hourChart {
+    &--title {
+      font-size: 1rem;
+      text-align: center;
+      margin-top: 20px;
+    }
+  }
+}

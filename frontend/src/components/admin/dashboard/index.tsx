@@ -7,13 +7,7 @@ import BarChartOnHour from './barChartOnHour';
 import DatePicker from 'react-datepicker';
 import BarChartOnDay from './barChartOnDay';
 import { ThreeDots } from 'react-loader-spinner';
-
-export type ChartOnHourData = {
-  time: Date;
-  amount_of_jobs: number;
-  memory_usage: number;
-  cronjob_names: Array<string>;
-};
+import { Button } from 'react-bootstrap';
 
 export type ChartOnDayData = {
   time: number;
@@ -26,10 +20,16 @@ export type CronjobDayBar = {
   times: number;
 };
 
+export type ChartOnHourData = {
+  minute: number;
+  amount_of_jobs: number;
+  cronjobs: Array<CronjobBar>;
+};
+
 export type CronjobBar = {
   name: string;
-  start_at: Date;
-  end_at: Date;
+  start_at: string;
+  end_at: string;
 };
 
 type CustomInputProps = {
@@ -38,17 +38,24 @@ type CustomInputProps = {
 };
 
 function Dashboard() {
-  const [chartOnHour, setChartOnHour] = useState<Array<ChartOnHourData>>();
+  const [chartOnHourData, setChartOnHourData] = useState<Array<ChartOnHourData>>();
   const [chartOnDayData, setChartOnDayData] = useState<Array<ChartOnDayData>>();
   const [choosenDay, setChoosenDay] = useState<Date>();
+  const [choosenHour, setChoosenHour] = useState<Date>()
   const router = useRouter();
-  const formatTimeHour = (hour: number): string => {
-    // if (today) {
-    //   let month = today.getUTCMonth() + 1;
-    //   return `${today.getUTCFullYear()}-${
-    //     today.getUTCMonth() + 1
-    //   }-${today.getUTCDate()} ${hour}:${today.getUTCMinutes()}:${today.getUTCSeconds()}`;
-    // }
+
+  const formatTimeHour = (date: Date | undefined): string => {
+    if (date) {
+      let month = `${date.getMonth() + 1}`;
+      if (date.getMonth() + 1 < 10) {
+        month = `0${date.getMonth() + 1}`;
+      }
+      let day = `${date.getDate()}`;
+      if (date.getDate() < 10) {
+        day = `0${date.getDate()}`;
+      }
+      return `${date.getFullYear()}-${month}-${day} ${date.getHours()}`;
+    }
     return '';
   };
 
@@ -67,12 +74,20 @@ function Dashboard() {
     return '';
   };
 
+  const handleChooseHour = (hour: number) => {
+    if (choosenDay) {
+      const temp = new Date(choosenDay)
+      temp.setHours(hour)
+      setChoosenHour(temp)
+    }
+  }
+
   const requestChartByHour = async (timeString: string) => {
     try {
       const { data } = await axiosProtectedAPI.get('cronjob/cronjob-on-hour', {
         params: { time: timeString },
       });
-      setChartOnHour(data.charts);
+      setChartOnHourData(data.cronjobs);
     } catch (error) {
       toast.error('Error occurred while get list cronjob', {
         position: 'top-right',
@@ -110,13 +125,19 @@ function Dashboard() {
   useEffect(() => {
     var date = new Date();
     setChoosenDay(date);
+    setChoosenHour(date)
   }, [router.asPath]);
+  useEffect(() => {
+    if (choosenHour) {
+      requestChartByHour(formatTimeHour(choosenHour))
+    }
+  }, [choosenHour]);
   useEffect(() => {
     if (choosenDay) {
       requestChartByDay(formatTimeDay(choosenDay));
+      requestChartByHour(formatTimeHour(choosenDay))
     }
   }, [choosenDay]);
-
   const handleOnClickChooseDay = (dateChose: Date) => {
     setChoosenDay(dateChose);
     requestChartByDay(formatTimeDay(dateChose));
@@ -129,9 +150,9 @@ function Dashboard() {
       date: Date | undefined;
     }
   >(({ onClick, date }, ref) => (
-    <button className="btnTriggerDate" onClick={onClick} ref={ref}>
+    <Button className="btnTriggerDate bg-success" onClick={onClick} ref={ref}>
       {date ? formatTimeDay(date) : 'Choose date'}
-    </button>
+    </Button>
   ));
 
   // eslint-disable-next-line react/display-name
@@ -144,6 +165,9 @@ function Dashboard() {
     <div className="adminDashboard">
       <div className="adminDashboard__title">Dashboard</div>
       <div className="adminDashboard__chooseDate">
+        <div className="adminDashboard__chooseDate--title">
+          Choose date
+        </div>
         <DatePicker
           selected={choosenDay}
           onChange={(date: Date) => handleOnClickChooseDay(date)}
@@ -157,6 +181,7 @@ function Dashboard() {
             <BarChartOnDay
               title={formatTimeDay(choosenDay)}
               chartData={chartOnDayData}
+              handleChooseHour={handleChooseHour}
             />
           </div>
         ) : (
@@ -172,13 +197,14 @@ function Dashboard() {
           </div>
         )}
       </div>
-      {/* <div className="adminDashboard__hourChart">
+      <div className="adminDashboard__hourChart">
         <div className="adminDashboard__hourChart--title">Hour chart</div>
-        {chartOnHour ? (
+        {chartOnHourData && choosenHour ? (
           <div className="adminDashboard__dayChart--warper">
             <BarChartOnHour
-              title={formatTimeDay(choosenDay)}
-              chartData={chartOnHour}
+              title={formatTimeHour(choosenHour)}
+              hour={choosenHour.getHours()}
+              chartData={chartOnHourData}
             />
           </div>
         ) : (
@@ -193,7 +219,7 @@ function Dashboard() {
             />
           </div>
         )}
-      </div> */}
+      </div>
     </div>
   );
 }

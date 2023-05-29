@@ -25,6 +25,7 @@ ChartJS.register(
 type Props = {
   title: string;
   chartData: ChartOnDayData[];
+  handleChooseHour: (hour: number) => void
 };
 const labels = [
   '0h',
@@ -113,8 +114,11 @@ const BarChartOnDay: React.FC<Props> = (props: Props) => {
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
   ) => {
     if (chartRef.current) {
-      const {index} = getElementAtEvent(chartRef.current, event)[0]
-      console.log(index);
+      if (getElementAtEvent(chartRef.current, event)[0]) {
+        const {index} = getElementAtEvent(chartRef.current, event)[0]
+        props.handleChooseHour(index)
+      }
+
     }
     
   };
