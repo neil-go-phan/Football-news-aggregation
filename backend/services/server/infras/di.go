@@ -1,8 +1,7 @@
 package infras
 
 import (
-	"server/db/seed"
-	"server/handler"
+	// "server/db/seed"
 	serverproto "server/proto"
 	"server/routes"
 
@@ -12,7 +11,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.CrawlerServiceClient, r *gin.Engine) {
+func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.CrawlerServiceClient, r *gin.Engine, jobIDMap map[string]cron.EntryID) {
+	cronjob := cron.New()
+
 	adminHandler := InitializeAdmin(db)
 	adminRoute := routes.NewAdminRoutes(adminHandler)
 
@@ -21,7 +22,7 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 
 	leaguesHandler := InitializeLeague(db)
 	leaguesRoutes := routes.NewLeaguesRoutes(leaguesHandler)
-		
+
 	articleHandler := InitializeArticle(db, es, grpcClient)
 	articleRoute := routes.NewArticleRoutes(articleHandler)
 
@@ -31,13 +32,16 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 	matchDetailHandler := InitializeMatch(db, grpcClient)
 	matchDetailRoute := routes.NewMatchDetailRoutes(matchDetailHandler)
 
-	configCrawlerHandler := InitializeConfigCrawler(db, grpcClient)
-	configCrawlerRoute := routes.NewConfigCrawlerRoutes(configCrawlerHandler)
+	crawlerHandler := InitializeCrawler(db, grpcClient, cronjob, es, jobIDMap)
+	crawlerRoute := routes.NewConfigCrawlerRoutes(crawlerHandler)
 
-	seed.SeedData(articleHandler, schedulesHandler)
-	createArticleCache(articleHandler)
+	cronjobHandler := InitializeCronjob(db, grpcClient, cronjob, es, jobIDMap)
+	cronjobRoute := routes.NewCronjobRoutes(cronjobHandler)
 
-	schedulesHandler.SignalToCrawlerToDay()
+	// seed.SeedData(articleHandler, schedulesHandler)
+	// createArticleCache(articleHandler)
+
+	// schedulesHandler.SignalToCrawlerToDay()
 
 	tagsRoutes.Setup(r)
 	leaguesRoutes.Setup(r)
@@ -45,21 +49,17 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 	schedulesRoute.Setup(r)
 	matchDetailRoute.Setup(r)
 	adminRoute.Setup(r)
-	configCrawlerRoute.Setup(r)
+	crawlerRoute.Setup(r)
+	cronjobRoute.Setup(r)
 
 	// cronjob Setup
+
 	go func() {
-		cronjob := cron.New()
-		articleHandler.SignalToCrawlerAfter10Min(cronjob)
-		articleHandler.RefreshCacheAfter5Min(cronjob)
-		go func() {
-			schedulesHandler.SignalToCrawlerOnNewDay(cronjob)
-		}()
+		cronjobHandler.CreateCronjobGetArticleFromGoogle()
+		// cronjobHandler.CreateCronjobRefreshCache()
+		crawlerHandler.CreateCustomCrawlerCronjob()
+		schedulesHandler.SignalToCrawlerOnNewDay(cronjob, jobIDMap)
 
 		cronjob.Run()
 	}()
-}
-
-func createArticleCache(handler *handler.ArticleHandler) {
-	handler.RefreshCache()
 }

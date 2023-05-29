@@ -1,3 +1,4 @@
+
 CREATE TABLE articles (
   id SERIAL PRIMARY KEY,
   created_at timestamp with time zone,
@@ -135,7 +136,7 @@ CREATE TABLE match_line_ups (
   shirt_color text
 );
 
-CREATE TABLE config_crawlers (
+CREATE TABLE crawlers (
   id SERIAL PRIMARY KEY,
   created_at timestamp with time zone,
   updated_at timestamp with time zone,
@@ -146,8 +147,22 @@ CREATE TABLE config_crawlers (
   article_description text,
   article_link text,
   next_page text,
-  netx_page_type text
+  netx_page_type text,
+  run_every_min int
 );
+
+CREATE TABLE cronjobs (
+  id SERIAL PRIMARY KEY,
+  created_at timestamp with time zone,
+  updated_at timestamp with time zone,
+  deleted_at timestamp with time zone,
+  name text,
+  start_at timestamp with time zone,
+  end_at timestamp with time zone,
+  crawler_id SERIAL,
+  run_every_min int
+);
+
 
 -- ADD FOREIGN KEY
 ALTER TABLE
@@ -159,6 +174,11 @@ ALTER TABLE
   article_tag
 ADD
   CONSTRAINT fk_article_tag_article FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE;
+
+ALTER TABLE
+  cronjobs
+ADD
+  CONSTRAINT fk_cronjobs_crawler FOREIGN KEY (crawler_id) REFERENCES crawlers(id);
 
 ALTER TABLE
   match_events

@@ -8,6 +8,7 @@ package infras
 
 import (
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 	"server/handler"
 	"server/proto"
@@ -15,7 +16,8 @@ import (
 	"server/services/admin"
 	"server/services/articles"
 	"server/services/club"
-	"server/services/configCrawler"
+	"server/services/crawler"
+	"server/services/cronjob"
 	"server/services/event"
 	"server/services/leagues"
 	"server/services/lineup"
@@ -43,10 +45,31 @@ func InitializeTag(db *gorm.DB) *handler.TagsHandler {
 	return tagsHandler
 }
 
-func InitializeConfigCrawler(db *gorm.DB, grpcClient serverproto.CrawlerServiceClient) *handler.ConfigCrawlerHandler {
-	configCrawlerRepo := repository.NewConfigCrawlerRepo(db)
-	configCrawlerService := configcrawler.NewConfigCrawlerService(configCrawlerRepo, grpcClient)
-	configCrawlerHandler := handler.NewConfigCrawlerHandler(configCrawlerService)
+func InitializeCronjob(db *gorm.DB, grpcClient serverproto.CrawlerServiceClient, cron2 *cron.Cron, es *elasticsearch.Client, jobIDMap map[string]cron.EntryID) *handler.CronjobHandler {
+	cronjobRepo := repository.NewCronjobRepo(db)
+	leaguesRepo := repository.NewLeaguesRepo(db)
+	tagRepo := repository.NewTagRepo(db)
+	tagsService := tagsservices.NewTagsService(tagRepo)
+	leaguesService := leaguesservices.NewleaguesService(leaguesRepo, tagsService)
+	articleRepo := repository.NewArticleRepo(db)
+	articleService := articlesservices.NewArticleService(leaguesService, tagsService, grpcClient, es, articleRepo)
+	cronjobService := cronjob.NewCronjobService(cronjobRepo, articleService, cron2, grpcClient, jobIDMap)
+	cronjobHandler := handler.NewCronjobHandler(cronjobService)
+	return cronjobHandler
+}
+
+func InitializeCrawler(db *gorm.DB, grpcClient serverproto.CrawlerServiceClient, cron2 *cron.Cron, es *elasticsearch.Client, jobIDMap map[string]cron.EntryID) *handler.ConfigCrawlerHandler {
+	crawlerRepo := repository.NewCrawlerRepo(db)
+	cronjobRepo := repository.NewCronjobRepo(db)
+	leaguesRepo := repository.NewLeaguesRepo(db)
+	tagRepo := repository.NewTagRepo(db)
+	tagsService := tagsservices.NewTagsService(tagRepo)
+	leaguesService := leaguesservices.NewleaguesService(leaguesRepo, tagsService)
+	articleRepo := repository.NewArticleRepo(db)
+	articleService := articlesservices.NewArticleService(leaguesService, tagsService, grpcClient, es, articleRepo)
+	cronjobService := cronjob.NewCronjobService(cronjobRepo, articleService, cron2, grpcClient, jobIDMap)
+	crawlerService := crawler.NewCrawlerService(crawlerRepo, cronjobService, grpcClient, cron2, jobIDMap)
+	configCrawlerHandler := handler.NewCrawlerHandler(crawlerService)
 	return configCrawlerHandler
 }
 
@@ -65,9 +88,7 @@ func InitializeArticle(db *gorm.DB, es *elasticsearch.Client, grpcClient serverp
 	tagsService := tagsservices.NewTagsService(tagRepo)
 	leaguesService := leaguesservices.NewleaguesService(leaguesRepo, tagsService)
 	articleRepo := repository.NewArticleRepo(db)
-	configCrawlerRepo := repository.NewConfigCrawlerRepo(db)
-	configCrawlerService := configcrawler.NewConfigCrawlerService(configCrawlerRepo, grpcClient)
-	articleService := articlesservices.NewArticleService(leaguesService, tagsService, grpcClient, es, articleRepo, configCrawlerService)
+	articleService := articlesservices.NewArticleService(leaguesService, tagsService, grpcClient, es, articleRepo)
 	articleHandler := handler.NewArticleHandler(articleService)
 	return articleHandler
 }

@@ -11,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
 )
 
 type ArticleHandler struct {
@@ -119,20 +118,6 @@ func (articleHandler *ArticleHandler) APIGetFirstPageOfLeagueRelatedArticle(c *g
 	}
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "articles": articles})
-}
-
-func (articleHandler *ArticleHandler) SignalToCrawlerAfter10Min(cronjob *cron.Cron) {
-	_, err := cronjob.AddFunc("@every 0h10m", func() { articleHandler.handler.GetArticles(make([]string, 0)) })
-	if err != nil {
-		log.Println("error occurred while seting up SignalToCrawlerAfter10Min cronjob: ", err)
-	}
-}
-
-func (articleHandler *ArticleHandler) RefreshCacheAfter5Min(cronjob *cron.Cron) {
-	_, err := cronjob.AddFunc("@every 0h5m", func() { articleHandler.handler.RefreshCache() })
-	if err != nil {
-		log.Println("error occurred while seting up RefreshCacheAfter5Min cronjob: ", err)
-	}
 }
 
 func (articleHandler *ArticleHandler) RefreshCache() {

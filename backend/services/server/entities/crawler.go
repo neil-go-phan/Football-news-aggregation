@@ -2,7 +2,7 @@ package entities
 
 import "gorm.io/gorm"
 
-type ConfigCrawler struct {
+type Crawler struct {
 	gorm.Model
 	Url string
 	ArticleDiv string
@@ -11,5 +11,5 @@ type ConfigCrawler struct {
 	ArticleLink string
 	NextPage string
   NetxPageType string
-	
+	RunEveryMin int // minute
 }

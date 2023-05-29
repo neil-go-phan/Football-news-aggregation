@@ -28,11 +28,11 @@ func NewSchedulesHandler(handler services.SchedulesServices) *ScheduleHandler {
 	return schedulesHandler
 }
 
-func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.Cron) {
+func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.Cron, jobIDMap map[string]cron.EntryID) {
 	_, err := cronjob.AddFunc("0 23 * * *", func() {
 		var wg sync.WaitGroup
 		now := time.Now()
-		var DAYOFWEEK = 7
+		var DAYOFWEEK = 1
 		for i := -1; i <= DAYOFWEEK; i++ {
 			wg.Add(1)
 			date := now.AddDate(0, 0, i)
@@ -55,6 +55,7 @@ func (schedulesHandler *ScheduleHandler) SignalToCrawlerOnNewDay(cronjob *cron.C
 	if err != nil {
 		log.Errorln("error occurred while seting up getSchedules cronjob: ", err)
 	}
+	// jobIDMap["Get schedule on new day"] = entryID
 }
 
 func MakeCronJobCrawlMatch(matchsToDay repository.MatchURLsWithTimeOnDay, schedulesHandler *ScheduleHandler) {
@@ -118,13 +119,14 @@ func MakeCronJobCrawlMatch(matchsToDay repository.MatchURLsWithTimeOnDay, schedu
 							schedulesHandler.handler.GetSchedules(time.Now().Format("02-01-2006"))
 							wg.Done()
 							done <- true
-							close(done)
+							
 							return
 						}
 					}
 				}
 			}(&wg)
 			wg.Wait()
+			close(done)
 			log.Printf("Stop cronjob crawl match at: %s", time.Now())
 		}(matchsOnTime)
 	}

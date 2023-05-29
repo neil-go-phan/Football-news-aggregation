@@ -6,7 +6,6 @@ import (
 	pb "server/proto"
 	"server/repository"
 	adminservices "server/services/admin"
-	configcrawler "server/services/configCrawler"
 	"time"
 )
 
@@ -25,7 +24,7 @@ type AdminServices interface {
 	ChangePassword(admin *adminservices.AdminWithConfirmPassword, usernameToken string) error
 	LoginWithUsername(admin *adminservices.Admin) (string, error)
 	LoginWithEmail(admin *adminservices.Admin) (string, error)
-	Register(admin *adminservices.RegisterUserInput) (error) 
+	Register(admin *adminservices.RegisterUserInput) error
 	GoogleOAuth(googleUser *adminservices.GoogleUserResult) (string, error)
 }
 
@@ -56,6 +55,7 @@ type ArticleServices interface {
 	GetArticles(keywords []string)
 	GetArticleCount() (total int64, today int64, err error)
 	DeleteArticle(id uint) error
+	StoreArticles(respArticles []*pb.Article, league string)
 }
 
 //go:generate mockery --name SchedulesServices
@@ -111,13 +111,67 @@ type LineUpServices interface {
 	GetLineUps(id1 uint, id2 uint) (*entities.MatchLineUp, *entities.MatchLineUp, error)
 }
 
-//go:generate mockery --name ConfigCrawlerServices
-type ConfigCrawlerServices interface {
+//go:generate mockery --name CrawlerServices
+type CrawlerServices interface {
 	GetHtmlPage(url *url.URL) error
-	Upsert(configCrawler *configcrawler.ConfigCrawler) error
-	List() ([]configcrawler.ConfigCrawler, error)
-	Get(url string) (configcrawler.ConfigCrawler, error)
+	Upsert(configCrawler *Crawler) error
+	List() ([]Crawler, error)
+	Get(url string) (*entities.Crawler, error)
 	Delete(urlInput string) error
-	TestCrawler(configCrawler *configcrawler.ConfigCrawler) ([]entities.Article, error)
-	GetArticles(configCrawler *configcrawler.ConfigCrawler) ([]entities.Article, error)
+	TestCrawler(configCrawler *Crawler) ([]entities.Article, error)
+	GetArticles(configCrawler *Crawler) ([]entities.Article, error)
+	UpdateRunEveryTime(crawler *entities.Crawler) error
+	CreateCustomCrawlerCronjob() error
+	ChangeScheduleCronjob(cronjobIn CronjobChangeTimeRequestPayload) error
+}
+
+//go:generate mockery --name CronjobServices
+type CronjobServices interface {
+	CreateCrawlerCronjob(crawler *entities.Crawler)
+	GetCronjobRuntime() []CronjobResponse
+	CronjobOnHour(timeString string) (*[60]ChartHour, error)
+	CreateCronjobGetArticleFromGoogle()
+	CreateCronjobRefreshCache()
+	CronjobOnDay(timeString string) (*[24]ChartDay, error)
+}
+
+type Crawler struct {
+	Url                string `json:"url" validate:"required"`
+	ArticleDiv         string `json:"article_div" validate:"required"`
+	ArticleTitle       string `json:"article_title" validate:"required"`
+	ArticleDescription string `json:"article_description"`
+	ArticleLink        string `json:"article_link" validate:"required"`
+	NextPage           string `json:"next_page"`
+	NetxPageType       string `json:"next_page_type" validate:"required"`
+}
+
+type CronjobResponse struct {
+	Name        string `json:"name"`
+	Url         string `json:"url"`
+	RunEveryMin int    `json:"run_every_min"`
+}
+
+type CronjobChangeTimeRequestPayload struct {
+	Name           string `json:"name"`
+	Url            string `json:"url"`
+	RunEveryMinOld int    `json:"run_every_min_old"`
+	RunEveryMinNew int    `json:"run_every_min_new"`
+}
+
+type ChartHour struct {
+	Minute      int              `json:"minute"`
+	AmountOfJob int              `json:"amount_of_jobs"`
+	Cronjobs    []CronjobInChart `json:"cronjobs"`
+}
+
+type CronjobInChart struct {
+	Name    string `json:"name"`
+	StartAt string `json:"start_at"` // ex: "16:01"
+	EndAt   string `json:"end_at"`   // ex: "16:02"
+}
+
+type ChartDay struct {
+	Hour        int            `json:"hour"`
+	AmountOfJob int            `json:"amount_of_jobs"`
+	Cronjobs    map[string]int // map[cronjob_name]runnng_times
 }

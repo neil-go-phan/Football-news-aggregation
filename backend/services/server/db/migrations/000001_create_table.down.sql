@@ -24,4 +24,6 @@ DROP TABLE leagues;
 
 DROP TABLE clubs;
 
-DROP TABLE config_crawlers;
+DROP TABLE cronjobs;
+
+DROP TABLE crawlers;

@@ -27,5 +27,6 @@ func (configCrawlerRoute *ConfigCrawlerRoutes) Setup(r *gin.Engine) {
 		routes.GET("list", middlewares.CheckToken(), configCrawlerRoute.configCrawlerHandler.APIListConfigCrawler)
 		routes.POST("upsert", middlewares.CheckToken(), configCrawlerRoute.configCrawlerHandler.APIUpsertConfigCrawler)
 		routes.POST("test", middlewares.CheckToken(), configCrawlerRoute.configCrawlerHandler.APITestCrawler)
+		routes.POST("change-time", middlewares.CheckToken(), configCrawlerRoute.configCrawlerHandler.APIChangeCronjobTime)
 	}
 }

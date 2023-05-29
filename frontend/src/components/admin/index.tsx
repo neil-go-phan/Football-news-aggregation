@@ -6,6 +6,8 @@ import AdminLeagues from './leagues';
 import AdminTags from './tags';
 import AddCrawler from './crawler/addCrawler';
 import CrawlerComponent from './crawler';
+import AdminCronjob from './cronjob';
+import Dashboard from './dashboard';
 
 function AdminComponent() {
   const router = useRouter();
@@ -25,8 +27,12 @@ function AdminComponent() {
         return <CrawlerComponent />;
       case _ROUTES.ADD_CRAWLER:
         return <AddCrawler />;
-      default:
+      case _ROUTES.ADMIN_CRONJOB:
+        return <AdminCronjob />
+      case _ROUTES.ADMIN_ARTICLES:
         return <ArticleAdmin />;
+      default:
+        return <Dashboard />
     }
   };
 

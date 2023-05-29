@@ -7,11 +7,11 @@ import (
 	"server/handler"
 	"server/repository"
 	"server/services"
-
 	adminservices "server/services/admin"
 	articlesservices "server/services/articles"
 	clubservices "server/services/club"
-	configcrawler "server/services/configCrawler"
+	crawlerservices "server/services/crawler"
+	cronjobservices "server/services/cronjob"
 	eventservices "server/services/event"
 	leaguesservices "server/services/leagues"
 	lineupservices "server/services/lineup"
@@ -26,6 +26,7 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/google/wire"
+	"github.com/robfig/cron/v3"
 	"gorm.io/gorm"
 )
 
@@ -52,13 +53,65 @@ func InitTag(db *gorm.DB) *handler.TagsHandler {
 	return &handler.TagsHandler{}
 }
 
-func InitConfigCrawler(db *gorm.DB, grpcClient pb.CrawlerServiceClient) *handler.ConfigCrawlerHandler {
+func InitCronjob(db *gorm.DB, grpcClient pb.CrawlerServiceClient, cron *cron.Cron, es *elasticsearch.Client, jobIDMap map[string]cron.EntryID) *handler.CronjobHandler {
 	wire.Build(
-		repository.NewConfigCrawlerRepo,
-		configcrawler.NewConfigCrawlerService,
-		handler.NewConfigCrawlerHandler,
-		wire.Bind(new(repository.ConfigCrawlerRepository), new(*repository.ConfigCrawlerRepo)),
-		wire.Bind(new(services.ConfigCrawlerServices), new(*configcrawler.ConfigCrawlerService)),
+		repository.NewArticleRepo,
+		wire.Bind(new(repository.ArticleRepository), new(*repository.ArticleRepo)),
+
+		repository.NewTagRepo,
+		wire.Bind(new(repository.TagRepository), new(*repository.TagRepo)),
+		tagsservices.NewTagsService,
+		wire.Bind(new(services.TagsServices), new(*tagsservices.TagsService)),
+
+		repository.NewLeaguesRepo,
+		wire.Bind(new(repository.LeaguesRepository), new(*repository.LeaguesRepo)),
+		leaguesservices.NewleaguesService,
+		wire.Bind(new(services.LeaguesServices), new(*leaguesservices.LeaguesService)),
+
+		articlesservices.NewArticleService,
+		wire.Bind(new(services.ArticleServices), new(*articlesservices.ArticleService)),
+
+		repository.NewCronjobRepo,
+		wire.Bind(new(repository.CronjobRepository), new(*repository.CronjobRepo)),
+
+		cronjobservices.NewCronjobService,
+		wire.Bind(new(services.CronjobServices), new(*cronjobservices.CronjobService)),
+
+		handler.NewCronjobHandler,
+	)
+	return &handler.CronjobHandler{}
+}
+func InitCrawler(db *gorm.DB, grpcClient pb.CrawlerServiceClient, cron *cron.Cron, es *elasticsearch.Client, jobIDMap map[string]cron.EntryID) *handler.ConfigCrawlerHandler {
+	wire.Build(
+		repository.NewArticleRepo,
+		wire.Bind(new(repository.ArticleRepository), new(*repository.ArticleRepo)),
+
+		repository.NewTagRepo,
+		wire.Bind(new(repository.TagRepository), new(*repository.TagRepo)),
+		tagsservices.NewTagsService,
+		wire.Bind(new(services.TagsServices), new(*tagsservices.TagsService)),
+
+		repository.NewLeaguesRepo,
+		wire.Bind(new(repository.LeaguesRepository), new(*repository.LeaguesRepo)),
+		leaguesservices.NewleaguesService,
+		wire.Bind(new(services.LeaguesServices), new(*leaguesservices.LeaguesService)),
+
+		articlesservices.NewArticleService,
+		wire.Bind(new(services.ArticleServices), new(*articlesservices.ArticleService)),
+
+		repository.NewCrawlerRepo,
+		wire.Bind(new(repository.CrawlerRepository), new(*repository.CrawlerRepo)),
+
+		repository.NewCronjobRepo,
+		wire.Bind(new(repository.CronjobRepository), new(*repository.CronjobRepo)),
+
+		cronjobservices.NewCronjobService,
+		wire.Bind(new(services.CronjobServices), new(*cronjobservices.CronjobService)),
+
+		crawlerservices.NewCrawlerService,
+		wire.Bind(new(services.CrawlerServices), new(*crawlerservices.CrawlerService)),
+
+		handler.NewCrawlerHandler,
 	)
 	return &handler.ConfigCrawlerHandler{}
 }
@@ -94,11 +147,6 @@ func InitArticle(db *gorm.DB, es *elasticsearch.Client, grpcClient pb.CrawlerSer
 		wire.Bind(new(repository.LeaguesRepository), new(*repository.LeaguesRepo)),
 		leaguesservices.NewleaguesService,
 		wire.Bind(new(services.LeaguesServices), new(*leaguesservices.LeaguesService)),
-
-		repository.NewConfigCrawlerRepo,
-		wire.Bind(new(repository.ConfigCrawlerRepository), new(*repository.ConfigCrawlerRepo)),
-		configcrawler.NewConfigCrawlerService,
-		wire.Bind(new(services.ConfigCrawlerServices), new(*configcrawler.ConfigCrawlerService)),
 
 		articlesservices.NewArticleService,
 		wire.Bind(new(services.ArticleServices), new(*articlesservices.ArticleService)),
