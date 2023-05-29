@@ -1,7 +1,8 @@
 package infras
 
 import (
-	// "server/db/seed"
+	"server/db/seed"
+	"server/handler"
 	serverproto "server/proto"
 	"server/routes"
 
@@ -38,10 +39,10 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 	cronjobHandler := InitializeCronjob(db, grpcClient, cronjob, es, jobIDMap)
 	cronjobRoute := routes.NewCronjobRoutes(cronjobHandler)
 
-	// seed.SeedData(articleHandler, schedulesHandler)
-	// createArticleCache(articleHandler)
+	seed.SeedData(articleHandler, schedulesHandler)
+	createArticleCache(articleHandler)
 
-	// schedulesHandler.SignalToCrawlerToDay()
+	schedulesHandler.SignalToCrawlerToDay()
 
 	tagsRoutes.Setup(r)
 	leaguesRoutes.Setup(r)
@@ -56,10 +57,14 @@ func SetupRoute(db *gorm.DB, es *elasticsearch.Client, grpcClient serverproto.Cr
 
 	go func() {
 		cronjobHandler.CreateCronjobGetArticleFromGoogle()
-		// cronjobHandler.CreateCronjobRefreshCache()
+		cronjobHandler.CreateCronjobRefreshCache()
 		crawlerHandler.CreateCustomCrawlerCronjob()
 		schedulesHandler.SignalToCrawlerOnNewDay(cronjob, jobIDMap)
 
 		cronjob.Run()
 	}()
+}
+
+func createArticleCache(handler *handler.ArticleHandler) {
+	handler.RefreshCache()
 }
