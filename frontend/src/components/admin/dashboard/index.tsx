@@ -123,7 +123,7 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    var date = new Date();
+    const date = new Date();
     setChoosenDay(date);
     setChoosenHour(date)
   }, [router.asPath]);

@@ -11,7 +11,6 @@ type Props = {
   name: string;
   runEveryMinOld: number;
   handleChangeTime: () => void;
-  // handleDeactive: () => void
 };
 
 const CronjobActions: React.FC<Props> = (props: Props) => {
@@ -20,7 +19,6 @@ const CronjobActions: React.FC<Props> = (props: Props) => {
     setIsModalOpen(false);
     requestChangeTime(newTime);
   };
-  console.log("url", props.url)
   const requestChangeTime = async (newTime: number) => {
     try {
       const { data } = await axiosProtectedAPI.post('crawler/change-time', {

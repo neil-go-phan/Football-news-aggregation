@@ -7,8 +7,6 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartEvent,
-  ActiveElement,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { ChartOnHourData } from '.';
@@ -60,7 +58,7 @@ const BarChartOnHour: React.FC<Props> = (props: Props) => {
           label: (context: any) => {
             const labels: Array<string> = [];
             const barData = props.chartData[context.dataIndex];
-            labels.push('amount of cronjob run: ' + barData.amount_of_jobs);
+            labels.push(`amount of cronjob run: ${barData.amount_of_jobs}`);
             barData.cronjobs.forEach((value) => {
               labels.push(`cronjob: ${value.name}, start at: ${value.start_at}, end at: ${value.end_at}`);
             });

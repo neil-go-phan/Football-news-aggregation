@@ -25,6 +25,7 @@ ChartJS.register(
 type Props = {
   title: string;
   chartData: ChartOnDayData[];
+    // eslint-disable-next-line no-unused-vars
   handleChooseHour: (hour: number) => void
 };
 const labels = [
@@ -55,7 +56,7 @@ const labels = [
 ];
 const BarChartOnDay: React.FC<Props> = (props: Props) => {
   const [amountOfJobs, setAmountOfJobs] = useState<Array<number>>([]);
-  const chartRef = useRef<ChartJS<"bar">>();
+  const chartRef = useRef<ChartJS<'bar'>>();
   const options = {
     responsive: true,
     onHover: (event: ChartEvent, elements: ActiveElement[]) => {
@@ -77,7 +78,7 @@ const BarChartOnDay: React.FC<Props> = (props: Props) => {
           label: (context: any) => {
             const labels: Array<string> = [];
             const barData = props.chartData[context.dataIndex];
-            labels.push('amount of cronjob run: ' + barData.amount_of_jobs);
+            labels.push(`amount of cronjob run: ${barData.amount_of_jobs}`);
             barData.cronjobs.forEach((value) => {
               labels.push(`cronjob: ${value.name}, run: ${value.times} times`);
             });
