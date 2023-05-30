@@ -1,4 +1,3 @@
-
 CREATE TABLE articles (
   id SERIAL PRIMARY KEY,
   created_at timestamp with time zone,
@@ -162,7 +161,6 @@ CREATE TABLE cronjobs (
   crawler_id SERIAL,
   run_every_min int
 );
-
 
 -- ADD FOREIGN KEY
 ALTER TABLE
