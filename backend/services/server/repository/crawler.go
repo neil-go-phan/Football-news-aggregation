@@ -53,7 +53,7 @@ func (repo *CrawlerRepo) Get(url string) (*entities.Crawler, error) {
 
 func (repo *CrawlerRepo) Delete(url string) error {
 	configCrawler := new(entities.Crawler)
-	err := repo.DB.Unscoped().Where("url = ?", url).Delete(&configCrawler).Error
+	err := repo.DB.Where("url = ?", url).Delete(&configCrawler).Error
 	if err != nil {
 		return err
 	}
