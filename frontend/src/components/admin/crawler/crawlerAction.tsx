@@ -30,7 +30,7 @@ const DeleteBtn: React.FC<Props> = (props: Props) => {
       });
       props.handleDelete();
     } catch (error) {
-      toast.error('Error occurred while delete tags', {
+      toast.error('Error occurred while delete crawler', {
         position: 'top-right',
         autoClose: ERROR_POPUP_ADMIN_TIME,
         hideProgressBar: false,

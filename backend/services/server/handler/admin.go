@@ -85,7 +85,6 @@ func (adminHandler *AdminHandler) GoogleOAuth(c *gin.Context) {
 		return
 	}
 
-	// c.SetCookie("token", token, 24*60*60, "/", c.Request.Header.Get("Origin"), false, false)
 	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s?token=%s",config.FrontEndOrigin, pathUrl, token))
 }
 
